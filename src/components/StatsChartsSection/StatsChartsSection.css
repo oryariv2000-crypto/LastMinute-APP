@@ -1,0 +1,168 @@
+/* ── StatsChartsSection ──────────────────────────────────────── */
+.stats-charts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Period tabs */
+.stats-charts__tabs {
+  display: inline-flex;
+  align-self: stretch;
+  background-color: var(--color-surface-container);
+  border-radius: var(--radius-full);
+  padding: 4px;
+  gap: 2px;
+}
+.stats-charts__tab {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+.stats-charts__tab--active {
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Card */
+.stats-charts__card {
+  padding: var(--space-4);
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.stats-charts__card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+.stats-charts__card-title {
+  font-family: var(--font-family-display);
+  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+.stats-charts__card-sub {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+/* ── Bar chart (dummy) */
+.stats-charts__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  height: 160px;
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--color-outline-variant);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+.stats-charts__bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+.stats-charts__bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: var(--radius-default) var(--radius-default) 0 0;
+  background: linear-gradient(180deg, var(--color-brand-primary) 0%, var(--color-dark-forest) 100%);
+  transition: height var(--transition-base);
+}
+.stats-charts__bar-label {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ── Donut chart */
+.stats-charts__donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.stats-charts__donut {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-full);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stats-charts__donut-hole {
+  width: 86px;
+  height: 86px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-lowest);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.stats-charts__donut-value {
+  font-family: var(--font-family-display);
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+.stats-charts__donut-cap {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+.stats-charts__legend {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stats-charts__legend li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.stats-charts__legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
+.stats-charts__legend-label {
+  font-size: var(--font-size-label-md);
+  color: var(--color-on-surface);
+}
+.stats-charts__legend-value {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 380px) {
+  .stats-charts__donut-wrap { flex-direction: column; }
+}

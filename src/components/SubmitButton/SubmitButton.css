@@ -1,0 +1,84 @@
+/* ── SubmitButton ────────────────────────────────────────────── */
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
+  white-space: nowrap;
+  min-height: 52px;
+}
+
+.submit-btn--full {
+  width: 100%;
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ── Variants */
+.submit-btn--primary {
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+}
+.submit-btn--primary:hover:not(:disabled) {
+  background-color: var(--color-dark-forest);
+  box-shadow: var(--shadow-md);
+}
+
+.submit-btn--action {
+  background-color: var(--color-accent);
+  color: #ffffff;
+}
+.submit-btn--action:hover:not(:disabled) {
+  background-color: #e86d3f;
+  box-shadow: var(--shadow-md);
+}
+
+.submit-btn--secondary {
+  background-color: transparent;
+  color: var(--color-brand-primary);
+  border: 2px solid var(--color-brand-primary);
+}
+.submit-btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-secondary-container);
+}
+
+/* ── Disabled / loading */
+.submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Spinner */
+.submit-btn__spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.submit-btn--secondary .submit-btn__spinner {
+  border-color: rgba(45, 106, 79, 0.3);
+  border-top-color: var(--color-brand-primary);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

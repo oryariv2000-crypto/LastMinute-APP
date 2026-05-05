@@ -1,0 +1,163 @@
+/* ============================================================
+   AuthPage — shared page shell for Login, B2C Register, B2B Register
+   ============================================================ */
+
+.auth-page {
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: linear-gradient(160deg, #f2f6f4 0%, #e8f0eb 60%, #dceee6 100%);
+  padding: var(--space-6) var(--space-gutter) var(--space-8);
+}
+
+/* Card shell */
+.auth-page__card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Brand */
+.auth-page__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.auth-page__logo-mark {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.auth-page__brand-name {
+  font-family: var(--font-family-display);
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-primary);
+  letter-spacing: -0.02em;
+}
+
+/* ── Header */
+.auth-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-page__title {
+  color: var(--color-on-surface);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.auth-page__subtitle {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Divider */
+.auth-page__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-outline);
+  font-size: var(--font-size-caption);
+}
+.auth-page__divider::before,
+.auth-page__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-outline-variant);
+}
+
+/* ── Switch link */
+.auth-page__switch {
+  text-align: center;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.auth-page__switch-link {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+.auth-page__switch-link:hover {
+  color: var(--color-dark-forest);
+  text-decoration: underline;
+}
+
+/* ── Role step indicator (used in register pages) */
+.auth-page__step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+.auth-page__step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-outline-variant);
+  transition: background-color var(--transition-base);
+}
+.auth-page__step-dot--active {
+  background-color: var(--color-brand-primary);
+  transform: scale(1.25);
+}
+
+/* ── Back button (register pages) */
+.auth-page__back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--font-size-label-md);
+  color: var(--color-text-muted);
+  font-family: var(--font-family-base);
+  transition: color var(--transition-fast);
+}
+.auth-page__back-btn:hover {
+  color: var(--color-brand-primary);
+}
+.auth-page__back-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Scrollable on short viewports */
+@media (max-height: 700px) {
+  .auth-page {
+    align-items: flex-start;
+    padding-top: var(--space-4);
+  }
+}
+
+/* ── 375px mobile */
+@media (max-width: 400px) {
+  .auth-page__card {
+    border-radius: var(--radius-lg);
+    padding: var(--space-6) var(--space-4);
+  }
+}

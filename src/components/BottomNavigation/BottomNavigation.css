@@ -1,0 +1,163 @@
+/* BottomNavigation.css — shared styles for both B2B and B2C bottom navs */
+
+/* ── Shared shell ─────────────────────────────────────────── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-sticky);
+  width: 100%;
+  /* safe-area-inset for iPhone notch */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-color: var(--color-surface-container-lowest);
+  border-top: 1px solid var(--color-outline-variant);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.bottom-nav__inner {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 60px;
+}
+
+/* ── Tab item ─────────────────────────────────────────────── */
+.bottom-nav__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: var(--space-1) 0;
+  position: relative;
+  transition: color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav__tab:hover {
+  color: var(--color-brand-primary);
+}
+
+/* Active state */
+.bottom-nav__tab--active {
+  color: var(--color-brand-primary);
+}
+
+/* Active indicator pill above icon */
+.bottom-nav__tab--active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background-color: var(--color-brand-primary);
+}
+
+/* Icon wrapper */
+.bottom-nav__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-nav__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Active icon gets a subtle filled pill background */
+.bottom-nav__tab--active .bottom-nav__icon {
+  background-color: var(--color-secondary-container);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+}
+
+/* Label text */
+.bottom-nav__label {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Notification badge */
+.bottom-nav__badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  color: var(--color-on-primary);
+  font-size: 9px;
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid var(--color-surface-container-lowest);
+}
+
+/* ── B2B FAB (center Publish button) ─────────────────────── */
+.bottom-nav__fab {
+  flex: 0 0 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: var(--space-1) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav__fab-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  margin-top: -20px;
+  transition: background-color var(--transition-fast), transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.bottom-nav__fab-btn:hover {
+  background-color: #e86d3f;
+  transform: scale(1.08);
+  box-shadow: var(--shadow-lg);
+}
+
+.bottom-nav__fab-btn svg {
+  width: 26px;
+  height: 26px;
+}
+
+.bottom-nav__fab-label {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent);
+  margin-top: 2px;
+}

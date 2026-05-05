@@ -1,0 +1,159 @@
+/* ── OrderHistoryCard ────────────────────────────────────────── */
+.order-history-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border-inline-start: 4px solid transparent;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+.order-history-card:hover { box-shadow: var(--shadow-md); }
+
+.order-history-card--active   { border-inline-start-color: var(--color-accent); }
+.order-history-card--ready    { border-inline-start-color: var(--color-mint-green); }
+.order-history-card--completed{ border-inline-start-color: var(--color-outline-variant); }
+.order-history-card--cancelled{ border-inline-start-color: var(--color-error); opacity: 0.85; }
+
+/* ── Main row */
+.order-history-card__main {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.order-history-card__thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-default);
+  background-color: var(--color-surface-container);
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+.order-history-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-history-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.order-history-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.order-history-card__biz {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-history-card__status {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.order-history-card__status--active {
+  background-color: rgba(255, 127, 81, 0.18);
+  color: var(--color-accent);
+}
+.order-history-card__status--ready {
+  background-color: rgba(82, 183, 136, 0.20);
+  color: var(--color-mint-green);
+}
+.order-history-card__status--completed {
+  background-color: var(--color-surface-container);
+  color: var(--color-text-muted);
+}
+.order-history-card__status--cancelled {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.order-history-card__items {
+  font-size: var(--font-size-caption);
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.order-history-card__meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.order-history-card__total {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-primary);
+}
+
+/* ── Actions */
+.order-history-card__actions {
+  display: flex;
+  gap: 8px;
+}
+.order-history-card__btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid transparent;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast),
+              border-color var(--transition-fast),
+              color var(--transition-fast);
+}
+.order-history-card__btn--primary {
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+}
+.order-history-card__btn--primary:hover { background-color: var(--color-dark-forest); }
+.order-history-card__btn--secondary {
+  background-color: transparent;
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+.order-history-card__btn--secondary:hover {
+  background-color: var(--color-secondary-container);
+}
+.order-history-card__btn--ghost {
+  background-color: transparent;
+  color: var(--color-text-muted);
+}
+.order-history-card__btn--ghost:hover {
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+}

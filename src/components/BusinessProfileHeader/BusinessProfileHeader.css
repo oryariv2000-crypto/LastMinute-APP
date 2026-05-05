@@ -1,0 +1,183 @@
+/* ── BusinessProfileHeader ───────────────────────────────────── */
+.biz-profile-header {
+  position: relative;
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.biz-profile-header__cover {
+  height: 120px;
+  background:
+    linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-dark-forest) 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+.biz-profile-header__content {
+  display: flex;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-4);
+  margin-top: -36px; /* lift avatar over the cover */
+}
+
+.biz-profile-header__avatar {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-container);
+  color: var(--color-brand-primary);
+  font-family: var(--font-family-display);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--color-surface-container-lowest);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.biz-profile-header__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.biz-profile-header__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 40px; /* push text below the cover */
+  min-width: 0;
+}
+
+.biz-profile-header__name {
+  font-family: var(--font-family-display);
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  margin: 0;
+  line-height: 1.2;
+}
+.biz-profile-header__owner {
+  font-size: var(--font-size-label-md);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.biz-profile-header__address {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.biz-profile-header__address svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* meta row */
+.biz-profile-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.biz-profile-header__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background-color: rgba(82, 183, 136, 0.18);
+  color: var(--color-mint-green);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+}
+.biz-profile-header__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-mint-green);
+}
+.biz-profile-header__status--off {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+.biz-profile-header__status--off .biz-profile-header__status-dot {
+  background-color: var(--color-error);
+}
+
+.biz-profile-header__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+}
+.biz-profile-header__rating svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-accent);
+}
+.biz-profile-header__reviews {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+/* actions */
+.biz-profile-header__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: var(--space-3);
+}
+.biz-profile-header__btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1.5px solid transparent;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+.biz-profile-header__btn svg { width: 14px; height: 14px; }
+
+.biz-profile-header__btn--primary {
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+}
+.biz-profile-header__btn--primary:hover {
+  background-color: var(--color-dark-forest);
+}
+.biz-profile-header__btn--secondary {
+  background-color: transparent;
+  color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+}
+.biz-profile-header__btn--secondary:hover {
+  background-color: var(--color-secondary-container);
+}
+
+/* Compact mobile */
+@media (max-width: 380px) {
+  .biz-profile-header__content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .biz-profile-header__text {
+    padding-top: 0;
+  }
+}

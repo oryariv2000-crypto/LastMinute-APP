@@ -1,0 +1,64 @@
+/* ── RevenueCard ─────────────────────────────────────────────── */
+.revenue-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  color: #fff;
+}
+
+/* gradient backgrounds per variant */
+.revenue-card--primary {
+  background: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-dark-forest) 100%);
+}
+.revenue-card--success {
+  background: linear-gradient(135deg, var(--color-mint-green) 0%, var(--color-brand-primary) 100%);
+}
+.revenue-card--accent {
+  background: linear-gradient(135deg, var(--color-accent) 0%, #e86d3f 100%);
+}
+
+.revenue-card__label {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  margin: 0;
+  opacity: 0.9;
+}
+
+.revenue-card__value {
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.revenue-card__subtitle {
+  font-size: var(--font-size-caption);
+  opacity: 0.85;
+  margin: 0;
+}
+
+.revenue-card__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  width: max-content;
+}
+.revenue-card__delta svg {
+  width: 12px;
+  height: 12px;
+}
+.revenue-card__delta--down {
+  background-color: rgba(217, 4, 41, 0.32);
+}

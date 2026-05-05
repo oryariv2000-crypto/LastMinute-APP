@@ -1,0 +1,100 @@
+/* ── PublishActions (sticky bottom bar) ──────────────────────── */
+.publish-actions {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-container-lowest);
+  border-top: 1px solid var(--color-outline-variant);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  /* keep above the iOS home indicator */
+  padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+}
+
+.publish-actions__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.publish-actions__count {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+.publish-actions__total {
+  font-family: var(--font-family-display);
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-primary);
+}
+
+.publish-actions__buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.publish-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              opacity var(--transition-fast);
+  min-height: 44px;
+}
+.publish-actions__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.publish-actions__btn--ghost {
+  background-color: transparent;
+  color: var(--color-text-muted);
+}
+.publish-actions__btn--ghost:hover:not(:disabled) {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.publish-actions__btn--action {
+  background-color: var(--color-accent);
+  color: #fff;
+  padding-inline: var(--space-6);
+}
+.publish-actions__btn--action:hover:not(:disabled) {
+  background-color: #e86d3f;
+  box-shadow: var(--shadow-md);
+}
+
+.publish-actions__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.publish-actions__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* shared keyframe — also defined in SubmitButton.css */
+@keyframes spin { to { transform: rotate(360deg); } }

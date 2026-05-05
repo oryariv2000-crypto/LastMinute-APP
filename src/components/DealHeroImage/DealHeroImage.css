@@ -1,0 +1,111 @@
+/* ── DealHeroImage ───────────────────────────────────────────── */
+.deal-hero {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-surface-container);
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.deal-hero__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.deal-hero__img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+}
+
+/* ── Top controls */
+.deal-hero__top {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-3);
+  /* gentle gradient so icons stay readable on bright photos */
+  background: linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, transparent 100%);
+}
+.deal-hero__top-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.deal-hero__round-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: none;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--color-on-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast),
+              transform var(--transition-fast);
+}
+.deal-hero__round-btn:hover {
+  background-color: #fff;
+}
+.deal-hero__round-btn:active { transform: scale(0.94); }
+.deal-hero__round-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.deal-hero__round-btn--active {
+  background-color: var(--color-action-red);
+  color: #fff;
+}
+.deal-hero__round-btn--active:hover {
+  background-color: #b8001f;
+}
+
+/* ── Bottom overlays */
+.deal-hero__overlay {
+  position: absolute;
+  bottom: var(--space-3);
+  inset-inline-start: var(--space-3);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.deal-hero__discount {
+  background-color: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-family-display);
+  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.deal-hero__timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(4px);
+}
+.deal-hero__timer svg { width: 12px; height: 12px; }
+.deal-hero__timer--urgent {
+  background-color: var(--color-action-red);
+  animation: hero-timer-pulse 1.4s ease-in-out infinite;
+}
+@keyframes hero-timer-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}

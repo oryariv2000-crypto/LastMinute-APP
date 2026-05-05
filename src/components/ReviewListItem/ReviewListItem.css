@@ -1,0 +1,144 @@
+/* ── ReviewListItem ──────────────────────────────────────────── */
+.review-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  list-style: none;
+}
+
+.review-item__media {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-default);
+  overflow: hidden;
+  background-color: var(--color-surface-container);
+}
+.review-item__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.review-item__img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.review-item__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.review-item__title {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.review-item__pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.review-item__price {
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-primary);
+}
+.review-item__original {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+.review-item__discount {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  background-color: var(--color-accent);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.review-item__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+}
+
+/* ── Qty pill */
+.review-item__qty {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-full);
+  padding: 2px;
+}
+.review-item__qty-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), opacity var(--transition-fast);
+}
+.review-item__qty-btn:hover:not(:disabled) {
+  background-color: var(--color-dark-forest);
+}
+.review-item__qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.review-item__qty-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.review-item__qty-value {
+  min-width: 28px;
+  text-align: center;
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+
+/* ── Remove button */
+.review-item__remove {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+.review-item__remove:hover {
+  background-color: var(--color-error-container);
+  color: var(--color-error);
+}
+.review-item__remove svg {
+  width: 18px;
+  height: 18px;
+}

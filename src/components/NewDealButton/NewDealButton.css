@@ -1,0 +1,71 @@
+/* ── NewDealButton ───────────────────────────────────────────── */
+.new-deal-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #e86d3f 100%);
+  color: #fff;
+  font-family: var(--font-family-base);
+  text-align: start;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0px 6px 20px rgba(255, 127, 81, 0.35);
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+.new-deal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 10px 28px rgba(255, 127, 81, 0.45);
+}
+.new-deal-btn:active {
+  transform: scale(0.99);
+}
+
+.new-deal-btn__icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-full);
+}
+.new-deal-btn__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.new-deal-btn__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.new-deal-btn__title {
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-display);
+}
+.new-deal-btn__subtitle {
+  font-size: var(--font-size-caption);
+  opacity: 0.92;
+}
+
+.new-deal-btn__arrow {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* ChevronLeft glyph; flip horizontally so it points to the inline-end (start) edge in RTL */
+  transform: scaleX(-1);
+}
+.new-deal-btn__arrow svg {
+  width: 18px;
+  height: 18px;
+}

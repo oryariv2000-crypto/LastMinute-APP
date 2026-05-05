@@ -1,0 +1,101 @@
+/* ── InputField ─────────────────────────────────────────────── */
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-field__label {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-on-surface-variant);
+  line-height: var(--line-height-label-md);
+}
+
+.input-field__required {
+  color: var(--color-error);
+}
+
+/* ── Wrapper (positions icon + input + right-slot) */
+.input-field__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-field__icon {
+  position: absolute;
+  inset-inline-start: 14px;
+  display: flex;
+  align-items: center;
+  color: var(--color-outline);
+  pointer-events: none;
+  width: 18px;
+  height: 18px;
+}
+
+.input-field__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.input-field__right-slot {
+  position: absolute;
+  inset-inline-end: 12px;
+  display: flex;
+  align-items: center;
+}
+
+/* ── The <input> itself */
+.input-field__input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body-md);
+  font-family: var(--font-family-base);
+  color: var(--color-on-surface);
+  background-color: var(--color-surface-container-lowest);
+  outline: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* When there is a leading icon, shift text right */
+.input-field__icon ~ .input-field__input,
+.input-field__wrapper:has(.input-field__icon) .input-field__input {
+  padding-inline-start: 42px;
+}
+
+/* When there is a right slot */
+.input-field__wrapper:has(.input-field__right-slot) .input-field__input {
+  padding-inline-end: 44px;
+}
+
+.input-field__input::placeholder {
+  color: var(--color-outline);
+  font-size: var(--font-size-label-md);
+}
+
+.input-field__input:focus {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.18);
+}
+
+/* ── Error state */
+.input-field--error .input-field__input {
+  border-color: var(--color-error);
+}
+.input-field--error .input-field__input:focus {
+  box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.15);
+}
+
+.input-field__error {
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+  margin-top: 2px;
+}

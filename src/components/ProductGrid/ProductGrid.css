@@ -1,0 +1,59 @@
+/* ── ProductGrid ─────────────────────────────────────────────── */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr;       /* mobile: stacked */
+  gap: var(--space-3);
+  /* Align grid copy to the inline-start edge (right edge in RTL) */
+  text-align: start;
+  direction: inherit;
+}
+
+@media (min-width: 600px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+}
+@media (min-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Outer link wrapper used by B2CHomePage when each card is wrapped in a
+   <Link to={`/b2c/product/${id}`}>. Strips default link styling. */
+.product-grid__cell {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-md);
+}
+.product-grid__cell:focus-visible {
+  outline: 3px solid rgba(45, 106, 79, 0.45);
+  outline-offset: 2px;
+}
+
+/* ── Empty state */
+.product-grid__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-8) var(--space-4);
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label-md);
+  text-align: center;
+}
+.product-grid__empty span {
+  font-size: 36px;
+}
+.product-grid__empty p {
+  margin: 0;
+}

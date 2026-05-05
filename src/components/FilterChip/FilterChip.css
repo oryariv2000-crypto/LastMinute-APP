@@ -1,0 +1,70 @@
+/* ── FilterChip ──────────────────────────────────────────────── */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+  flex-shrink: 0;
+}
+.filter-chip:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+.filter-chip:active {
+  transform: scale(0.97);
+}
+
+.filter-chip--active {
+  background-color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.filter-chip--active:hover {
+  background-color: var(--color-dark-forest);
+  border-color: var(--color-dark-forest);
+  color: var(--color-on-primary);
+}
+
+.filter-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+.filter-chip__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.filter-chip__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+.filter-chip--active .filter-chip__count {
+  background-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}

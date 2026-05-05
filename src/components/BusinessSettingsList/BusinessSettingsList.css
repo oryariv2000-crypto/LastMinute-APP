@@ -1,0 +1,155 @@
+/* ── BusinessSettingsList ────────────────────────────────────── */
+.biz-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.biz-settings__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.biz-settings__group-title {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 var(--space-3);
+}
+
+.biz-settings__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.biz-settings__list li + li .biz-settings__row {
+  border-top: 1px solid var(--color-surface-container);
+}
+
+.biz-settings__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-family-base);
+  text-align: start;
+  transition: background-color var(--transition-fast);
+}
+.biz-settings__row:hover {
+  background-color: var(--color-surface-container-low);
+}
+.biz-settings__row--toggle {
+  cursor: default;
+}
+.biz-settings__row--toggle:hover {
+  background-color: transparent;
+}
+
+.biz-settings__row-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.biz-settings__row-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-default);
+  background-color: var(--color-secondary-container);
+  color: var(--color-brand-primary);
+}
+.biz-settings__row-icon svg { width: 18px; height: 18px; }
+.biz-settings__row-icon--danger {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.biz-settings__row-label {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-on-surface);
+}
+.biz-settings__row-label--danger {
+  color: var(--color-error);
+  font-weight: var(--font-weight-semibold);
+}
+
+.biz-settings__row-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.biz-settings__row-value {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+}
+
+.biz-settings__chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--color-outline);
+  /* Chevron-Left: in RTL it visually points to inline-end (left edge). */
+}
+
+/* ── iOS-style toggle */
+.biz-settings__switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.biz-settings__switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+.biz-settings__switch-track {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-outline-variant);
+  transition: background-color var(--transition-fast);
+}
+.biz-settings__switch-thumb {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background-color: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+.biz-settings__switch input:checked + .biz-settings__switch-track {
+  background-color: var(--color-brand-primary);
+}
+.biz-settings__switch input:checked + .biz-settings__switch-track .biz-settings__switch-thumb {
+  /* Move toward inline-end: in LTR that's +18px, in RTL it's -18px */
+  transform: translateX(18px);
+}
+[dir="rtl"] .biz-settings__switch input:checked + .biz-settings__switch-track .biz-settings__switch-thumb {
+  transform: translateX(-18px);
+}

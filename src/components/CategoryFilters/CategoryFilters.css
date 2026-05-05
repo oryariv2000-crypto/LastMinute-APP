@@ -1,0 +1,32 @@
+/* ── CategoryFilters ─────────────────────────────────────────── */
+.category-filters {
+  position: relative;
+  /* Bleed to the page edges so chips can scroll under the gutter */
+  margin-inline: calc(-1 * var(--space-gutter));
+  /* Inherit document direction so the flex track + scroll origin start
+     from the inline-start edge (right edge in RTL). */
+  direction: inherit;
+}
+
+.category-filters__scroll {
+  display: flex;
+  /* In RTL, this means the first chip sits on the far right and the
+     overflow extends leftward — matching the natural reading order. */
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline-start: var(--space-gutter);
+  padding: 4px var(--space-gutter);
+  /* Hide scrollbar but keep scrolling */
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.category-filters__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-filters__scroll > * {
+  scroll-snap-align: start;
+}

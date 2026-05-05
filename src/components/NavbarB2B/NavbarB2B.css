@@ -1,0 +1,168 @@
+/* NavbarB2B.css — Top navigation for business owners */
+
+.navbar-b2b {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  width: 100%;
+  background-color: var(--color-brand-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.navbar-b2b__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 var(--space-gutter);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Brand / Logo ─────────────────────────────────────────── */
+.navbar-b2b__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+
+.navbar-b2b__logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-default);
+  background-color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.navbar-b2b__brand-name {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-primary);
+  letter-spacing: 0.02em;
+}
+
+.navbar-b2b__brand-tag {
+  display: block;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-on-primary-container);
+  line-height: 1;
+}
+
+/* ── Business Info (center) ───────────────────────────────── */
+.navbar-b2b__biz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 0 var(--space-2);
+}
+
+.navbar-b2b__biz-name {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.navbar-b2b__biz-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-caption);
+  color: var(--color-on-primary-container);
+}
+
+.navbar-b2b__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-mint-green);
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+.navbar-b2b__status-dot--offline {
+  background-color: var(--color-outline);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* ── Actions (right) ──────────────────────────────────────── */
+.navbar-b2b__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.navbar-b2b__icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.navbar-b2b__icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-b2b__icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Notification badge on bell */
+.navbar-b2b__notif-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  border: 2px solid var(--color-brand-primary);
+}
+
+/* Avatar */
+.navbar-b2b__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-on-primary-container);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.navbar-b2b__avatar:hover {
+  opacity: 0.85;
+}

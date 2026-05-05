@@ -1,0 +1,77 @@
+/* ── QRCodeDisplay ───────────────────────────────────────────── */
+.qr-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.qr-display__frame {
+  position: relative;
+  width: 240px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: var(--space-3);
+  background-color: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 0 0 1px var(--color-outline-variant),
+    var(--shadow-md);
+}
+.qr-display__svg,
+.qr-display__img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* keep QR pixels crisp */
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+/* Corner anchors */
+.qr-display__corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--color-brand-primary);
+}
+.qr-display__corner--tl { top: -6px; left: -6px;  border-right: none;  border-bottom: none; border-top-left-radius: 8px; }
+.qr-display__corner--tr { top: -6px; right: -6px; border-left: none;   border-bottom: none; border-top-right-radius: 8px; }
+.qr-display__corner--bl { bottom: -6px; left: -6px;  border-right: none; border-top: none;   border-bottom-left-radius: 8px; }
+.qr-display__corner--br { bottom: -6px; right: -6px; border-left: none;  border-top: none;   border-bottom-right-radius: 8px; }
+
+/* ── Order code */
+.qr-display__code-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--space-2);
+}
+.qr-display__code-label {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.qr-display__code-value {
+  font-family: var(--font-family-display);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  letter-spacing: 0.18em;
+}
+
+.qr-display__caption {
+  font-size: var(--font-size-label-md);
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 30ch;
+  line-height: 1.4;
+}

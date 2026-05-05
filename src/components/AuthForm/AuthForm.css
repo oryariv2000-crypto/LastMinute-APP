@@ -1,0 +1,38 @@
+/* ── AuthForm ────────────────────────────────────────────────── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-form__forgot {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-brand-primary);
+  text-align: end;
+  text-decoration: none;
+  margin-top: -4px;
+  transition: color var(--transition-fast);
+}
+.auth-form__forgot:hover {
+  color: var(--color-dark-forest);
+  text-decoration: underline;
+}
+
+.auth-form__toggle-pass {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-outline);
+  transition: color var(--transition-fast);
+}
+.auth-form__toggle-pass:hover {
+  color: var(--color-brand-primary);
+}
+.auth-form__toggle-pass svg {
+  width: 18px;
+  height: 18px;
+}

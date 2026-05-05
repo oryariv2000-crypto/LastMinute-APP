@@ -1,0 +1,195 @@
+/* ── DealInfoSection ─────────────────────────────────────────── */
+.deal-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.deal-info__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deal-info__title {
+  font-family: var(--font-family-display);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.deal-info__tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.deal-info__tags li {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-secondary-container);
+  background-color: var(--color-secondary-container);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Pricing block */
+.deal-info__pricing {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.deal-info__price {
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-primary);
+  line-height: 1.1;
+}
+.deal-info__original {
+  font-size: var(--font-size-body-md);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+.deal-info__save {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  background-color: var(--color-mint-green);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+/* ── Business strip (link to store) */
+.deal-info__biz {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-family-base);
+  text-align: start;
+  transition: background-color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+.deal-info__biz:hover {
+  background-color: var(--color-surface-container-low);
+  border-color: var(--color-brand-primary);
+}
+
+.deal-info__biz-avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-container);
+  color: var(--color-brand-primary);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.deal-info__biz-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deal-info__biz-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.deal-info__biz-name {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+}
+.deal-info__biz-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+.deal-info__biz-meta svg {
+  width: 12px;
+  height: 12px;
+  color: var(--color-accent);
+}
+.deal-info__biz-reviews,
+.deal-info__biz-distance {
+  color: var(--color-text-muted);
+}
+
+.deal-info__biz svg:last-child {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--color-outline);
+}
+
+/* ── Generic info block */
+.deal-info__block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deal-info__block-title {
+  font-family: var(--font-family-display);
+  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+.deal-info__block-body {
+  font-size: var(--font-size-body-md);
+  line-height: var(--line-height-body-md);
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.deal-info__details {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.deal-info__details li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-label-md);
+  color: var(--color-on-surface);
+}
+.deal-info__detail-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-default);
+  background-color: var(--color-secondary-container);
+  color: var(--color-brand-primary);
+}
+.deal-info__detail-icon svg {
+  width: 16px;
+  height: 16px;
+}

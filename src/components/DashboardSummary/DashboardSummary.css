@@ -1,0 +1,78 @@
+/* ── DashboardSummary ────────────────────────────────────────── */
+.dashboard-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.dashboard-summary__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-4);
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border-inline-start: 4px solid var(--color-brand-primary);
+  min-height: 96px;
+}
+
+.dashboard-summary__card--accent  { border-inline-start-color: var(--color-accent); }
+.dashboard-summary__card--success { border-inline-start-color: var(--color-mint-green); }
+.dashboard-summary__card--error   { border-inline-start-color: var(--color-error); }
+
+.dashboard-summary__icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-default);
+  background-color: var(--color-secondary-container);
+  color: var(--color-brand-primary);
+}
+.dashboard-summary__icon svg {
+  width: 18px;
+  height: 18px;
+}
+.dashboard-summary__card--accent .dashboard-summary__icon {
+  background-color: rgba(255, 127, 81, 0.18);
+  color: var(--color-accent);
+}
+.dashboard-summary__card--success .dashboard-summary__icon {
+  background-color: rgba(82, 183, 136, 0.20);
+  color: var(--color-mint-green);
+}
+.dashboard-summary__card--error .dashboard-summary__icon {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.dashboard-summary__label {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  margin-top: 4px;
+}
+
+.dashboard-summary__value {
+  font-family: var(--font-family-display);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  line-height: 1.2;
+}
+
+.dashboard-summary__delta {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-mint-green);
+}
+
+/* ── 3-up on wider screens */
+@media (min-width: 700px) {
+  .dashboard-summary__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
