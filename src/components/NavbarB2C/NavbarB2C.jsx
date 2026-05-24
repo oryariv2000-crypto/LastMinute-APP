@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
 import './NavbarB2C.css'
 
 /**
@@ -19,6 +20,12 @@ export default function NavbarB2C({
   onSearch,
 }) {
   const [query, setQuery] = useState('')
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
 
   const initials = userName
     .trim()
@@ -71,6 +78,16 @@ export default function NavbarB2C({
           >
             {initials}
           </Link>
+
+          {/* Logout */}
+          <button
+            className="navbar-b2c__logout"
+            onClick={handleLogout}
+            aria-label="התנתקות"
+            id="b2c-nav-logout"
+          >
+            <LogoutIcon />
+          </button>
         </div>
 
         {/* ── Search row ────────────────────────────────── */}
@@ -131,6 +148,17 @@ function ChevronDownIcon({ className }) {
       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
       style={{ width: 12, height: 12 }} aria-hidden="true">
       <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+function LogoutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
   )
 }

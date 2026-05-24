@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2B from '../components/RegisterFormB2B/RegisterFormB2B'
+import { supabase } from '../lib/supabase'
 import './AuthPage.css'
 
 /**
@@ -16,6 +17,7 @@ export default function B2BRegisterPage() {
   const [step, setStep]       = useState(1)
   const [role, setRole]       = useState('b2b')
   const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
   const navigate = useNavigate()
 
   function handleRoleNext() {
@@ -28,10 +30,51 @@ export default function B2BRegisterPage() {
 
   async function handleSubmit(data) {
     setLoading(true)
+    setError('')
     try {
-      await new Promise(r => setTimeout(r, 1600))
-      console.log('B2B Register:', data)
+      // 1. Create the auth user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      })
+      if (signUpError) {
+        setError(signUpError.message)
+        return
+      }
+
+      const user = signUpData.user
+      if (!user) {
+        // Happens when email confirmation is enabled — no session yet.
+        setError('נשלח אליך מייל לאימות. אשר אותו כדי להשלים את ההרשמה.')
+        return
+      }
+
+      // 2. Insert the profile row into `users` with role = business_owner
+      const { error: profileError } = await supabase.from('users').insert({
+        id: user.id,
+        email: data.email,
+        full_name: data.ownerName,
+        role: 'business_owner',
+      })
+      if (profileError) {
+        setError(profileError.message)
+        return
+      }
+
+      // 3. Insert the business record owned by this user
+      const { error: businessError } = await supabase.from('businesses').insert({
+        owner_id: user.id,
+        name: data.businessName,
+        address: data.address,
+      })
+      if (businessError) {
+        setError(businessError.message)
+        return
+      }
+
       navigate('/b2b/dashboard')
+    } catch (err) {
+      setError(err?.message || 'ההרשמה נכשלה, נסה שוב')
     } finally {
       setLoading(false)
     }
@@ -100,7 +143,7 @@ export default function B2BRegisterPage() {
               </p>
             </div>
 
-            <RegisterFormB2B onSubmit={handleSubmit} loading={loading} />
+            <RegisterFormB2B onSubmit={handleSubmit} loading={loading} error={error} />
           </>
         )}
 

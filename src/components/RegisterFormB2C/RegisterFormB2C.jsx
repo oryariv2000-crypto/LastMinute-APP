@@ -9,8 +9,9 @@ import './RegisterFormB2C.css'
  * Props:
  *   onSubmit  fn(data)  — called with form data on successful validation
  *   loading   boolean   — shows spinner while request is in flight
+ *   error     string    — server-side error message shown above the form
  */
-export default function RegisterFormB2C({ onSubmit, loading = false }) {
+export default function RegisterFormB2C({ onSubmit, loading = false, error = '' }) {
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -60,6 +61,12 @@ export default function RegisterFormB2C({ onSubmit, loading = false }) {
       noValidate
       aria-label="טופס הרשמה לקוח"
     >
+      {error && (
+        <p className="register-form__error" role="alert">
+          {error}
+        </p>
+      )}
+
       {/* Name row */}
       <div className="register-b2c-form__name-row">
         <InputField

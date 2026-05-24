@@ -10,8 +10,9 @@ import './AuthForm.css'
  * Props:
  *   onSubmit   fn(email, password) — called with credentials on valid submit
  *   loading    boolean             — disables form while request is in flight
+ *   error      string              — server-side error message shown above the form
  */
-export default function AuthForm({ onSubmit, loading = false }) {
+export default function AuthForm({ onSubmit, loading = false, error = '' }) {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -45,6 +46,12 @@ export default function AuthForm({ onSubmit, loading = false }) {
       noValidate
       aria-label="טופס כניסה"
     >
+      {error && (
+        <p className="auth-form__error" role="alert">
+          {error}
+        </p>
+      )}
+
       <InputField
         id="login-email"
         label="אימייל"

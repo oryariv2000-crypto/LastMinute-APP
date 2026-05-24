@@ -17,6 +17,7 @@ import B2CCheckoutPage from './pages/B2CCheckoutPage'
 import B2CConfirmationPage from './pages/B2CConfirmationPage'
 import B2COrdersPage from './pages/B2COrdersPage'
 import B2CProfilePage from './pages/B2CProfilePage'
+import ProtectedRoute from './components/ProtectedRoute'
 
 /* ── Global design tokens (must be first CSS import) */
 import './styles/globals.css'
@@ -35,14 +36,14 @@ export default function App() {
       <Route path="/register" element={<Navigate to="/register/b2c" replace />} />
 
       {/* ── B2B (Business) ─────────────────────────────────── */}
-      <Route path="/b2b/dashboard" element={<B2BDashboardPage />} />
+      <Route path="/b2b/dashboard" element={<ProtectedRoute><B2BDashboardPage /></ProtectedRoute>} />
       <Route path="/b2b/new-deal"  element={<B2BNewDealPage />} />
       <Route path="/b2b/review"    element={<B2BAiReviewPage />} />
       <Route path="/b2b/stats"     element={<B2BStatsPage />} />
       <Route path="/b2b/profile"   element={<B2BProfilePage />} />
 
       {/* ── B2C (Customer) ─────────────────────────────────── */}
-      <Route path="/b2c/home"          element={<B2CHomePage />} />
+      <Route path="/b2c/home"          element={<ProtectedRoute><B2CHomePage /></ProtectedRoute>} />
       <Route path="/b2c/product/:id"   element={<B2CProductPage />} />
       <Route path="/b2c/checkout"      element={<B2CCheckoutPage />} />
       <Route path="/b2c/confirmation"  element={<B2CConfirmationPage />} />

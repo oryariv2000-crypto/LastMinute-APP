@@ -119,6 +119,29 @@
   border-color: var(--color-brand-primary);
 }
 
+.navbar-b2c__logout {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+.navbar-b2c__logout:hover {
+  color: var(--color-brand-primary);
+  background-color: var(--color-surface-container-high);
+}
+.navbar-b2c__logout svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* ── Search row ───────────────────────────────────────────── */
 .navbar-b2c__search-wrap {
   position: relative;

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2C from '../components/RegisterFormB2C/RegisterFormB2C'
+import { supabase } from '../lib/supabase'
 import './AuthPage.css'
 
 /**
@@ -16,6 +17,7 @@ export default function B2CRegisterPage() {
   const [step, setStep]       = useState(1)   // 1 = role, 2 = form
   const [role, setRole]       = useState('b2c')
   const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
   const navigate = useNavigate()
 
   function handleRoleNext() {
@@ -28,10 +30,40 @@ export default function B2CRegisterPage() {
 
   async function handleSubmit(data) {
     setLoading(true)
+    setError('')
     try {
-      await new Promise(r => setTimeout(r, 1400))
-      console.log('B2C Register:', data)
+      // 1. Create the auth user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      })
+      if (signUpError) {
+        setError(signUpError.message)
+        return
+      }
+
+      const user = signUpData.user
+      if (!user) {
+        // Happens when email confirmation is enabled — no session yet.
+        setError('נשלח אליך מייל לאימות. אשר אותו כדי להשלים את ההרשמה.')
+        return
+      }
+
+      // 2. Insert the profile row into `users` with role = customer
+      const { error: profileError } = await supabase.from('users').insert({
+        id: user.id,
+        email: data.email,
+        full_name: `${data.firstName} ${data.lastName}`.trim(),
+        role: 'customer',
+      })
+      if (profileError) {
+        setError(profileError.message)
+        return
+      }
+
       navigate('/b2c/home')
+    } catch (err) {
+      setError(err?.message || 'ההרשמה נכשלה, נסה שוב')
     } finally {
       setLoading(false)
     }
@@ -100,7 +132,7 @@ export default function B2CRegisterPage() {
               </p>
             </div>
 
-            <RegisterFormB2C onSubmit={handleSubmit} loading={loading} />
+            <RegisterFormB2C onSubmit={handleSubmit} loading={loading} error={error} />
           </>
         )}
 

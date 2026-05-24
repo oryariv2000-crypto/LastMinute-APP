@@ -20,7 +20,7 @@ const BUSINESS_TYPES = [
   { value: 'other',      label: 'אחר' },
 ]
 
-export default function RegisterFormB2B({ onSubmit, loading = false }) {
+export default function RegisterFormB2B({ onSubmit, loading = false, error = '' }) {
   const [form, setForm] = useState({
     businessName:  '',
     ownerName:     '',
@@ -75,6 +75,12 @@ export default function RegisterFormB2B({ onSubmit, loading = false }) {
       noValidate
       aria-label="טופס הרשמה עסק"
     >
+      {error && (
+        <p className="register-form__error" role="alert">
+          {error}
+        </p>
+      )}
+
       {/* Business details section */}
       <fieldset className="register-b2b-form__section">
         <legend className="register-b2b-form__section-title">
