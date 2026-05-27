@@ -18,6 +18,7 @@ export default function NavbarB2C({
   location = 'תל אביב',
   userName = 'דנה כהן',
   onSearch,
+  showSearch = true,
 }) {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
@@ -91,30 +92,32 @@ export default function NavbarB2C({
         </div>
 
         {/* ── Search row ────────────────────────────────── */}
-        <div className="navbar-b2c__search-wrap">
-          <span className="navbar-b2c__search-icon" aria-hidden="true">
-            <SearchIcon />
-          </span>
-          <input
-            id="b2c-nav-search"
-            className="navbar-b2c__search-input"
-            type="search"
-            placeholder="חפש מסעדות, מאפיות, קופה..."
-            value={query}
-            onChange={handleChange}
-            aria-label="חיפוש עסקים ומבצעים"
-            autoComplete="off"
-          />
-          {query && (
-            <button
-              className="navbar-b2c__search-clear"
-              onClick={clearSearch}
-              aria-label="נקה חיפוש"
-            >
-              <XIcon />
-            </button>
-          )}
-        </div>
+        {showSearch && (
+          <div className="navbar-b2c__search-wrap">
+            <span className="navbar-b2c__search-icon" aria-hidden="true">
+              <SearchIcon />
+            </span>
+            <input
+              id="b2c-nav-search"
+              className="navbar-b2c__search-input"
+              type="search"
+              placeholder="חפש מסעדות, מאפיות, קופה..."
+              value={query}
+              onChange={handleChange}
+              aria-label="חיפוש עסקים ומבצעים"
+              autoComplete="off"
+            />
+            {query && (
+              <button
+                className="navbar-b2c__search-clear"
+                onClick={clearSearch}
+                aria-label="נקה חיפוש"
+              >
+                <XIcon />
+              </button>
+            )}
+          </div>
+        )}
 
       </div>
     </header>

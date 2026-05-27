@@ -1,0 +1,89 @@
+.b2c-explore {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-background);
+  /* reserve room for the fixed bottom navigation so the map isn't covered */
+  padding-bottom: 76px;
+}
+
+.b2c-explore__map-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  /* Contain Leaflet's internal high z-index panes so they don't paint over
+     the fixed bottom navigation. */
+  isolation: isolate;
+  z-index: 0;
+}
+
+.b2c-explore__map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Loading state */
+.b2c-explore__loading {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+/* Floating pill over the map — centered, narrow, clear of the zoom controls */
+.b2c-explore__overlay {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 110px); /* leave room for +/- zoom controls */
+  z-index: 1000; /* above leaflet panes */
+  background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-outline-variant, rgba(0, 0, 0, 0.06));
+  border-radius: var(--radius-full, 999px);
+  padding: 8px 20px;
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.28);
+  text-align: center;
+  pointer-events: none;
+}
+.b2c-explore__title { margin: 0; font-size: 0.98rem; font-weight: 800; color: var(--color-secondary, #1B4332); }
+.b2c-explore__sub { margin: 1px 0 0; font-size: 0.78rem; color: var(--color-text-muted); }
+
+/* ── Custom Leaflet pins ──────────────────────────────────── */
+.lm-pin { background: none; border: none; }
+
+.lm-user-pin {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--color-brand-primary, #2D6A4F);
+  color: #fff; font-weight: 800; font-size: 0.85rem;
+  display: grid; place-items: center;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-primary) 35%, transparent),
+              0 6px 16px rgba(0, 0, 0, 0.3);
+  animation: lm-user-pulse 2s ease-out infinite;
+}
+@keyframes lm-user-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-primary) 45%, transparent), 0 6px 16px rgba(0,0,0,0.3); }
+  70%  { box-shadow: 0 0 0 14px transparent, 0 6px 16px rgba(0,0,0,0.3); }
+  100% { box-shadow: 0 0 0 0 transparent, 0 6px 16px rgba(0,0,0,0.3); }
+}
+
+.lm-shop-pin {
+  width: 40px; height: 40px; border-radius: 50% 50% 50% 4px;
+  transform: rotate(45deg);
+  background: #fff;
+  border: 2px solid var(--color-sunset-orange, #FF7F51);
+  display: grid; place-items: center;
+  font-size: 1.1rem;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+.lm-shop-pin { transform: rotate(0deg); } /* keep emoji upright; teardrop via radius */
+
+@media (prefers-reduced-motion: reduce) {
+  .lm-user-pin { animation: none; }
+}

@@ -1,19 +1,27 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import NavbarB2B from '../components/NavbarB2B/NavbarB2B'
 import ReviewListSection from '../components/ReviewListSection/ReviewListSection'
 import PublishActions from '../components/PublishActions/PublishActions'
+import { createDeal } from '../lib/db'
 import './B2BPage.css'
 
 /**
- * B2BAiReviewPage — Review the AI-suggested deals before publishing.
+ * B2BAiReviewPage — Review the AI-suggested deals, then publish them. On
+ * publish each reviewed item is inserted into `deals` for the current
+ * business (Step 16 create). The deal image uploaded on the previous screen
+ * arrives via router state.
  *
  * Route: /b2b/review
  */
 export default function B2BAiReviewPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const uploadedImage = location.state?.imageUrl ?? null
+
   const [items, setItems]     = useState(INITIAL_ITEMS)
   const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
 
   const total = useMemo(
     () => items.reduce((sum, it) => sum + it.suggestedPrice * it.quantity, 0),
@@ -30,18 +38,29 @@ export default function B2BAiReviewPage() {
 
   async function handlePublish() {
     setLoading(true)
+    setError('')
     try {
-      await new Promise(r => setTimeout(r, 1400))
-      console.log('published deals:', items)
+      // Insert every reviewed item as a deal for the current business.
+      for (const it of items) {
+        await createDeal({
+          title: it.title,
+          original_price: it.originalPrice,
+          discounted_price: it.suggestedPrice,
+          quantity: it.quantity,
+          image_url: uploadedImage || it.image,
+          status: 'active',
+        })
+      }
       navigate('/b2b/dashboard')
-    } finally {
+    } catch (err) {
+      setError(err?.message || 'פרסום המבצעים נכשל')
       setLoading(false)
     }
   }
 
   return (
     <div className="b2b-page b2b-page--with-bar" dir="rtl">
-      <NavbarB2B businessName="הפינה של מיכל" isOpen notifCount={3} />
+      <NavbarB2B businessName="הפינה של מיכל" isOpen notifCount={0} />
 
       <main className="b2b-page__main">
         <header className="b2b-page__greeting">
@@ -58,6 +77,12 @@ export default function B2BAiReviewPage() {
             וודא שהפרטים נכונים לפני פרסום הציבורי
           </p>
         </header>
+
+        {error && (
+          <p className="b2b-page__helper" role="alert" style={{ color: 'var(--color-error)' }}>
+            {error}
+          </p>
+        )}
 
         <ReviewListSection
           items={items}
@@ -87,7 +112,7 @@ function ChevronRightIcon() {
   )
 }
 
-/* ── Mock AI suggestions ─────────────────────────────────────── */
+/* ── Mock AI suggestions (the AI step itself is out of scope here) ───── */
 const INITIAL_ITEMS = [
   {
     id: 'r1',

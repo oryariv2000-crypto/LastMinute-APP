@@ -5,15 +5,27 @@ import BottomNavigationB2C from '../components/BottomNavigation/BottomNavigation
 import UserProfileHeader from '../components/UserProfileHeader/UserProfileHeader'
 import EcoImpactStats from '../components/EcoImpactStats/EcoImpactStats'
 import SettingsList from '../components/SettingsList/SettingsList'
+import ProfileEditModal from '../components/ProfileEditModal/ProfileEditModal'
+import { supabase } from '../lib/supabase'
+import { updateMyProfile } from '../lib/db'
+import { useProfile } from '../lib/useProfile'
 import './B2CPage.css'
 
 /**
- * B2CProfilePage — Customer profile + impact + settings.
+ * B2CProfilePage — Customer profile + impact + settings. Reads the profile
+ * from Supabase and supports editing it + uploading an avatar.
  *
  * Route: /b2c/profile
  */
 export default function B2CProfilePage() {
   const navigate = useNavigate()
+  const { profile, setProfile } = useProfile()
+  const [editing, setEditing] = useState(false)
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
 
   const [pushNotifs, setPushNotifs]  = useState(true)
   const [emailDeals, setEmailDeals]  = useState(true)
@@ -46,22 +58,25 @@ export default function B2CProfilePage() {
         { id: 'addresses',icon: <PinIcon />,     label: 'כתובות שמורות', type: 'link', onClick: () => {} },
         { id: 'support',  icon: <HelpIcon />,    label: 'עזרה ותמיכה',  type: 'link', onClick: () => {} },
         { id: 'about',    icon: <InfoIcon />,    label: 'אודות',         type: 'value', value: 'גרסה 1.0.0', onClick: () => {} },
-        { id: 'logout',   icon: <LogoutIcon />,  label: 'התנתקות',      type: 'link', danger: true, onClick: () => navigate('/login') },
+        { id: 'logout',   icon: <LogoutIcon />,  label: 'התנתקות',      type: 'link', danger: true, onClick: handleLogout },
       ],
     },
   ]
 
   return (
     <div className="b2c-page" dir="rtl">
-      <NavbarB2C location="תל אביב" userName="דנה כהן" />
+      <NavbarB2C location="תל אביב" userName={profile?.full_name || 'לקוח/ה'} />
 
       <main className="b2c-page__main">
         <UserProfileHeader
-          name="דנה כהן"
-          email="dana@example.com"
-          phone="050-123-4567"
-          memberSince="ינואר 2026"
-          onEdit={() => {}}
+          name={profile?.full_name || ''}
+          email={profile?.email || ''}
+          phone={profile?.phone || ''}
+          avatarUrl={profile?.avatar_url}
+          memberSince={profile?.created_at
+            ? new Date(profile.created_at).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })
+            : ''}
+          onEdit={() => setEditing(true)}
         />
 
         <EcoImpactStats
@@ -74,7 +89,26 @@ export default function B2CProfilePage() {
         <SettingsList groups={groups} />
       </main>
 
-      <BottomNavigationB2C orderCount={2} />
+      {editing && (
+        <ProfileEditModal
+          title="עריכת פרופיל"
+          fields={[
+            { name: 'full_name', label: 'שם מלא' },
+            { name: 'phone', label: 'טלפון', type: 'tel' },
+          ]}
+          initial={{ full_name: profile?.full_name, phone: profile?.phone }}
+          avatarUrl={profile?.avatar_url}
+          onAvatarChange={(url) => setProfile((p) => ({ ...p, avatar_url: url }))}
+          onSave={async (values) => {
+            const updated = await updateMyProfile(values)
+            setProfile(updated)
+            setEditing(false)
+          }}
+          onClose={() => setEditing(false)}
+        />
+      )}
+
+      <BottomNavigationB2C orderCount={0} />
     </div>
   )
 }

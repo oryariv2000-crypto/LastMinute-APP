@@ -31,13 +31,18 @@ const CATEGORIES = [
 export default function StatsChartsSection() {
   const [period, setPeriod] = useState('7d')
 
-  // build the conic-gradient for the donut
-  let acc = 0
-  const conic = CATEGORIES.map(c => {
-    const start = acc
-    acc += c.value
-    return `${c.color} ${start}% ${acc}%`
-  }).join(', ')
+  // Build the conic-gradient for the donut with a pure reduce — no variables
+  // are mutated during render. Each step carries the running offset forward.
+  const conic = CATEGORIES
+    .reduce(
+      ({ offset, stops }, c) => ({
+        offset: offset + c.value,
+        stops: [...stops, `${c.color} ${offset}% ${offset + c.value}%`],
+      }),
+      { offset: 0, stops: [] },
+    )
+    .stops
+    .join(', ')
 
   return (
     <section className="stats-charts" aria-label="גרפים וביצועים">

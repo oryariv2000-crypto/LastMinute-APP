@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import './RoleSelector.css'
 
 /**
@@ -13,7 +12,6 @@ export default function RoleSelector({ value, onChange }) {
     <div className="role-selector" role="group" aria-label="בחירת סוג חשבון">
       <RoleCard
         id="role-b2c"
-        role="b2c"
         selected={value === 'b2c'}
         onSelect={() => onChange('b2c')}
         icon={<CustomerIcon />}
@@ -22,7 +20,6 @@ export default function RoleSelector({ value, onChange }) {
       />
       <RoleCard
         id="role-b2b"
-        role="b2b"
         selected={value === 'b2b'}
         onSelect={() => onChange('b2b')}
         icon={<BusinessIcon />}
@@ -33,7 +30,7 @@ export default function RoleSelector({ value, onChange }) {
   )
 }
 
-function RoleCard({ id, role, selected, onSelect, icon, title, description }) {
+function RoleCard({ id, selected, onSelect, icon, title, description }) {
   return (
     <button
       id={id}

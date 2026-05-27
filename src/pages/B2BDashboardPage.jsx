@@ -1,154 +1,142 @@
+import { useEffect, useState } from 'react'
 import NavbarB2B from '../components/NavbarB2B/NavbarB2B'
 import BottomNavigationB2B from '../components/BottomNavigation/BottomNavigationB2B'
 import DashboardSummary from '../components/DashboardSummary/DashboardSummary'
 import NewDealButton from '../components/NewDealButton/NewDealButton'
 import ActiveDealsSection from '../components/ActiveDealsSection/ActiveDealsSection'
-import RecentActivitySection from '../components/RecentActivitySection/RecentActivitySection'
+import DealEditModal from '../components/DealEditModal/DealEditModal'
+import Loader from '../components/Loader/Loader'
+import { getMyDeals, updateDeal, deleteDeal, discountPct } from '../lib/db'
+import { useProfile } from '../lib/useProfile'
 import './B2BPage.css'
 
 /**
- * B2BDashboardPage — Business owner home screen.
+ * B2BDashboardPage — Business owner home screen. Reads the signed-in
+ * business's own deals from Supabase and supports edit / delete.
  *
  * Route: /b2b/dashboard
  */
 export default function B2BDashboardPage() {
+  const { profile, business } = useProfile({ withBusiness: true })
+
+  const [deals, setDeals]     = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState('')
+  const [editing, setEditing] = useState(null) // deal row being edited, or null
+
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      try {
+        const rows = await getMyDeals()
+        if (active) setDeals(rows)
+      } catch (err) {
+        if (active) setError(err?.message || 'שגיאה בטעינת המבצעים')
+      } finally {
+        if (active) setLoading(false)
+      }
+    })()
+    return () => { active = false }
+  }, [])
+
+  async function handleDelete(id) {
+    if (!window.confirm('למחוק את המבצע? פעולה זו אינה הפיכה.')) return
+    try {
+      await deleteDeal(id)
+      setDeals((prev) => prev.filter((d) => d.id !== id))
+    } catch (err) {
+      alert(err?.message || 'מחיקת המבצע נכשלה')
+    }
+  }
+
+  async function handleSaveEdit(fields) {
+    const updated = await updateDeal(editing.id, fields)
+    setDeals((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
+    setEditing(null)
+  }
+
+  // Map DB rows → the props ActiveDealCard expects.
+  const cards = deals.map((d) => ({
+    id: d.id,
+    title: d.title,
+    image: d.image_url,
+    originalPrice: d.original_price,
+    price: d.discounted_price,
+    discountPct: discountPct(d.original_price, d.discounted_price),
+    quantity: d.quantity_left,
+    timeLeftMin: 0,
+  }))
+
+  const businessName = business?.name || profile?.full_name || 'העסק שלי'
+  const firstName = (profile?.full_name || '').trim().split(/\s+/)[0]
+
   return (
     <div className="b2b-page" dir="rtl">
-      <NavbarB2B businessName="הפינה של מיכל" isOpen notifCount={3} />
+      <NavbarB2B businessName={businessName} isOpen notifCount={0} />
 
       <main className="b2b-page__main">
         <header className="b2b-page__greeting">
-          <h1 className="b2b-page__greeting-title">שלום מיכל 👋</h1>
-          <p className="b2b-page__greeting-sub">הנה סיכום היום שלך</p>
+          <h1 className="b2b-page__greeting-title">
+            שלום {firstName || ''} 👋
+          </h1>
+          <p className="b2b-page__greeting-sub">הנה המבצעים הפעילים שלך</p>
         </header>
 
-        <DashboardSummary stats={MOCK_STATS} />
+        <DashboardSummary stats={buildStats(cards)} />
 
         <NewDealButton />
 
-        <ActiveDealsSection
-          deals={MOCK_DEALS}
-          onEdit={(id) => console.log('edit', id)}
-          onPause={(id) => console.log('pause', id)}
-        />
-
-        <RecentActivitySection items={MOCK_ACTIVITY} />
+        {error ? (
+          <div className="active-deals-section__empty" role="alert">
+            <span aria-hidden="true">⚠️</span>
+            <p>{error}</p>
+          </div>
+        ) : loading ? (
+          <Loader label="טוען מבצעים…" />
+        ) : (
+          <ActiveDealsSection
+            deals={cards}
+            onEdit={(id) => setEditing(deals.find((d) => d.id === id))}
+            onPause={(id) => handleDelete(id)}
+          />
+        )}
       </main>
 
-      <BottomNavigationB2B notifCount={2} />
+      {editing && (
+        <DealEditModal
+          deal={editing}
+          onSave={handleSaveEdit}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
+      <BottomNavigationB2B notifCount={0} />
     </div>
   )
 }
 
-/* ── Mock data (placeholder until API hookup) ─────────────────── */
-const MOCK_STATS = [
-  {
-    id: 'sales',
-    label: 'מכירות היום',
-    value: '₪842',
-    delta: '+12% מאתמול',
-    accent: 'success',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-    ),
-  },
-  {
-    id: 'orders',
-    label: 'הזמנות פעילות',
-    value: '8',
-    delta: '+3 חדשות',
-    accent: 'primary',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    ),
-  },
-  {
-    id: 'saved',
-    label: 'מזון שניצל',
-    value: '14kg',
-    delta: 'השבוע',
-    accent: 'accent',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-    ),
-  },
-  {
-    id: 'rating',
-    label: 'דירוג ממוצע',
-    value: '4.8★',
-    delta: '23 ביקורות',
-    accent: 'accent',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-    ),
-  },
-]
+/* Derive the summary cards from live deals (no fake numbers). */
+function buildStats(cards) {
+  const activeCount = cards.length
+  const unitsLeft = cards.reduce((s, c) => s + (c.quantity || 0), 0)
+  const potential = cards.reduce((s, c) => s + (c.price || 0) * (c.quantity || 0), 0)
+  return [
+    { id: 'active', label: 'מבצעים פעילים', value: String(activeCount), accent: 'primary',
+      icon: <Svg d="M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /> },
+    { id: 'units', label: 'יחידות במלאי', value: String(unitsLeft), accent: 'accent',
+      icon: <Svg d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /> },
+    { id: 'potential', label: 'הכנסה פוטנציאלית', value: `₪${potential}`, accent: 'success',
+      icon: <Svg d="M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /> },
+  ]
+}
 
-const MOCK_DEALS = [
-  {
-    id: 1,
-    title: 'מגש סלטים יום שלישי',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
-    originalPrice: 60,
-    price: 30,
-    discountPct: 50,
-    quantity: 3,
-    timeLeftMin: 45,
-  },
-  {
-    id: 2,
-    title: 'לחמניות בריוש טריות',
-    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=300&fit=crop',
-    originalPrice: 24,
-    price: 12,
-    discountPct: 50,
-    quantity: 8,
-    timeLeftMin: 25,
-  },
-  {
-    id: 3,
-    title: 'קישים גבינה ופטריות',
-    image: 'https://images.unsplash.com/photo-1565299543923-37dd37887442?w=400&h=300&fit=crop',
-    originalPrice: 35,
-    price: 22,
-    discountPct: 37,
-    quantity: 5,
-    timeLeftMin: 120,
-  },
-]
-
-const MOCK_ACTIVITY = [
-  {
-    id: 'a1',
-    type: 'sale',
-    title: 'מכירה חדשה — מגש סלטים',
-    subtitle: 'דנה כהן · #ORD-1041',
-    timeAgo: 'לפני 5 דק׳',
-    amount: 30,
-  },
-  {
-    id: 'a2',
-    type: 'pickup',
-    title: 'הזמנה נאספה — קישים',
-    subtitle: 'יוסי לוי · #ORD-1038',
-    timeAgo: 'לפני 18 דק׳',
-  },
-  {
-    id: 'a3',
-    type: 'review',
-    title: 'ביקורת חדשה ★ 5',
-    subtitle: '״האוכל היה מצוין, ממליצה!״',
-    timeAgo: 'לפני שעה',
-  },
-  {
-    id: 'a4',
-    type: 'expire',
-    title: 'מבצע פג — בייגלה טרי',
-    subtitle: 'נמכרו 4 מתוך 6',
-    timeAgo: 'לפני שעתיים',
-  },
-]
+function Svg({ d }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round">
+      {d.split(' M').map((seg, i) => (
+        <path key={i} d={i === 0 ? seg : `M${seg}`} />
+      ))}
+    </svg>
+  )
+}

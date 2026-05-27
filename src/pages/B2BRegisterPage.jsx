@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2B from '../components/RegisterFormB2B/RegisterFormB2B'
 import { supabase } from '../lib/supabase'
@@ -14,15 +14,16 @@ import './AuthPage.css'
  * Route: /register/b2b
  */
 export default function B2BRegisterPage() {
-  const [step, setStep]       = useState(1)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [step, setStep]       = useState(location.state?.goToForm ? 2 : 1)
   const [role, setRole]       = useState('b2b')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
-  const navigate = useNavigate()
 
   function handleRoleNext() {
     if (role === 'b2c') {
-      navigate('/register/b2c')
+      navigate('/register/b2c', { state: { goToForm: true } })
       return
     }
     setStep(2)
@@ -61,11 +62,13 @@ export default function B2BRegisterPage() {
         return
       }
 
-      // 3. Insert the business record owned by this user
+      // 3. Insert the business record owned by this user (owner = user_id).
       const { error: businessError } = await supabase.from('businesses').insert({
-        owner_id: user.id,
+        user_id: user.id,
         name: data.businessName,
         address: data.address,
+        business_type: data.businessType,
+        phone: data.phone,
       })
       if (businessError) {
         setError(businessError.message)

@@ -4,15 +4,27 @@ import NavbarB2B from '../components/NavbarB2B/NavbarB2B'
 import BottomNavigationB2B from '../components/BottomNavigation/BottomNavigationB2B'
 import BusinessProfileHeader from '../components/BusinessProfileHeader/BusinessProfileHeader'
 import BusinessSettingsList from '../components/BusinessSettingsList/BusinessSettingsList'
+import ProfileEditModal from '../components/ProfileEditModal/ProfileEditModal'
+import { supabase } from '../lib/supabase'
+import { updateMyProfile, updateMyBusiness } from '../lib/db'
+import { useProfile } from '../lib/useProfile'
 import './B2BPage.css'
 
 /**
- * B2BProfilePage — Business profile + settings.
+ * B2BProfilePage — Business profile + settings. Reads the owner profile +
+ * business from Supabase, supports editing them and uploading a logo/avatar.
  *
  * Route: /b2b/profile
  */
 export default function B2BProfilePage() {
   const navigate = useNavigate()
+  const { profile, business, setProfile, setBusiness } = useProfile({ withBusiness: true })
+  const [editing, setEditing] = useState(false)
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
 
   const [isOpen, setIsOpen]               = useState(true)
   const [autoPublish, setAutoPublish]     = useState(false)
@@ -46,31 +58,64 @@ export default function B2BProfilePage() {
         { id: 'payments', icon: <CardIcon />, label: 'אמצעי תשלום', type: 'link', onClick: () => {} },
         { id: 'team', icon: <UsersIcon />, label: 'צוות והרשאות', type: 'link', onClick: () => {} },
         { id: 'support', icon: <HelpIcon />, label: 'עזרה ותמיכה', type: 'link', onClick: () => {} },
-        { id: 'logout', icon: <LogoutIcon />, label: 'התנתקות', type: 'link', danger: true, onClick: () => navigate('/login') },
+        { id: 'logout', icon: <LogoutIcon />, label: 'התנתקות', type: 'link', danger: true, onClick: handleLogout },
       ],
     },
   ]
 
   return (
     <div className="b2b-page" dir="rtl">
-      <NavbarB2B businessName="הפינה של מיכל" isOpen={isOpen} notifCount={3} />
+      <NavbarB2B businessName={business?.name || 'העסק שלי'} isOpen={isOpen} notifCount={0} />
 
       <main className="b2b-page__main">
         <BusinessProfileHeader
-          businessName="הפינה של מיכל"
-          ownerName="מיכל כהן"
-          address="דיזנגוף 50, תל אביב"
+          businessName={business?.name || ''}
+          ownerName={profile?.full_name || ''}
+          address={business?.address || ''}
+          logoUrl={profile?.avatar_url}
           isOpen={isOpen}
-          rating={4.8}
-          reviewCount={147}
-          onEdit={() => {}}
+          rating={0}
+          reviewCount={0}
+          onEdit={() => setEditing(true)}
           onToggleOpen={() => setIsOpen(o => !o)}
         />
 
         <BusinessSettingsList groups={groups} />
       </main>
 
-      <BottomNavigationB2B notifCount={2} />
+      {editing && (
+        <ProfileEditModal
+          title="עריכת פרופיל העסק"
+          fields={[
+            { name: 'full_name', label: 'שם בעל/ת העסק' },
+            { name: 'name', label: 'שם העסק' },
+            { name: 'address', label: 'כתובת' },
+            { name: 'phone', label: 'טלפון', type: 'tel' },
+          ]}
+          initial={{
+            full_name: profile?.full_name,
+            name: business?.name,
+            address: business?.address,
+            phone: business?.phone,
+          }}
+          avatarUrl={profile?.avatar_url}
+          onAvatarChange={(url) => setProfile((p) => ({ ...p, avatar_url: url }))}
+          onSave={async (values) => {
+            const updatedProfile = await updateMyProfile({ full_name: values.full_name })
+            const updatedBiz = await updateMyBusiness({
+              name: values.name,
+              address: values.address,
+              phone: values.phone,
+            })
+            setProfile(updatedProfile)
+            setBusiness(updatedBiz)
+            setEditing(false)
+          }}
+          onClose={() => setEditing(false)}
+        />
+      )}
+
+      <BottomNavigationB2B notifCount={0} />
     </div>
   )
 }

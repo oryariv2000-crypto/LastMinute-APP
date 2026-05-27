@@ -5,10 +5,13 @@ import BottomNavigationB2B from '../components/BottomNavigation/BottomNavigation
 import VoiceRecordSection from '../components/VoiceRecordSection/VoiceRecordSection'
 import CameraCaptureSection from '../components/CameraCaptureSection/CameraCaptureSection'
 import SubmitButton from '../components/SubmitButton/SubmitButton'
+import { uploadDealImage } from '../lib/db'
 import './B2BPage.css'
 
 /**
- * B2BNewDealPage — Capture leftovers via voice + photos and hand off to AI.
+ * B2BNewDealPage — Capture leftovers via voice + photos, upload the first
+ * photo to the `deal-images` bucket, then hand off to the AI review screen
+ * (which performs the actual deal insert on publish).
  *
  * Route: /b2b/new-deal
  */
@@ -17,14 +20,24 @@ export default function B2BNewDealPage() {
   const [voiceDuration, setVoiceDuration] = useState(null)
   const [photos, setPhotos]               = useState([])
   const [analyzing, setAnalyzing]         = useState(false)
+  const [error, setError]                 = useState('')
 
   const canContinue = voiceDuration != null || photos.length > 0
 
   async function handleAnalyze() {
     setAnalyzing(true)
+    setError('')
     try {
-      await new Promise(r => setTimeout(r, 1300))
-      navigate('/b2b/review')
+      // Upload the first captured photo so published deals have a real image.
+      let imageUrl = null
+      if (photos[0]) {
+        imageUrl = await uploadDealImage(photos[0])
+      }
+      // Simulate the AI step, then carry the uploaded image to the review page.
+      await new Promise((r) => setTimeout(r, 800))
+      navigate('/b2b/review', { state: { imageUrl } })
+    } catch (err) {
+      setError(err?.message || 'העלאת התמונה נכשלה')
     } finally {
       setAnalyzing(false)
     }
@@ -32,7 +45,7 @@ export default function B2BNewDealPage() {
 
   return (
     <div className="b2b-page" dir="rtl">
-      <NavbarB2B businessName="הפינה של מיכל" isOpen notifCount={3} />
+      <NavbarB2B businessName="הפינה של מיכל" isOpen notifCount={0} />
 
       <main className="b2b-page__main">
         <header className="b2b-page__greeting">
@@ -54,6 +67,12 @@ export default function B2BNewDealPage() {
 
         <CameraCaptureSection onChange={setPhotos} />
 
+        {error && (
+          <p className="b2b-page__helper" role="alert" style={{ color: 'var(--color-error)' }}>
+            {error}
+          </p>
+        )}
+
         <SubmitButton
           loading={analyzing}
           disabled={!canContinue}
@@ -71,7 +90,7 @@ export default function B2BNewDealPage() {
         )}
       </main>
 
-      <BottomNavigationB2B notifCount={2} />
+      <BottomNavigationB2B notifCount={0} />
     </div>
   )
 }

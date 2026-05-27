@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2C from '../components/RegisterFormB2C/RegisterFormB2C'
 import { supabase } from '../lib/supabase'
@@ -14,15 +14,18 @@ import './AuthPage.css'
  * Route: /register/b2c
  */
 export default function B2CRegisterPage() {
-  const [step, setStep]       = useState(1)   // 1 = role, 2 = form
+  const navigate = useNavigate()
+  const location = useLocation()
+  // If we arrived here from a role switch, jump straight to the form (step 2).
+  const [step, setStep]       = useState(location.state?.goToForm ? 2 : 1)
   const [role, setRole]       = useState('b2c')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
-  const navigate = useNavigate()
 
+  // One "המשך" click: switch to the chosen ecosystem's form, no double step.
   function handleRoleNext() {
     if (role === 'b2b') {
-      navigate('/register/b2b')
+      navigate('/register/b2b', { state: { goToForm: true } })
       return
     }
     setStep(2)

@@ -17,6 +17,7 @@ import './OrderHistoryCard.css'
  *   onViewQr      fn      — optional override for active "showQR" link
  */
 const STATUS_LABEL = {
+  pending:   'בהמתנה לאיסוף',
   active:    'בהמתנה לאיסוף',
   ready:     'מוכן לאיסוף',
   completed: 'הושלם',
@@ -24,7 +25,6 @@ const STATUS_LABEL = {
 }
 
 export default function OrderHistoryCard({
-  id,
   orderCode,
   businessName,
   image,
@@ -35,7 +35,7 @@ export default function OrderHistoryCard({
   onReorder,
   onViewQr,
 }) {
-  const isActive = status === 'active' || status === 'ready'
+  const isActive = status === 'pending' || status === 'active' || status === 'ready'
 
   return (
     <article className={`order-history-card order-history-card--${status}`} aria-label={`הזמנה ${orderCode}`}>
@@ -89,7 +89,7 @@ export default function OrderHistoryCard({
               הזמן שוב
             </button>
             <Link
-              to={`/b2c/order/${id}`}
+              to={`/b2c/confirmation?code=${encodeURIComponent(orderCode)}`}
               className="order-history-card__btn order-history-card__btn--ghost"
             >
               פרטים
@@ -97,7 +97,7 @@ export default function OrderHistoryCard({
           </>
         ) : (
           <Link
-            to={`/b2c/order/${id}`}
+            to={`/b2c/confirmation?code=${encodeURIComponent(orderCode)}`}
             className="order-history-card__btn order-history-card__btn--ghost"
           >
             פרטים

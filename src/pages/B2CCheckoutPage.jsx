@@ -1,35 +1,91 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import NavbarB2C from '../components/NavbarB2C/NavbarB2C'
 import OrderSummarySection from '../components/OrderSummarySection/OrderSummarySection'
 import PaymentMethodsSection from '../components/PaymentMethodsSection/PaymentMethodsSection'
 import SubmitButton from '../components/SubmitButton/SubmitButton'
+import Loader from '../components/Loader/Loader'
+import { getDealById, createOrder } from '../lib/db'
 import './B2CPage.css'
 
 /**
- * B2CCheckoutPage — Review cart, choose payment, confirm order.
+ * B2CCheckoutPage — Review the selected deal, choose payment, confirm order.
+ * The deal id + quantity arrive via router state from the product page. On
+ * pay it inserts a row into `orders` linked to the deal and the customer
+ * (Step 18), then redirects to the confirmation screen with the order code.
  *
  * Route: /b2c/checkout
  */
 export default function B2CCheckoutPage() {
   const navigate = useNavigate()
-  const [payment, setPayment] = useState('apple')
-  const [loading, setLoading] = useState(false)
+  const location = useLocation()
+  const { dealId, quantity = 1 } = location.state || {}
 
-  const items = MOCK_CART
-  const subtotal     = items.reduce((s, it) => s + it.price * it.quantity, 0)
-  const SERVICE_FEE  = 0
-  const total        = subtotal + SERVICE_FEE
+  const [payment, setPayment] = useState('apple')
+  const [deal, setDeal]       = useState(null)
+  const [loadingDeal, setLoadingDeal] = useState(!!dealId)
+  const [paying, setPaying]   = useState(false)
+  const [error, setError]     = useState('')
+
+  useEffect(() => {
+    if (!dealId) return
+    let active = true
+    ;(async () => {
+      try {
+        const row = await getDealById(dealId)
+        if (active) setDeal(row)
+      } catch (err) {
+        if (active) setError(err?.message || 'שגיאה בטעינת המבצע')
+      } finally {
+        if (active) setLoadingDeal(false)
+      }
+    })()
+    return () => { active = false }
+  }, [dealId])
+
+  const total = deal ? deal.discounted_price * quantity : 0
+
+  const summaryItems = deal
+    ? [{
+        id: deal.id,
+        title: deal.title,
+        businessName: deal.businesses?.name,
+        image: deal.image_url,
+        originalPrice: deal.original_price,
+        price: deal.discounted_price,
+        quantity,
+      }]
+    : []
 
   async function handlePay() {
-    setLoading(true)
+    if (!deal) return
+    setPaying(true)
+    setError('')
     try {
-      await new Promise(r => setTimeout(r, 1300))
-      const orderCode = `LM-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
-      navigate(`/b2c/confirmation?code=${encodeURIComponent(orderCode)}`)
-    } finally {
-      setLoading(false)
+      const order = await createOrder({ deal_id: deal.id, quantity, total })
+      navigate(`/b2c/confirmation?code=${encodeURIComponent(order.order_code)}`)
+    } catch (err) {
+      setError(err?.message || 'יצירת ההזמנה נכשלה')
+      setPaying(false)
     }
+  }
+
+  // No deal in state (e.g. user hit /checkout directly) — bounce home.
+  if (!dealId && !loadingDeal) {
+    return (
+      <div className="b2c-page" dir="rtl">
+        <NavbarB2C location="תל אביב" userName="דנה כהן" />
+        <main className="b2c-page__main">
+          <div className="product-grid__empty">
+            <span aria-hidden="true">🛒</span>
+            <p>אין פריט לתשלום. חזור לפיד ובחר מבצע.</p>
+            <button className="btn btn-primary" style={{ marginTop: 'var(--space-3)' }} onClick={() => navigate('/b2c/home')}>
+              לפיד המבצעים
+            </button>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -38,35 +94,36 @@ export default function B2CCheckoutPage() {
 
       <main className="b2c-page__main">
         <header className="b2c-page__greeting">
-          <button
-            type="button"
-            className="b2c-page__back"
-            onClick={() => navigate(-1)}
-            aria-label="חזרה"
-          >
+          <button type="button" className="b2c-page__back" onClick={() => navigate(-1)} aria-label="חזרה">
             <ChevronStartIcon /> חזרה
           </button>
           <h1 className="b2c-page__greeting-title">תשלום</h1>
           <p className="b2c-page__greeting-sub">בדיקה אחרונה לפני אישור</p>
         </header>
 
-        <OrderSummarySection items={items} serviceFee={SERVICE_FEE} />
+        {error && (
+          <p className="b2c-page__greeting-sub" role="alert" style={{ color: 'var(--color-error)' }}>
+            {error}
+          </p>
+        )}
 
-        <PaymentMethodsSection
-          value={payment}
-          onChange={setPayment}
-          cardLast4="4242"
-        />
+        {loadingDeal ? (
+          <Loader label="טוען…" />
+        ) : (
+          <>
+            <OrderSummarySection items={summaryItems} serviceFee={0} />
+            <PaymentMethodsSection value={payment} onChange={setPayment} cardLast4="4242" />
+          </>
+        )}
       </main>
 
-      {/* Sticky pay bar */}
       <div className="b2c-pay-bar" role="toolbar" aria-label="תשלום">
         <div className="b2c-pay-bar__total">
           <span className="b2c-pay-bar__total-label">סה״כ</span>
           <span className="b2c-pay-bar__total-value">₪{total}</span>
         </div>
         <SubmitButton
-          loading={loading}
+          loading={paying}
           variant="action"
           onClick={handlePay}
           fullWidth={false}
@@ -87,25 +144,3 @@ function ChevronStartIcon() {
     </svg>
   )
 }
-
-/* ── Mock cart ───────────────────────────────────────────────── */
-const MOCK_CART = [
-  {
-    id: 1,
-    title: 'מגש סלטים יום שלישי',
-    businessName: 'הפינה של מיכל',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop',
-    originalPrice: 60,
-    price: 30,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    title: 'בייגלה שומשום טרי',
-    businessName: 'מאפיית רחל',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop',
-    originalPrice: 18,
-    price: 9,
-    quantity: 2,
-  },
-]

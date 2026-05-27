@@ -1,0 +1,68 @@
+.deal-edit__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 1000;
+}
+
+.deal-edit__panel {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.deal-edit__title {
+  margin: 0;
+  font-size: var(--text-headline-sm, 1.25rem);
+  font-weight: 700;
+}
+
+.deal-edit__error {
+  color: var(--color-error, #c0392b);
+  background: var(--color-error-container, #fdecea);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.deal-edit__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.deal-edit__field > span {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.deal-edit__field input,
+.deal-edit__field select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline, #ccc);
+  border-radius: var(--radius-md);
+  font: inherit;
+  background: var(--color-surface, #fff);
+}
+
+.deal-edit__row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.deal-edit__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-start;
+  margin-top: var(--space-2);
+}
