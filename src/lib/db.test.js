@@ -125,8 +125,8 @@ function seedTwoBusinesses() {
       { id: 'biz-B', user_id: 'user-B', name: 'Shop B' },
     ],
     deals: [
-      { id: 'deal-A1', business_id: 'biz-A', title: 'A deal', original_price: 20, discounted_price: 10, quantity_total: 5, quantity_left: 5, status: 'active' },
-      { id: 'deal-B1', business_id: 'biz-B', title: 'B deal', original_price: 30, discounted_price: 15, quantity_total: 3, quantity_left: 3, status: 'active' },
+      { id: 'deal-A1', business_id: 'biz-A', title: 'A deal', original_price: 20, discount_price: 10, quantity_total: 5, quantity_left: 5, status: 'active' },
+      { id: 'deal-B1', business_id: 'biz-B', title: 'B deal', original_price: 30, discount_price: 15, quantity_total: 3, quantity_left: 3, status: 'active' },
     ],
     orders: [],
   }
@@ -140,7 +140,7 @@ describe('deals — create', () => {
   it('creating a deal adds it to the DB, scoped to the owner business', async () => {
     const before = h.fake.store.deals.length
     const created = await createDeal({
-      title: 'Fresh bagels', original_price: 18, discounted_price: 9, quantity: 6, status: 'active',
+      title: 'Fresh bagels', original_price: 18, discount_price: 9, quantity: 6, status: 'active',
     })
     expect(created.id).toBeTruthy()
     expect(created.business_id).toBe('biz-A') // derived from the owner, not the client
@@ -160,13 +160,13 @@ describe('deals — read', () => {
 
 describe('deals — update / delete (RLS)', () => {
   it('owner can update their own deal', async () => {
-    const updated = await updateDeal('deal-A1', { discounted_price: 7 })
-    expect(updated.discounted_price).toBe(7)
+    const updated = await updateDeal('deal-A1', { discount_price: 7 })
+    expect(updated.discount_price).toBe(7)
   })
 
   it('RLS prevents updating another business’s deal', async () => {
-    await expect(updateDeal('deal-B1', { discounted_price: 1 })).rejects.toBeTruthy()
-    expect(h.fake.store.deals.find((d) => d.id === 'deal-B1').discounted_price).toBe(15)
+    await expect(updateDeal('deal-B1', { discount_price: 1 })).rejects.toBeTruthy()
+    expect(h.fake.store.deals.find((d) => d.id === 'deal-B1').discount_price).toBe(15)
   })
 
   it('deleting another business’s deal removes nothing (RLS)', async () => {

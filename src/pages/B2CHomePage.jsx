@@ -115,8 +115,8 @@ export default function B2CHomePage() {
                   title={deal.title}
                   businessName={deal.businesses?.name ?? ''}
                   originalPrice={deal.original_price}
-                  price={deal.discounted_price}
-                  discountPct={discountPct(deal.original_price, deal.discounted_price)}
+                  price={deal.discount_price}
+                  discountPct={discountPct(deal.original_price, deal.discount_price)}
                   tag={deal.category}
                 />
               </Link>

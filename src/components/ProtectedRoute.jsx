@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { isAdminEmail } from '../lib/support'
 import Loader from './Loader/Loader'
 
 /* Where each role belongs — used to bounce mismatched users home. */
@@ -19,9 +20,11 @@ const HOME_BY_ROLE = {
  * redirects to /login; if the role does not match `allowedRole` it redirects
  * the user to their own ecosystem; otherwise it renders its children.
  *
- * @param {'customer'|'business_owner'} allowedRole - role permitted on this route
+ * @param {'customer'|'business_owner'} [allowedRole] - role permitted on this
+ *        route. Omit to allow ANY authenticated user (e.g. shared pages).
+ * @param {boolean} [adminOnly] - restrict to the support-team email allowlist.
  */
-export default function ProtectedRoute({ children, allowedRole }) {
+export default function ProtectedRoute({ children, allowedRole, adminOnly = false }) {
   const [session, setSession] = useState(undefined) // undefined = loading
   const [role, setRole] = useState(undefined)       // undefined = loading
 
@@ -67,9 +70,17 @@ export default function ProtectedRoute({ children, allowedRole }) {
   // No active user — bounce to login.
   if (!session) return <Navigate to="/login" replace />
 
-  // Wrong ecosystem — send the user to their own home (falls back to login
-  // if the role is missing/unrecognised).
-  if (role !== allowedRole) {
+  // Admin-only route — gate by the support-team email allowlist.
+  if (adminOnly) {
+    if (!isAdminEmail(session.user?.email)) {
+      return <Navigate to={HOME_BY_ROLE[role] ?? '/login'} replace />
+    }
+    return children
+  }
+
+  // Role-scoped route — wrong ecosystem bounces home. When allowedRole is
+  // omitted the page is shared, so any authenticated user is allowed.
+  if (allowedRole && role !== allowedRole) {
     return <Navigate to={HOME_BY_ROLE[role] ?? '/login'} replace />
   }
 

@@ -1,7 +1,9 @@
 /* ── DashboardSummary ────────────────────────────────────────── */
 .dashboard-summary__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* Three stat cards, evenly sized: one neat row on tablet/desktop,
+     and a clean 3-across compact row on phones too. */
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-3);
 }
 
@@ -57,11 +59,15 @@
 }
 
 .dashboard-summary__value {
-  font-family: var(--font-family-display);
+  /* Use the Hebrew base font (Heebo): Plus Jakarta Sans lacks a proper ₪
+     glyph, so the browser substitutes a stretched fallback. Heebo renders
+     both the shekel sign and the digits cleanly. */
+  font-family: var(--font-family-base);
   font-size: 1.5rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-on-surface);
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .dashboard-summary__delta {
@@ -70,9 +76,17 @@
   color: var(--color-mint-green);
 }
 
-/* ── 3-up on wider screens */
-@media (min-width: 700px) {
-  .dashboard-summary__grid {
-    grid-template-columns: repeat(4, 1fr);
+/* ── Phones: keep the 3 cards in one tidy row at a smaller scale */
+@media (max-width: 560px) {
+  .dashboard-summary__card {
+    padding: var(--space-3);
+    min-height: 0;
+  }
+  .dashboard-summary__icon {
+    width: 28px;
+    height: 28px;
+  }
+  .dashboard-summary__value {
+    font-size: 1.125rem;
   }
 }

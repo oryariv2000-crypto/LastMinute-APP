@@ -150,6 +150,22 @@
   --z-sticky:    200;
   --z-modal:     300;
   --z-toast:     400;
+
+  /* ── Responsive shell width ──────────────────────────────────
+     Single source of truth for the centered content column. The
+     B2B page, top bar, and bottom nav all read this so they stay
+     aligned at every breakpoint. Mobile-first: 480px by default. */
+  --shell-max: 480px;
+}
+
+/* Tablet — give the canvas more room. */
+@media (min-width: 700px) {
+  :root { --shell-max: 760px; }
+}
+
+/* Desktop — full responsive web layout, no wasted side gutters. */
+@media (min-width: 1024px) {
+  :root { --shell-max: 1120px; }
 }
 
 /* ============================================================
@@ -178,6 +194,10 @@ body {
   background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Guard against the 1px horizontal scrollbar that full-bleed 100vw
+     elements (e.g. the B2B top bar) can introduce when a vertical
+     scrollbar is present. */
+  overflow-x: hidden;
 }
 
 img,

@@ -44,6 +44,15 @@
   box-shadow: var(--shadow-card);
 }
 
+/* Empty state inside a chart card */
+.stats-charts__empty {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label-md);
+}
+
 .stats-charts__card-head {
   display: flex;
   align-items: baseline;

@@ -56,7 +56,7 @@ export default function B2CProfilePage() {
       items: [
         { id: 'payments', icon: <CardIcon />,    label: 'אמצעי תשלום',   type: 'link', onClick: () => {} },
         { id: 'addresses',icon: <PinIcon />,     label: 'כתובות שמורות', type: 'link', onClick: () => {} },
-        { id: 'support',  icon: <HelpIcon />,    label: 'עזרה ותמיכה',  type: 'link', onClick: () => {} },
+        { id: 'support',  icon: <HelpIcon />,    label: 'עזרה ותמיכה',  type: 'link', onClick: () => navigate('/support') },
         { id: 'about',    icon: <InfoIcon />,    label: 'אודות',         type: 'value', value: 'גרסה 1.0.0', onClick: () => {} },
         { id: 'logout',   icon: <LogoutIcon />,  label: 'התנתקות',      type: 'link', danger: true, onClick: handleLogout },
       ],

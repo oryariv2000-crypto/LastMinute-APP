@@ -43,7 +43,7 @@ export default function B2CCheckoutPage() {
     return () => { active = false }
   }, [dealId])
 
-  const total = deal ? deal.discounted_price * quantity : 0
+  const total = deal ? deal.discount_price * quantity : 0
 
   const summaryItems = deal
     ? [{
@@ -52,7 +52,7 @@ export default function B2CCheckoutPage() {
         businessName: deal.businesses?.name,
         image: deal.image_url,
         originalPrice: deal.original_price,
-        price: deal.discounted_price,
+        price: deal.discount_price,
         quantity,
       }]
     : []

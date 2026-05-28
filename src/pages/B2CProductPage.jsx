@@ -60,7 +60,7 @@ function ProductView({ deal, onCheckout }) {
   const [saved, setSaved]     = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const pct = discountPct(deal.original_price, deal.discounted_price)
+  const pct = discountPct(deal.original_price, deal.discount_price)
 
   async function handleAdd() {
     setLoading(true)
@@ -91,7 +91,7 @@ function ProductView({ deal, onCheckout }) {
             rating={0}
             reviewCount={0}
             originalPrice={deal.original_price}
-            price={deal.discounted_price}
+            price={deal.discount_price}
             discountPct={pct}
             description={deal.description}
             tags={deal.category ? [deal.category] : []}
@@ -102,7 +102,7 @@ function ProductView({ deal, onCheckout }) {
       </main>
 
       <AddToCartBar
-        price={deal.discounted_price}
+        price={deal.discount_price}
         quantity={qty}
         maxQuantity={deal.quantity_left ?? 99}
         onQtyChange={setQty}

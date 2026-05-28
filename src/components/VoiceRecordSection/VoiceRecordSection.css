@@ -88,67 +88,35 @@
 .voice-record__wave span {
   display: block;
   width: 3px;
-  height: 6px;
+  height: 4px;
   border-radius: var(--radius-full);
   background-color: var(--color-outline-variant);
-  transition: height var(--transition-fast);
+  transition: height 80ms linear, background-color var(--transition-fast);
 }
-.voice-record__wave--active span {
+/* Bars are driven by the real mic level (inline height) while listening. */
+.voice-record__wave--live span {
   background-color: var(--color-brand-primary);
-  animation: wave 0.9s ease-in-out infinite;
 }
-@keyframes wave {
-  0%, 100% { height: 6px; }
-  50%      { height: 28px; }
+.voice-record__ring {
+  will-change: transform;
 }
 
-/* ── Timer */
-.voice-record__timer {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-}
-.voice-record__time {
-  font-family: var(--font-family-display);
-  font-size: 1.5rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-on-surface);
-}
-.voice-record__time-max {
-  font-size: var(--font-size-caption);
-  color: var(--color-text-muted);
-}
-
-/* ── Done state */
-.voice-record__done {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background-color: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
-  border-radius: var(--radius-full);
+/* ── Live status + interim transcript */
+.voice-record__status {
+  margin: 0;
   font-size: var(--font-size-label-md);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
 }
-.voice-record__done-icon {
-  display: inline-flex;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-mint-green);
-  color: #fff;
-  align-items: center;
-  justify-content: center;
+.voice-record__interim {
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  font-style: italic;
 }
-.voice-record__done-icon svg { width: 12px; height: 12px; }
-.voice-record__redo {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-brand-primary);
-  font-weight: var(--font-weight-semibold);
-  padding: 0 4px;
-  font-family: var(--font-family-base);
+
+/* ── Note (unsupported / error) */
+.voice-record__note {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
 }
-.voice-record__redo:hover { text-decoration: underline; }

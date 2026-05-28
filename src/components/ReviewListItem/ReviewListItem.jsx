@@ -1,50 +1,138 @@
+import InputField from '../InputField/InputField'
 import './ReviewListItem.css'
 
 /**
  * ReviewListItem — Editable row for AI-suggested deals during review.
  *
+ * The owner can edit the title, set a manual price per deal (regular + sale),
+ * attach a dedicated product photo, adjust the quantity, or remove the row.
+ *
  * Props:
- *   image        string  — preview image URL
- *   title        string  — item name (editable via parent later)
- *   originalPrice number — original price
- *   suggestedPrice number — AI-suggested discount price
- *   discountPct  number  — derived discount percent
- *   quantity     number  — quantity (controlled)
- *   onQtyChange  fn(next)— called with updated quantity
- *   onRemove     fn      — remove this row from the list
+ *   id             string  — item id (for input/label association)
+ *   image          string  — preview image URL (or null)
+ *   title          string  — item name (editable)
+ *   category       string  — AI category label (shown as a chip)
+ *   originalPrice  number   — regular price (editable)
+ *   suggestedPrice number   — sale price (editable, the "manual price")
+ *   quantity       number   — quantity (controlled)
+ *   onTitleChange  fn(next)            — updated title
+ *   onQtyChange    fn(next)            — updated quantity
+ *   onPriceChange  fn(field, value)    — field is 'originalPrice' | 'suggestedPrice'
+ *   onImageChange  fn({ url, file })   — owner picked a photo for this deal
+ *   onRemove       fn                  — remove this row from the list
  */
 export default function ReviewListItem({
+  id,
   image,
   title,
-  originalPrice,
-  suggestedPrice,
-  discountPct,
+  category,
+  originalPrice = 0,
+  suggestedPrice = 0,
   quantity,
+  onTitleChange,
   onQtyChange,
+  onPriceChange,
+  onImageChange,
   onRemove,
 }) {
   const dec = () => onQtyChange?.(Math.max(0, quantity - 1))
   const inc = () => onQtyChange?.(quantity + 1)
 
+  const pct =
+    originalPrice > 0 && originalPrice > suggestedPrice
+      ? Math.round((1 - suggestedPrice / originalPrice) * 100)
+      : 0
+
+  function handlePrice(field) {
+    return (e) => {
+      const v = e.target.value
+      onPriceChange?.(field, v === '' ? 0 : Math.max(0, Number(v)))
+    }
+  }
+
+  function handleImage(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    onImageChange?.({ url: URL.createObjectURL(file), file })
+    e.target.value = ''
+  }
+
   return (
     <li className="review-item">
-      <div className="review-item__media">
+      {/* Per-deal photo picker */}
+      <label className="review-item__media" aria-label={`הוסף תמונה ל${title}`}>
         {image ? (
           <img src={image} alt="" className="review-item__img" />
         ) : (
           <div className="review-item__img review-item__img--placeholder" aria-hidden="true">🥖</div>
         )}
-      </div>
+        <span className="review-item__media-overlay" aria-hidden="true">
+          <CameraIcon />
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+          onChange={handleImage}
+        />
+      </label>
 
       <div className="review-item__body">
-        <p className="review-item__title">{title}</p>
-        <div className="review-item__pricing">
-          <span className="review-item__price">₪{suggestedPrice}</span>
-          {originalPrice && originalPrice > suggestedPrice && (
-            <span className="review-item__original">₪{originalPrice}</span>
-          )}
-          {discountPct > 0 && (
-            <span className="review-item__discount">-{discountPct}%</span>
+        {/* Editable title + AI category chip */}
+        <div className="review-item__head">
+          <div className="review-item__title-field">
+            <InputField
+              id={`deal-title-${id}`}
+              value={title}
+              onChange={(e) => onTitleChange?.(e.target.value)}
+              placeholder="שם המוצר"
+              aria-label="שם המוצר"
+            />
+          </div>
+          {category && <span className="review-item__category">{category}</span>}
+        </div>
+
+        {/* Editable pricing */}
+        <div className="review-item__prices">
+          <label className="review-item__price-field">
+            <span className="review-item__price-label">מחיר מבצע</span>
+            <span className="review-item__price-input-wrap">
+              <span className="review-item__currency" aria-hidden="true">₪</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="decimal"
+                className="review-item__price-input review-item__price-input--sale"
+                value={suggestedPrice || ''}
+                onChange={handlePrice('suggestedPrice')}
+                aria-label={`מחיר מבצע ל${title}`}
+                placeholder="0"
+              />
+            </span>
+          </label>
+
+          <label className="review-item__price-field">
+            <span className="review-item__price-label">מחיר רגיל</span>
+            <span className="review-item__price-input-wrap">
+              <span className="review-item__currency" aria-hidden="true">₪</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="decimal"
+                className="review-item__price-input"
+                value={originalPrice || ''}
+                onChange={handlePrice('originalPrice')}
+                aria-label={`מחיר רגיל ל${title}`}
+                placeholder="0"
+              />
+            </span>
+          </label>
+
+          {pct > 0 && (
+            <span className="review-item__discount" aria-label={`הנחה ${pct} אחוז`}>
+              -{pct}%
+            </span>
           )}
         </div>
 
@@ -84,6 +172,15 @@ export default function ReviewListItem({
   )
 }
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  )
+}
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"

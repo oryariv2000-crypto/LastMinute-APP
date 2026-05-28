@@ -10,12 +10,40 @@
 }
 
 .review-item__media {
+  position: relative;
   flex-shrink: 0;
   width: 72px;
   height: 72px;
   border-radius: var(--radius-default);
   overflow: hidden;
   background-color: var(--color-surface-container);
+  cursor: pointer;
+}
+
+/* Camera affordance shown on the photo tile */
+.review-item__media-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+.review-item__media:hover .review-item__media-overlay,
+.review-item__media:focus-within .review-item__media-overlay {
+  opacity: 1;
+}
+/* Always hint the action when there's no photo yet */
+.review-item__media:has(.review-item__img--placeholder) .review-item__media-overlay {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.18);
+}
+.review-item__media-overlay svg {
+  width: 22px;
+  height: 22px;
 }
 .review-item__img {
   width: 100%;
@@ -47,23 +75,97 @@
   text-overflow: ellipsis;
 }
 
-.review-item__pricing {
+/* ── Editable title + category chip */
+.review-item__head {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+}
+.review-item__title-field {
+  flex: 1;
+  min-width: 0;
+}
+/* Compact the shared InputField for the row context */
+.review-item__title-field .input-field__input {
+  padding-block: 6px;
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+}
+.review-item__category {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-secondary-container);
+  background-color: var(--color-secondary-container);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* ── Editable pricing */
+.review-item__prices {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
   flex-wrap: wrap;
 }
-.review-item__price {
-  font-size: var(--font-size-body-md);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-brand-primary);
+.review-item__price-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.review-item__original {
+.review-item__price-label {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+.review-item__price-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background-color: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  padding: 4px 8px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.review-item__price-input-wrap:focus-within {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 2px var(--color-secondary-container);
+}
+.review-item__currency {
   font-size: var(--font-size-caption);
   color: var(--color-text-muted);
-  text-decoration: line-through;
+}
+.review-item__price-input {
+  width: 48px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+  text-align: start;
+}
+.review-item__price-input:focus {
+  outline: none;
+}
+.review-item__price-input--sale {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-bold);
+}
+/* Hide number spinners for a cleaner pill */
+.review-item__price-input::-webkit-outer-spin-button,
+.review-item__price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.review-item__price-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 .review-item__discount {
+  align-self: center;
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   color: #fff;

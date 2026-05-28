@@ -7,27 +7,35 @@ import './ActiveDealsSection.css'
  * "view all" link.
  *
  * Props:
- *   deals      array  — deal objects passed as ActiveDealCard props
- *   onEdit     fn(id) — edit handler
- *   onPause    fn(id) — pause handler
- *   viewAllTo  string — destination for the view-all link
+ *   deals          array  — deal objects passed as ActiveDealCard props
+ *   onEdit         fn(id) — edit handler
+ *   onToggleStatus fn(id) — pause / resume handler
+ *   onDelete       fn(id) — permanent delete handler
+ *   viewAllTo      string — destination for the view-all link (omit to hide it)
  */
 export default function ActiveDealsSection({
   deals = [],
   onEdit,
-  onPause,
-  viewAllTo = '/b2b/deals',
+  onToggleStatus,
+  onDelete,
+  viewAllTo = null,
 }) {
+  // Count only active deals (paused ones are shown dimmed but aren't "active"),
+  // so this matches the dashboard summary card.
+  const activeCount = deals.filter((d) => d.status !== 'paused').length
+
   return (
     <section className="active-deals-section" aria-label="מבצעים פעילים">
       <header className="active-deals-section__header">
         <h2 className="active-deals-section__title">
           מבצעים פעילים
-          <span className="active-deals-section__count">{deals.length}</span>
+          <span className="active-deals-section__count">{activeCount}</span>
         </h2>
-        <Link to={viewAllTo} className="active-deals-section__view-all">
-          צפה בכולם
-        </Link>
+        {viewAllTo && (
+          <Link to={viewAllTo} className="active-deals-section__view-all">
+            צפה בכולם
+          </Link>
+        )}
       </header>
 
       {deals.length === 0 ? (
@@ -42,7 +50,8 @@ export default function ActiveDealsSection({
               key={d.id}
               {...d}
               onEdit={() => onEdit?.(d.id)}
-              onPause={() => onPause?.(d.id)}
+              onToggleStatus={() => onToggleStatus?.(d.id)}
+              onDelete={() => onDelete?.(d.id)}
             />
           ))}
         </div>

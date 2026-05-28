@@ -1,97 +1,107 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSpeechDictation } from '../../lib/useSpeechDictation'
 import './VoiceRecordSection.css'
 
+/* Arch-shaped profile so the level meter reads like a real waveform. */
+const BAR_COUNT = 18
+const BAR_FACTORS = Array.from({ length: BAR_COUNT }, (_, i) =>
+  0.3 + 0.7 * Math.abs(Math.sin((i / (BAR_COUNT - 1)) * Math.PI)),
+)
+
 /**
- * VoiceRecordSection — Mic-first capture UI for the new-deal flow.
+ * VoiceRecordSection — Mic-first dictation for the new-deal flow.
  *
- * Records a short voice note describing what's left over; the AI flow
- * later turns it into deal suggestions.
+ * Transcribes speech to text (Web Speech API) and feeds each finalized phrase
+ * up via `onTranscript`. The waveform reacts to the real microphone level, so
+ * the owner can see the mic is live even when recognition itself is quiet.
  *
  * Props:
- *   onRecordingComplete  fn(durationSec) — called when user stops recording
- *   maxSeconds           number          — auto-stop limit (default 60)
+ *   onTranscript  fn(text) — called with each finalized phrase of speech
  */
-export default function VoiceRecordSection({ onRecordingComplete, maxSeconds = 60 }) {
-  const [recording, setRecording] = useState(false)
-  const [seconds, setSeconds]     = useState(0)
-  const [doneSec, setDoneSec]     = useState(null)
-  const intervalRef = useRef(null)
+export default function VoiceRecordSection({ onTranscript }) {
+  const [showNoSpeech, setShowNoSpeech] = useState(false)
+  const heardRef = useRef(false)
 
-  useEffect(() => () => clearInterval(intervalRef.current), [])
+  const { supported, listening, interim, level, error, start, stop } = useSpeechDictation({
+    onResult: (text) => {
+      heardRef.current = true
+      onTranscript?.(text)
+    },
+  })
 
-  function start() {
-    setSeconds(0)
-    setDoneSec(null)
-    setRecording(true)
-    intervalRef.current = setInterval(() => {
-      setSeconds(s => {
-        if (s + 1 >= maxSeconds) {
-          stop(s + 1)
-          return s + 1
-        }
-        return s + 1
-      })
-    }, 1000)
-  }
+  // Interim text also counts as "speech heard".
+  useEffect(() => {
+    if (interim) heardRef.current = true
+  }, [interim])
 
-  function stop(finalSec = seconds) {
-    clearInterval(intervalRef.current)
-    setRecording(false)
-    setDoneSec(finalSec)
-    onRecordingComplete?.(finalSec)
-  }
-
-  function reset() {
-    setSeconds(0)
-    setDoneSec(null)
-  }
-
-  const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
-  const ss = String(seconds % 60).padStart(2, '0')
+  // While listening, if no transcript arrives within a few seconds, warn that
+  // the browser likely can't recognise speech (mic level may still be moving).
+  useEffect(() => {
+    if (!listening) return undefined
+    heardRef.current = false
+    const t = setTimeout(() => { if (!heardRef.current) setShowNoSpeech(true) }, 5000)
+    return () => { clearTimeout(t); setShowNoSpeech(false) }
+  }, [listening])
 
   return (
-    <section className="voice-record" aria-label="הקלטת קול">
+    <section className="voice-record" aria-label="הכתבה קולית">
       <div className="voice-record__header">
         <h2 className="voice-record__title">ספר/י לנו מה נשאר</h2>
         <p className="voice-record__subtitle">
-          הקלט/י תיאור קצר — המערכת תזהה את המוצרים אוטומטית
+          {supported
+            ? 'לחץ/י על המיקרופון ודבר/י — הטקסט יתווסף אוטומטית'
+            : 'הכתבה קולית אינה נתמכת בדפדפן זה — הקלד/י ידנית למעלה'}
         </p>
       </div>
 
       <div className="voice-record__visual" aria-hidden="true">
-        <div className={`voice-record__ring${recording ? ' voice-record__ring--active' : ''}`}>
+        <div
+          className={`voice-record__ring${listening ? ' voice-record__ring--active' : ''}`}
+          style={listening ? { transform: `scale(${1 + level * 0.18})` } : undefined}
+        >
           <button
             type="button"
-            className={`voice-record__mic${recording ? ' voice-record__mic--recording' : ''}`}
-            onClick={recording ? () => stop() : start}
-            aria-label={recording ? 'עצור הקלטה' : 'התחל הקלטה'}
-            aria-pressed={recording}
+            className={`voice-record__mic${listening ? ' voice-record__mic--recording' : ''}`}
+            onClick={listening ? stop : start}
+            disabled={!supported}
+            aria-label={listening ? 'עצור הכתבה' : 'התחל הכתבה'}
+            aria-pressed={listening}
           >
-            {recording ? <StopIcon /> : <MicIcon />}
+            {listening ? <StopIcon /> : <MicIcon />}
           </button>
         </div>
 
-        {/* dummy waveform */}
-        <div className={`voice-record__wave${recording ? ' voice-record__wave--active' : ''}`}>
-          {Array.from({ length: 18 }).map((_, i) => (
-            <span key={i} style={{ animationDelay: `${i * 60}ms` }} />
+        {/* Live level meter — bar heights track the real mic input. */}
+        <div className={`voice-record__wave${listening ? ' voice-record__wave--live' : ''}`}>
+          {BAR_FACTORS.map((factor, i) => (
+            <span
+              key={i}
+              style={
+                listening
+                  ? { height: `${4 + level * 34 * factor}px` }
+                  : undefined
+              }
+            />
           ))}
         </div>
       </div>
 
-      <div className="voice-record__timer" aria-live="polite">
-        <span className="voice-record__time">{mm}:{ss}</span>
-        <span className="voice-record__time-max">/ 00:{String(maxSeconds).padStart(2, '0')}</span>
-      </div>
+      {listening && (
+        <p className="voice-record__status" aria-live="polite">
+          🎙️ מקשיב…{interim && <span className="voice-record__interim"> “{interim}”</span>}
+        </p>
+      )}
 
-      {doneSec != null && (
-        <div className="voice-record__done">
-          <span className="voice-record__done-icon" aria-hidden="true"><CheckIcon /></span>
-          <span>הקלטה נשמרה ({doneSec} שנ׳)</span>
-          <button type="button" className="voice-record__redo" onClick={reset}>
-            הקלט שוב
-          </button>
-        </div>
+      {listening && showNoSpeech && !error && (
+        <p className="voice-record__note" role="status">
+          {level > 0.05
+            ? 'המיקרופון תקין אך לא זוהה דיבור — ייתכן שהדפדפן אינו תומך בזיהוי עברית. נסה/י Chrome/Edge, או הקלד/י ידנית למעלה.'
+            : 'לא נקלט קול מהמיקרופון — בדוק/י שהמיקרופון הנכון נבחר, או הקלד/י ידנית למעלה.'}
+        </p>
+      )}
+
+      {error && (
+        <p className="voice-record__note" role="alert">{error}</p>
       )}
     </section>
   )
@@ -112,14 +122,6 @@ function StopIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <rect x="6" y="6" width="12" height="12" rx="2" />
-    </svg>
-  )
-}
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12" />
     </svg>
   )
 }

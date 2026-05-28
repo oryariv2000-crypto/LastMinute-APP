@@ -4,10 +4,12 @@ import './BottomNavigation.css'
 /**
  * BottomNavigationB2B — Fixed bottom tab bar for business owners.
  *
- * Tabs: Home · Stats · [Publish FAB] · Deals · Profile
+ * Tabs: Home · [Publish FAB] · Stats
  *
  * The center slot is a floating action button (FAB) for "Publish Deal"
  * — styled with the Sunset Orange accent color from the design system.
+ * Profile is reached from the avatar in the top bar (NavbarB2B), so it
+ * is intentionally not duplicated here.
  *
  * Props:
  *   notifCount  number — badge on Home tab (pending orders / alerts)
@@ -24,29 +26,15 @@ export default function BottomNavigationB2B({ notifCount = 5 }) {
       match: '/b2b/dashboard',
       badge: notifCount,
     },
+  ]
+
+  const rightTabs = [
     {
       id:    'b2b-tab-stats',
       to:    '/b2b/stats',
       label: 'סטטיסטיקות',
       icon:  <BarChartIcon />,
       match: '/b2b/stats',
-    },
-  ]
-
-  const rightTabs = [
-    {
-      id:    'b2b-tab-deals',
-      to:    '/b2b/deals',
-      label: 'מבצעים',
-      icon:  <TagIcon />,
-      match: '/b2b/deals',
-    },
-    {
-      id:    'b2b-tab-profile',
-      to:    '/b2b/profile',
-      label: 'פרופיל',
-      icon:  <StoreIcon />,
-      match: '/b2b/profile',
     },
   ]
 
@@ -116,28 +104,6 @@ function BarChartIcon() {
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6"  y1="20" x2="6"  y2="14" />
-    </svg>
-  )
-}
-
-function TagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
-    </svg>
-  )
-}
-
-function StoreIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 9l1-6h16l1 6" />
-      <path d="M3 9a2 2 0 1 0 4 0 2 2 0 1 0 4 0 2 2 0 1 0 4 0 2 2 0 1 0 4 0" />
-      <path d="M5 9v12h14V9" />
-      <rect x="9" y="14" width="6" height="7" />
     </svg>
   )
 }

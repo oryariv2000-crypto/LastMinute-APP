@@ -6,7 +6,7 @@ import NewDealButton from '../components/NewDealButton/NewDealButton'
 import ActiveDealsSection from '../components/ActiveDealsSection/ActiveDealsSection'
 import DealEditModal from '../components/DealEditModal/DealEditModal'
 import Loader from '../components/Loader/Loader'
-import { getMyDeals, updateDeal, deleteDeal, discountPct } from '../lib/db'
+import { getMyDeals, updateDeal, deleteDeal, setDealStatus, discountPct } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import './B2BPage.css'
 
@@ -40,12 +40,24 @@ export default function B2BDashboardPage() {
   }, [])
 
   async function handleDelete(id) {
-    if (!window.confirm('למחוק את המבצע? פעולה זו אינה הפיכה.')) return
+    if (!window.confirm('למחוק את המבצע לצמיתות? לא ניתן לשחזר.')) return
     try {
       await deleteDeal(id)
       setDeals((prev) => prev.filter((d) => d.id !== id))
     } catch (err) {
       alert(err?.message || 'מחיקת המבצע נכשלה')
+    }
+  }
+
+  async function handleToggleStatus(id) {
+    const deal = deals.find((d) => d.id === id)
+    if (!deal) return
+    const next = deal.status === 'paused' ? 'active' : 'paused'
+    try {
+      const updated = await setDealStatus(id, next)
+      setDeals((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
+    } catch (err) {
+      alert(err?.message || 'עדכון סטטוס המבצע נכשל')
     }
   }
 
@@ -61,10 +73,11 @@ export default function B2BDashboardPage() {
     title: d.title,
     image: d.image_url,
     originalPrice: d.original_price,
-    price: d.discounted_price,
-    discountPct: discountPct(d.original_price, d.discounted_price),
+    price: d.discount_price,
+    discountPct: discountPct(d.original_price, d.discount_price),
     quantity: d.quantity_left,
     timeLeftMin: 0,
+    status: d.status,
   }))
 
   const businessName = business?.name || profile?.full_name || 'העסק שלי'
@@ -72,7 +85,7 @@ export default function B2BDashboardPage() {
 
   return (
     <div className="b2b-page" dir="rtl">
-      <NavbarB2B businessName={businessName} isOpen notifCount={0} />
+      <NavbarB2B businessName={businessName} avatarUrl={business?.logo_url} isOpen notifCount={0} />
 
       <main className="b2b-page__main">
         <header className="b2b-page__greeting">
@@ -97,7 +110,8 @@ export default function B2BDashboardPage() {
           <ActiveDealsSection
             deals={cards}
             onEdit={(id) => setEditing(deals.find((d) => d.id === id))}
-            onPause={(id) => handleDelete(id)}
+            onToggleStatus={handleToggleStatus}
+            onDelete={handleDelete}
           />
         )}
       </main>
@@ -115,17 +129,20 @@ export default function B2BDashboardPage() {
   )
 }
 
-/* Derive the summary cards from live deals (no fake numbers). */
+/* Derive the summary cards from live deals (no fake numbers).
+   Paused deals aren't offered to customers, so they don't count toward the
+   "active deals" / inventory / potential-revenue figures. */
 function buildStats(cards) {
-  const activeCount = cards.length
-  const unitsLeft = cards.reduce((s, c) => s + (c.quantity || 0), 0)
-  const potential = cards.reduce((s, c) => s + (c.price || 0) * (c.quantity || 0), 0)
+  const live = cards.filter((c) => c.status !== 'paused')
+  const activeCount = live.length
+  const unitsLeft = live.reduce((s, c) => s + (c.quantity || 0), 0)
+  const potential = live.reduce((s, c) => s + (c.price || 0) * (c.quantity || 0), 0)
   return [
     { id: 'active', label: 'מבצעים פעילים', value: String(activeCount), accent: 'primary',
       icon: <Svg d="M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /> },
     { id: 'units', label: 'יחידות במלאי', value: String(unitsLeft), accent: 'accent',
       icon: <Svg d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /> },
-    { id: 'potential', label: 'הכנסה פוטנציאלית', value: `₪${potential}`, accent: 'success',
+    { id: 'potential', label: 'הכנסה פוטנציאלית', value: `₪${potential.toLocaleString('he-IL')}`, accent: 'success',
       icon: <Svg d="M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /> },
   ]
 }

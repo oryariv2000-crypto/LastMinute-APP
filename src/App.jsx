@@ -15,6 +15,8 @@ import B2CCheckoutPage from './pages/B2CCheckoutPage'
 import B2CConfirmationPage from './pages/B2CConfirmationPage'
 import B2COrdersPage from './pages/B2COrdersPage'
 import B2CProfilePage from './pages/B2CProfilePage'
+import SupportPage from './pages/SupportPage'
+import AdminSupportPage from './pages/AdminSupportPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 /* ── Global design tokens (must be first CSS import) */
@@ -39,8 +41,6 @@ export default function App() {
 
       {/* ── B2B (Business) — business_owner only ───────────── */}
       <Route path="/b2b/dashboard" element={B2B(<B2BDashboardPage />)} />
-      {/* "מבצעים" tab — the deal list lives on the dashboard */}
-      <Route path="/b2b/deals"     element={B2B(<B2BDashboardPage />)} />
       <Route path="/b2b/new-deal"  element={B2B(<B2BNewDealPage />)} />
       <Route path="/b2b/review"    element={B2B(<B2BAiReviewPage />)} />
       <Route path="/b2b/stats"     element={B2B(<B2BStatsPage />)} />
@@ -55,6 +55,11 @@ export default function App() {
       <Route path="/b2c/confirmation"  element={B2C(<B2CConfirmationPage />)} />
       <Route path="/b2c/orders"        element={B2C(<B2COrdersPage />)} />
       <Route path="/b2c/profile"       element={B2C(<B2CProfilePage />)} />
+
+      {/* ── Shared — any signed-in user ─────────────────────── */}
+      <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+      {/* ── Support team only (email allowlist) ─────────────── */}
+      <Route path="/admin/support" element={<ProtectedRoute adminOnly><AdminSupportPage /></ProtectedRoute>} />
 
       {/* ── Unknown sub-routes → bounce to the matching home ─ */}
       <Route path="/b2c/*" element={<Navigate to="/b2c/home" replace />} />

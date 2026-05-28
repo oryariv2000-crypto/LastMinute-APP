@@ -5,16 +5,10 @@
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  max-width: 480px;
+  width: 100%;
+  max-width: var(--shell-max);
   margin: 0 auto;
   background-color: var(--color-background);
-}
-
-/* allow wider canvas on desktop */
-@media (min-width: 700px) {
-  .b2b-page {
-    max-width: 720px;
-  }
 }
 
 .b2b-page__main {
@@ -80,6 +74,94 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
+}
+
+/* ── New-deal free-text description (drives AI product detection) */
+.new-deal-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.new-deal-text__label {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+}
+/* Box wraps the textarea so the mic button can sit in its corner. */
+.new-deal-text__box {
+  position: relative;
+}
+.new-deal-text__input {
+  width: 100%;
+  resize: none;            /* height is managed automatically (auto-grow) */
+  overflow: hidden;
+  min-height: 76px;
+  /* leave room for the mic button in the bottom-start corner */
+  padding: var(--space-3) var(--space-3) 48px;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body-md);
+  line-height: 1.5;
+  color: var(--color-on-surface);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.new-deal-text__input:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-secondary-container);
+}
+.new-deal-text__input[readonly] {
+  background-color: var(--color-surface-container-low);
+}
+
+/* Mic button anchored in the textarea corner (bottom-start in RTL). */
+.new-deal-text__mic {
+  position: absolute;
+  bottom: 8px;
+  inset-inline-start: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-primary);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast), transform 80ms linear;
+}
+.new-deal-text__mic svg { width: 20px; height: 20px; }
+.new-deal-text__mic:hover { background-color: var(--color-dark-forest); }
+.new-deal-text__mic--live {
+  background-color: var(--color-action-red);
+  animation: mic-pulse 1.4s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 4, 41, 0.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(217, 4, 41, 0); }
+}
+
+.new-deal-text__hint {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+.new-deal-text__hint--live {
+  color: var(--color-action-red);
+  font-weight: var(--font-weight-semibold);
+}
+.new-deal-text__note {
+  margin: 4px 0 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-caption);
+  color: var(--color-on-secondary-container);
+  background-color: var(--color-secondary-container);
+  border-radius: var(--radius-default);
+  line-height: 1.5;
 }
 
 /* ── Helper text (e.g. disabled-CTA hint on new-deal page) */

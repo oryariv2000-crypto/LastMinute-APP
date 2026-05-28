@@ -65,6 +65,33 @@
   gap: var(--space-3);
 }
 
+/* ── Add-manually button */
+.review-list-section__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: var(--space-3);
+  background-color: transparent;
+  border: 1.5px dashed var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  color: var(--color-brand-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+.review-list-section__add:hover {
+  background-color: var(--color-secondary-container);
+  border-color: var(--color-brand-primary);
+}
+.review-list-section__add svg {
+  width: 18px;
+  height: 18px;
+}
+
 .review-list-section__empty {
   display: flex;
   flex-direction: column;

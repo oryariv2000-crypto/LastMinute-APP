@@ -34,6 +34,43 @@
   font-size: 0.9rem;
 }
 
+.deal-edit__image-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.deal-edit__image-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.deal-edit__image-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.deal-edit__image-preview {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-container, #eee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border: 1px solid var(--color-outline-variant, #ddd);
+}
+.deal-edit__image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.deal-edit__image-pick {
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .deal-edit__field {
   display: flex;
   flex-direction: column;

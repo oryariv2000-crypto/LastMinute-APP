@@ -1,43 +1,39 @@
-import { useState } from 'react'
 import './StatsChartsSection.css'
 
 /**
- * StatsChartsSection — Period switch + dummy chart visuals (bars + donut).
- * Real data wiring is intentionally deferred — these are placeholder visuals.
+ * StatsChartsSection — real, order-based charts for the B2B Stats page.
+ * Pure presentational: all data is computed upstream from live orders.
+ *
+ * Props:
+ *   bars       [{ label, value }]   — revenue per time bucket (value in ₪)
+ *   categories [{ label, revenue }] — revenue per deal category
+ *   barsTitle  string               — e.g. "7 ימים אחרונים"
  */
-const PERIODS = [
-  { id: '7d',  label: '7 ימים' },
-  { id: '30d', label: '30 ימים' },
-  { id: '90d', label: '90 ימים' },
+const DONUT_COLORS = [
+  'var(--color-brand-primary)',
+  'var(--color-mint-green)',
+  'var(--color-accent)',
+  'var(--color-dark-forest)',
+  'var(--color-outline-variant)',
 ]
 
-const BARS = [
-  { day: 'א',   value: 38 },
-  { day: 'ב',   value: 62 },
-  { day: 'ג',   value: 55 },
-  { day: 'ד',   value: 80 },
-  { day: 'ה',   value: 72 },
-  { day: 'ו',   value: 95 },
-  { day: 'ש',   value: 48 },
-]
+export default function StatsChartsSection({ bars = [], categories = [], barsTitle = '' }) {
+  const maxBar = Math.max(0, ...bars.map((b) => b.value))
+  const hasSales = maxBar > 0
 
-const CATEGORIES = [
-  { id: 'baked',   label: 'מאפים',   value: 42, color: 'var(--color-brand-primary)' },
-  { id: 'salads',  label: 'סלטים',   value: 28, color: 'var(--color-mint-green)' },
-  { id: 'mains',   label: 'מנות',    value: 18, color: 'var(--color-accent)' },
-  { id: 'other',   label: 'אחר',    value: 12, color: 'var(--color-outline-variant)' },
-]
+  const totalCat = categories.reduce((s, c) => s + c.revenue, 0)
+  const cats = categories.map((c, i) => ({
+    ...c,
+    pct: totalCat > 0 ? Math.round((c.revenue / totalCat) * 100) : 0,
+    color: DONUT_COLORS[i % DONUT_COLORS.length],
+  }))
 
-export default function StatsChartsSection() {
-  const [period, setPeriod] = useState('7d')
-
-  // Build the conic-gradient for the donut with a pure reduce — no variables
-  // are mutated during render. Each step carries the running offset forward.
-  const conic = CATEGORIES
+  // conic-gradient stops via a pure reduce (no mutation during render).
+  const conic = cats
     .reduce(
       ({ offset, stops }, c) => ({
-        offset: offset + c.value,
-        stops: [...stops, `${c.color} ${offset}% ${offset + c.value}%`],
+        offset: offset + c.pct,
+        stops: [...stops, `${c.color} ${offset}% ${offset + c.pct}%`],
       }),
       { offset: 0, stops: [] },
     )
@@ -46,72 +42,63 @@ export default function StatsChartsSection() {
 
   return (
     <section className="stats-charts" aria-label="גרפים וביצועים">
-      {/* Period switcher */}
-      <div className="stats-charts__tabs" role="tablist">
-        {PERIODS.map(p => (
-          <button
-            key={p.id}
-            type="button"
-            role="tab"
-            aria-selected={period === p.id}
-            className={`stats-charts__tab${period === p.id ? ' stats-charts__tab--active' : ''}`}
-            onClick={() => setPeriod(p.id)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Bar chart */}
+      {/* Bar chart — revenue per bucket */}
       <article className="stats-charts__card">
         <header className="stats-charts__card-head">
-          <h3 className="stats-charts__card-title">מכירות יומיות</h3>
-          <span className="stats-charts__card-sub">{periodLabel(period)}</span>
+          <h3 className="stats-charts__card-title">מכירות</h3>
+          <span className="stats-charts__card-sub">{barsTitle}</span>
         </header>
-        <div className="stats-charts__bars" aria-hidden="true">
-          {BARS.map((b, i) => (
-            <div key={i} className="stats-charts__bar-wrap">
-              <span className="stats-charts__bar" style={{ height: `${b.value}%` }} />
-              <span className="stats-charts__bar-label">{b.day}</span>
-            </div>
-          ))}
-        </div>
+
+        {hasSales ? (
+          <div className="stats-charts__bars" role="img" aria-label={`גרף מכירות, שיא ₪${maxBar.toLocaleString('he-IL')}`}>
+            {bars.map((b, i) => (
+              <div key={i} className="stats-charts__bar-wrap" title={`${b.label}: ₪${b.value.toLocaleString('he-IL')}`}>
+                <span
+                  className="stats-charts__bar"
+                  style={{ height: `${maxBar ? Math.round((b.value / maxBar) * 100) : 0}%` }}
+                />
+                <span className="stats-charts__bar-label">{b.label}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="stats-charts__empty">אין מכירות בתקופה זו עדיין</p>
+        )}
       </article>
 
-      {/* Donut + legend */}
+      {/* Donut — revenue by category */}
       <article className="stats-charts__card">
         <header className="stats-charts__card-head">
           <h3 className="stats-charts__card-title">פילוח קטגוריות</h3>
-          <span className="stats-charts__card-sub">% מכלל המכירות</span>
+          <span className="stats-charts__card-sub">% מההכנסות</span>
         </header>
-        <div className="stats-charts__donut-wrap">
-          <div
-            className="stats-charts__donut"
-            style={{ background: `conic-gradient(${conic})` }}
-            aria-hidden="true"
-          >
-            <div className="stats-charts__donut-hole">
-              <span className="stats-charts__donut-value">100%</span>
-              <span className="stats-charts__donut-cap">סה״כ</span>
+
+        {totalCat > 0 ? (
+          <div className="stats-charts__donut-wrap">
+            <div
+              className="stats-charts__donut"
+              style={{ background: `conic-gradient(${conic})` }}
+              aria-hidden="true"
+            >
+              <div className="stats-charts__donut-hole">
+                <span className="stats-charts__donut-value">100%</span>
+                <span className="stats-charts__donut-cap">סה״כ</span>
+              </div>
             </div>
+            <ul className="stats-charts__legend">
+              {cats.map((c, i) => (
+                <li key={i}>
+                  <span className="stats-charts__legend-dot" style={{ background: c.color }} />
+                  <span className="stats-charts__legend-label">{c.category}</span>
+                  <span className="stats-charts__legend-value">{c.pct}%</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="stats-charts__legend">
-            {CATEGORIES.map(c => (
-              <li key={c.id}>
-                <span className="stats-charts__legend-dot" style={{ background: c.color }} />
-                <span className="stats-charts__legend-label">{c.label}</span>
-                <span className="stats-charts__legend-value">{c.value}%</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        ) : (
+          <p className="stats-charts__empty">אין נתוני קטגוריות בתקופה זו</p>
+        )}
       </article>
     </section>
   )
-}
-
-function periodLabel(id) {
-  if (id === '7d')  return '7 ימים אחרונים'
-  if (id === '30d') return '30 ימים אחרונים'
-  return '90 ימים אחרונים'
 }

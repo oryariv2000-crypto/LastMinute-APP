@@ -1,0 +1,74 @@
+.notif { position: relative; }
+
+.notif__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-end: 0;
+  width: 300px;
+  max-width: 86vw;
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-outline-variant);
+  z-index: var(--z-dropdown);
+  overflow: hidden;
+}
+
+.notif__header {
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.notif__empty {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label-md);
+}
+
+.notif__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.notif__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-outline-variant);
+  cursor: pointer;
+  text-align: start;
+  font: inherit;
+}
+.notif__item:hover { background-color: var(--color-surface-container-low); }
+.notif__list li:last-child .notif__item { border-bottom: none; }
+
+.notif__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.notif__dot--danger { background-color: var(--color-action-red); }
+.notif__dot--warn   { background-color: #d98324; }
+.notif__dot--info   { background-color: var(--color-brand-primary); }
+.notif__dot--ok     { background-color: var(--color-mint-green); }
+
+.notif__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.notif__item-title {
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+}
+.notif__item-sub { font-size: var(--font-size-caption); color: var(--color-text-muted); }

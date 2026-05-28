@@ -4,7 +4,12 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  width: 100%;
+  /* Full-bleed green bar: the navbar lives inside the centered, max-width
+     .b2b-page shell, so without this its background would only fill that
+     column and leave white gutters on desktop. This breaks it out to the
+     full viewport width while the inner content stays shell-aligned. */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
   background-color: var(--color-brand-primary);
   box-shadow: var(--shadow-md);
 }
@@ -13,10 +18,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  gap: var(--space-3);
+  height: 60px;
   padding: 0 var(--space-gutter);
-  max-width: 480px;
+  max-width: var(--shell-max);
   margin: 0 auto;
+}
+
+/* A touch taller on desktop for comfortable breathing room. */
+@media (min-width: 1024px) {
+  .navbar-b2b__inner {
+    height: 68px;
+    padding-inline: var(--space-6);
+  }
 }
 
 /* ── Brand / Logo ─────────────────────────────────────────── */
@@ -25,6 +39,7 @@
   align-items: center;
   gap: var(--space-2);
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .navbar-b2b__logo-mark {
@@ -41,11 +56,13 @@
 }
 
 .navbar-b2b__brand-name {
+  display: block;
   font-family: var(--font-family-display);
   font-size: var(--font-size-label-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-on-primary);
   letter-spacing: 0.02em;
+  line-height: 1.15;
 }
 
 .navbar-b2b__brand-tag {
@@ -61,7 +78,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 2px;
   flex: 1;
+  min-width: 0;
   padding: 0 var(--space-2);
 }
 
@@ -106,7 +126,8 @@
 .navbar-b2b__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 .navbar-b2b__icon-btn {
@@ -165,4 +186,12 @@
 
 .navbar-b2b__avatar:hover {
   opacity: 0.85;
+}
+
+/* When a real profile photo exists, fill the avatar circle with it. */
+.navbar-b2b__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-full);
 }

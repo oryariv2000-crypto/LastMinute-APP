@@ -78,3 +78,10 @@
     gap: var(--space-4);
   }
 }
+
+/* Desktop: 3 columns so cards keep a comfortable size in the wide column */
+@media (min-width: 1024px) {
+  .active-deals-section__list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -30,7 +30,9 @@
 }
 
 .revenue-card__value {
-  font-family: var(--font-family-display);
+  /* Heebo, not the display font — Plus Jakarta Sans renders the ₪ sign as a
+     stretched fallback glyph. Heebo has a clean shekel sign. */
+  font-family: var(--font-family-base);
   font-size: 2rem;
   font-weight: var(--font-weight-bold);
   line-height: 1.1;

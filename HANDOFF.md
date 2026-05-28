@@ -1,7 +1,7 @@
 # LastMinute — סיכום עבודה (Handoff)
 
 > מסמך המשכיות לסשן הבא. מתעד מה נעשה, מה עובד, ומה דורש פעולה.
-> תאריך עדכון אחרון: 2026-05-26.
+> תאריך עדכון אחרון: 2026-05-28.
 
 ## תמונת מצב כללית
 אפליקציית Vite + React (עברית/RTL) עם שתי סביבות: **B2B** (בעלי עסקים) ו-**B2C** (לקוחות).
@@ -10,7 +10,96 @@ Backend על **Supabase** (Auth + Postgres + Storage). הקוד מחובר ל-Su
 
 ---
 
-## ✅ מה הושלם בסשן האחרון (יישור סכמה + דף נחיתה)
+## ✅ מה הושלם בסשן הזה (2026-05-27→28)
+דיוק AI · רספונסיביות B2B · טופ בר · כפתורי מבצע · גרפים אמיתיים · דף חנות/פרופיל · לוגו אחיד · מערכת תמיכה + אדמין · מרכז התראות · הכתבה קולית חיה
+
+### 1. שיפור דיוק כימות המלאי של ה-AI (`src/lib/aiVision.js`)
+ה-AI (Gemini 2.5 Flash) החזיר כמויות נמוכות מדי מתמונת חלון הראווה. תוקן בפרומפט:
+- הוסרה השורה "אם אינך בטוח, תן הערכה סבירה" שעודדה ניחוש מספרים עגולים/נמוכים.
+- נוספו **כללי ספירה מפורשים**: לספור שורות×עמודות בערימות/מגשים, לכלול פריטים חלקיים מאחור, ואזהרה שמדף לחם מלא = 15–40 ולא 5–10.
+- נוסף שדה **`count_note`** (לפני `quantity` בסכמה) שמאלץ את המודל "להראות עבודה" (CoT בתוך ה-JSON) → דיוק ספירה טוב יותר. השדה נזרק ב-`normalizeItem`, מסך הביקורת לא הושפע.
+- אומת ע"י המשתמש: "עובד יותר טוב וגם מפרסם".
+
+### 2. אתר Web רספונסיבי לכל הממשק העסקי (B2B)
+הבעיה: שלושה max-width קשיחים ולא עקביים (480/720/480) דחסו הכל לעמודה צרה עם חללים ריקים בדסקטופ.
+- **`globals.css`**: מקור אמת אחד — משתנה `--shell-max` (mobile 480px → tablet ≥700px: 760px → desktop ≥1024px: 1120px). נוסף גם `overflow-x: hidden` ל-body.
+- **`B2BPage.css`** + **`NavbarB2B.css`** + **`BottomNavigation.css`**: כולם קוראים מ-`--shell-max` (הטופ בר), ה-bottom-nav נשאר קומפקטי 480px ממורכז.
+- **`ActiveDealsSection.css`**: רשת כרטיסים 1→2→**3 טורים** בדסקטופ. (כרטיסי הסיכום כבר 4 טורים מ-700px.)
+- **`index.html`**: `viewport-fit=cover` לתמיכת safe-area (notch).
+
+### 3. תיקון הטופ בר הירוק (`NavbarB2B.css`)
+- **Full-bleed**: `width: 100vw` + `margin-inline: calc(50% - 50vw)` — הרקע הירוק נמתח לכל רוחב המסך (קודם נעצר ברוחב העמודה והשאיר שוליים לבנים, כי הוא sticky בתוך `.b2b-page` המוגבל).
+- גובה 60px (מובייל) / 68px (דסקטופ), יישור אנכי ומרווחי אייקונים מסודרים (4px→8px), `flex-shrink: 0` למותג ולאייקונים.
+
+### 4. הסרת "פרופיל" מה-Bottom Nav (`BottomNavigationB2B.jsx`)
+הפרופיל נגיש מהאווטאר בטופ בר. ה-bottom-nav עכשיו: **ראשי · [פרסם FAB] · סטטיסטיקות**. הוסר `StoreIcon` שלא בשימוש.
+
+### 5. בהירות כפתורי כרטיס המבצע — השהיה אמיתית + מחק
+היה: כפתור כתוב "השהה" שבפועל **מחק** לצמיתות (מבלבל). עכשיו **שלושה כפתורים ברורים** עם tooltips:
+- **✏️ ערוך** (ירוק) · **⏸️ השהה** (כתום) / **▶️ הפעל** (ירוק, כשמושהה) · **🗑️ מחק** (אדום, אישור "לא ניתן לשחזר").
+- **השהיה אמיתית**: `setDealStatus()` חדש ב-`db.js` מעדכן `status` ל-`paused`/`active`. הפיד ללקוחות מסנן `status='active'`, אז מבצע מושהה יוצא מהתצוגה הציבורית בלי להימחק.
+- כרטיס מושהה מוצג מעומעם עם תווית "מושהה — לא מוצג ללקוחות". `buildStats` לא סופר מבצעים מושהים.
+- קבצים: `ActiveDealCard.jsx`+CSS, `ActiveDealsSection.jsx` (prop `onPause`→`onToggleStatus`+`onDelete`), `B2BDashboardPage.jsx`, `db.js`.
+
+> ⚠️ **לבדיקה ב-DB**: `status='paused'` מניח שעמודת `status` ב-`deals` מקבלת ערך זה (אין constraint/enum שחוסם). לוודא שאין CHECK שמגביל ל-`active` בלבד.
+
+### 6. גרפים אמיתיים בדף הסטטיסטיקות (מבוסס הזמנות)
+הגרפים היו דמה. עכשיו כל דף `/b2b/stats` מבוסס הזמנות חיות:
+- **כלל עסקי שסוכם**: "מכירה" = כל הזמנה ש-`status <> 'cancelled'` (כולל pending — אין עדיין מנגנון שמסמן הזמנה כ"נאספה"). הכנסה = `sum(orders.total)`.
+- **הבורר 7/30/90 ימים מניע את כל הדף** (כרטיסי הכנסות+הזמנות + שני הגרפים). "מבצעים פעילים" נשאר snapshot נוכחי. הבורר הורם לראש הדף.
+- **קיבוץ אוטומטי** בגרף העמודות: 7 ימים→יומי, 30→שבועי, 90→חודשי.
+- **🔴 צעד DB חובה**: להריץ את **`supabase/stats_charts.sql`** ב-Supabase SQL Editor. הוא מגדיר 3 פונקציות `security definer` (owner-scoped): `get_business_stats` (חתימה חדשה עם `p_from/p_to` — דורסת את הישנה), `get_business_sales_timeseries`, `get_business_category_breakdown`. בלי זה הדף ייכשל ב-RPC.
+- קבצים: `db.js` (`periodRange`, `fetchBusinessStats` עם {from,to}, `fetchSalesTimeseries`, `fetchCategoryBreakdown`), `B2BStatsPage.jsx`, `StatsChartsSection.jsx` (הפך presentational, data-driven, עם empty states).
+- **פתוח**: אין מנגנון לסמן הזמנה כ"נאספה". אם רוצים שהכנסות ישקפו רק נאספו בפועל — להוסיף סטטוס `completed` + פעולה בצד העסק, ואז לשנות את ה-SQL ל-`status = 'completed'`.
+
+### 7. דף פרופיל עסקי שמיש + חנות הניתנת לעריכה (`/b2b/profile`)
+הדף היה מלא placeholders (שעות/כתובת/קטגוריה קשיחים, טוגלים שלא נשמרו, לינקים מתים, כפילות כתובת). שוכתב לדף חנות מלא שכל שדה בו אמיתי ונשמר ל-Supabase:
+- **לוגו + תמונת רקע (cover)**, **תיאור/אודות**, **קטגוריה** (`business_type`), **שעות פעילות שבועיות** (עורך לכל יום), **גלריית תמונות** (הוספה/הסרה inline).
+- **סטטוס פתוח/סגור** נשמר ב-DB; **הפיד ללקוחות (`getActiveDeals`) מסנן מבצעים מעסק סגור** (`is_open = false`).
+- **טוגלים אמיתיים** נשמרים ל-DB: `notify_push`, `notify_email`. פיצ'ר "פרסום אוטומטי" **הוסר** (העמודה `auto_publish` נמחקת ב-SQL).
+- לינקים בלי בקאנד (אמצעי תשלום, צוות) → מסומנים "בקרוב"; "עזרה ותמיכה" → `/support`; התנתקות עובדת.
+- קבצים חדשים: `components/StorefrontEditModal/` (+css), `pages/B2BProfilePage.css`. תמונות חנות (לוגו/רקע/גלריה) עולות ל-bucket `deal-images` דרך `uploadDealImage`.
+
+### 8. תמונת לוגו אחת לכל ממשק ה-B2B
+`business.logo_url` הוא **המקור היחיד** לתמונה — מוצג ב-`NavbarB2B` בכל 5 דפי העסק וגם בכותרת החנות. (קודם ה-navbar קרא `profile.avatar_url` וההheader קרא `logo_url` — חוסר עקביות שתוקן.) `NavbarB2B` קיבל prop `avatarUrl` (img עם fallback לראשי-תיבות). `profile.avatar_url` נשאר רק לצד ה-B2C. אגב, `B2BNewDealPage`/`B2BAiReviewPage` קיבלו `useProfile` אז גם השם אמיתי (לא עוד placeholder "הפינה של מיכל").
+
+### 9. מערכת תמיכה (tickets) + דף ניהול אדמין
+- טבלת **`support_tickets`** (RLS: משתמש יוצר/רואה את שלו; אדמין לפי email רואה/מעדכן הכל; טריגר `updated_at`).
+- **`/support`** — דף משותף לכל משתמש מחובר (route ללא `allowedRole`). טופס: **קטגוריה** (תקלה/שאלה/בקשה), **דחיפות**, **נושא** (בורר מתוך `TICKET_TOPICS` ב-`support.js` + "אחר"→טקסט חופשי), **תיאור**, **פרטי קשר (חובה!)**, **צילום מסך** (אופציונלי, עולה ל-`deal-images`). מתחת — "הפניות שלי" עם סטטוסים.
+- **`/admin/support`** — דף triage מוגן ב-`adminOnly`: סינון לפי סטטוס/קטגוריה, שינוי סטטוס/קטגוריה/דחיפות inline.
+- לינק "עזרה ותמיכה" בשני הפרופילים (B2B+B2C) מפנה ל-`/support`.
+- **גישת אדמין**: email ב-`src/lib/support.js` (`ADMIN_EMAILS`) **וגם** ב-RLS של `support_tickets.sql`. כרגע **`oryariv2000@gmail.com`** — חייב להיות זהה בשני המקומות, אחרת דף הניהול לא יראה פניות.
+- קבצים: `pages/SupportPage.jsx`+css, `pages/AdminSupportPage.jsx`+css, `lib/support.js`, `lib/db.js` (createSupportTicket/getMy/getAll/updateSupportTicket), `ProtectedRoute.jsx` (תומך עכשיו ב-route ללא role = כל מחובר, וב-`adminOnly`), `App.jsx` (routes).
+
+### 10. פעמון = מרכז התראות (`components/NotificationsBell/`)
+הפעמון בטופ בר פותח דרופדאון התראות אמיתי, נגזר מנתונים שהעסק כבר קורא: מבצעים שאזלו / כמעט אזלו (`getMyDeals`) + עדכוני סטטוס של פניות התמיכה שלו. החליף את הפעמון הסטטי (הוסר prop `notifCount` מ-`NavbarB2B`).
+- **פתוח**: התראות "הזמנה חדשה מלקוח" חסומות ב-RLS (הזמנות שייכות ללקוח) — צריך RPC `security definer` כדי להוסיף אותן.
+
+### 11. הכתבה קולית חיה ב-`/b2b/new-deal`
+- המיקרופון מובנה בפינת תיבת הטקסט; דיבור מוזן **בלייב** (interim) לתיבה, והתיבה **גדלה אוטומטית** (auto-grow). הוסר `VoiceRecordSection` מהדף (הקובץ נשאר, לא בשימוש).
+- ההודעה התחתונה: כשיש תוכן מוצגת אזהרה ש"ה-AI יכול לטעות — בדקו וערכו לפני פרסום".
+- **דיאגנוסטיקה**: אחרי ~4ש' האזנה בלי טקסט מוצגת הודעה (לפי `level`) שמסבירה אם זו בעיית זיהוי דפדפן (עברית עובדת יציב רק ב-Chrome) או בעיית התקן. ב-`useSpeechDictation` נוסף `ctx.resume()` (AudioContext suspended ⇒ מד-עוצמה תקוע על 0).
+- **לקח חשוב לתמיכה**: הכתבה קולית = Web Speech API, תלוי דפדפן/מערכת. נפתר אצל המשתמש ע"י **הגדרות מיקרופון בכרום + הרשאת "אפליקציות שולחן עבודה" ב-Windows**. אוזניות Bluetooth (AirPods) הן מקור נפוץ לתקלה. פתרון אמין לכל דפדפן = תמלול בצד שרת (Whisper דרך Edge Function) — לא מומש, הוצע למשתמש.
+
+### 12. תיקוני באגים — audit ממשק B2B
+- **טיימר "00:00" אדום על כל כרטיס** (`ActiveDealCard.jsx`): למבצעים אין נתון תפוגה (`timeLeftMin=0`), אז הוצג טיימר אדום פועם מטעה. עכשיו הטיימר מוסתר כש-`timeLeftMin <= 0`.
+- **חוסר אופציית "מושהה" בבורר הסטטוס** (`DealEditModal.jsx`): עריכת מבצע paused הציגה ערך שגוי/ריק. נוספה אופציה `paused` → "מושהה".
+- **`Promise.all` בפעמון** (`NotificationsBell.jsx`): כשל בטעינת פניות (למשל טבלה חסרה) הפיל את כל ההתראות כולל התראות מלאי. שונה ל-`Promise.allSettled` (מקורות עצמאיים).
+- **מונה "מבצעים פעילים"** (`ActiveDealsSection.jsx`): ספר גם מבצעים מושהים; עכשיו סופר רק active (תואם לכרטיס הסיכום).
+
+---
+
+## 🔴 צעדי Supabase שצריך לוודא שרצו (SQL Editor)
+שלושה קבצים נוספו השבוע. אפשר להריץ כל אחד בנפרד, או בלוק מאוחד (ניתן בצ'אט). כולם idempotent (בטוח להרצה חוזרת):
+1. **`supabase/stats_charts.sql`** — 3 פונקציות `security definer` לגרפים (`get_business_stats` עם `p_from/p_to`, `get_business_sales_timeseries`, `get_business_category_breakdown`). **כולל `drop function ... get_business_stats(uuid)`** הישנה כדי למנוע התנגשות overload.
+2. **`supabase/business_profile.sql`** — עמודות ל-`businesses`: `logo_url, cover_url, description, opening_hours(jsonb), gallery(jsonb), is_open, notify_push, notify_email` + `drop column auto_publish`.
+3. **`supabase/support_tickets.sql`** — טבלת `support_tickets` + RLS + טריגר. **לוודא שהאימייל בתוך מדיניות ה-RLS = `oryariv2000@gmail.com`** (זהה ל-`ADMIN_EMAILS` בקוד).
+
+> בלי הרצת הקבצים: דף הסטטיסטיקות, שמירות הפרופיל/חנות, ודפי התמיכה — ייכשלו.
+
+---
+
+## ✅ מה הושלם בסשן קודם (יישור סכמה + דף נחיתה)
 
 ### 1. יישור הקוד לסכמה האמיתית של ה-DB
 התגלה שה-DB החי שונה מהקוד. יושר הכל לעמודות האמיתיות:

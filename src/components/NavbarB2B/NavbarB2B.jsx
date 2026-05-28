@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import NotificationsBell from '../NotificationsBell/NotificationsBell'
 import './NavbarB2B.css'
 
 /**
@@ -15,7 +16,7 @@ export default function NavbarB2B({
   businessName = 'הפינה של מיכל',
   isOpen = true,
   initials,
-  notifCount = 3,
+  avatarUrl,
 }) {
   const navigate = useNavigate()
 
@@ -61,17 +62,8 @@ export default function NavbarB2B({
 
         {/* ── Actions ────────────────────────────────────── */}
         <div className="navbar-b2b__actions">
-          {/* Notifications bell */}
-          <button
-            className="navbar-b2b__icon-btn"
-            aria-label={`התראות${notifCount > 0 ? ` — ${notifCount} חדשות` : ''}`}
-            id="b2b-nav-notifications"
-          >
-            <BellIcon />
-            {notifCount > 0 && (
-              <span className="navbar-b2b__notif-badge" aria-hidden="true" />
-            )}
-          </button>
+          {/* Notifications center */}
+          <NotificationsBell />
 
           {/* Avatar / Profile */}
           <Link
@@ -80,7 +72,11 @@ export default function NavbarB2B({
             aria-label={`פרופיל — ${businessName}`}
             id="b2b-nav-avatar"
           >
-            {derivedInitials}
+            {avatarUrl ? (
+              <img className="navbar-b2b__avatar-img" src={avatarUrl} alt="" />
+            ) : (
+              derivedInitials
+            )}
           </Link>
 
           {/* Logout */}
@@ -100,15 +96,6 @@ export default function NavbarB2B({
 }
 
 /* ── Inline SVG icons (no external dependency) ───────────── */
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  )
-}
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
