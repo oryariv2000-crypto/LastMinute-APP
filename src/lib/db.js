@@ -3,7 +3,8 @@
  *
  * Column names match the LIVE database schema:
  *   users        id, email, role, full_name, phone, avatar_url, created_at
- *   businesses   id, user_id (owner), name, address, is_open, is_approved, ...
+ *   businesses   id, user_id (owner), name, address, opening_hours,
+ *                closed_until, is_approved, ...
  *   deals        id, business_id, title, original_price, discount_price,
  *                quantity_total, quantity_left, status, image_url, category, ...
  *   orders       id, user_id (customer), deal_id, subtotal, total, status,
@@ -13,6 +14,7 @@
  * Every function throws on error; row scoping is enforced by RLS.
  */
 import { supabase } from './supabase'
+import { isBusinessOpen } from './businessHours'
 
 /* ── Auth helpers ─────────────────────────────────────────────── */
 
@@ -86,17 +88,19 @@ export async function updateMyBusiness(fields) {
 
 /**
  * All active deals for the B2C feed, newest first, with the shop joined.
- * Deals from a business that is currently "closed" (is_open = false) are
- * filtered out so customers only see what they can actually pick up now.
+ * Deals from a business that is currently closed — outside its opening hours or
+ * under a manual "close now" override — are filtered out so customers only see
+ * what they can actually pick up now. The status is computed live from the
+ * shop's schedule, so the feed stays accurate without any stored flag to flip.
  */
 export async function getActiveDeals() {
   const { data, error } = await supabase
     .from('deals')
-    .select('*, businesses ( name, address, is_open )')
+    .select('*, businesses ( name, address, opening_hours, closed_until )')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
   if (error) throw error
-  return (data ?? []).filter((d) => d.businesses?.is_open !== false)
+  return (data ?? []).filter((d) => isBusinessOpen(d.businesses))
 }
 
 /** A single deal (product page), with its shop joined. */

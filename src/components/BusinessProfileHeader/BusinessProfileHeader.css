@@ -111,6 +111,12 @@
 .biz-profile-header__status--off .biz-profile-header__status-dot {
   background-color: var(--color-error);
 }
+.biz-profile-header__status-hint {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-caption);
+  color: var(--color-on-surface-variant);
+}
 
 .biz-profile-header__rating {
   display: inline-flex;

@@ -11,6 +11,7 @@ import {
   fetchCategoryBreakdown,
 } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
+import { isBusinessOpen } from '../lib/businessHours'
 import './B2BPage.css'
 
 /**
@@ -66,7 +67,7 @@ export default function B2BStatsPage() {
 
   return (
     <div className="b2b-page" dir="rtl">
-      <NavbarB2B businessName={business?.name || 'העסק שלי'} avatarUrl={business?.logo_url} isOpen notifCount={0} />
+      <NavbarB2B businessName={business?.name || 'העסק שלי'} avatarUrl={business?.logo_url} isOpen={isBusinessOpen(business)} notifCount={0} />
 
       <main className="b2b-page__main">
         <header className="b2b-page__greeting">

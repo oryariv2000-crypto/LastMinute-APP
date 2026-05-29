@@ -9,6 +9,7 @@ import Loader from '../components/Loader/Loader'
 import { supabase } from '../lib/supabase'
 import { updateMyProfile, updateMyBusiness, uploadDealImage } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
+import { businessOpenState, manualCloseUntil, todayKey } from '../lib/businessHours'
 import './B2BPage.css'
 import './B2BProfilePage.css'
 
@@ -84,7 +85,21 @@ export default function B2BProfilePage() {
     )
   }
 
-  const isOpen = business?.is_open ?? true
+  const status = businessOpenState(business)
+  const isOpen = status.open
+
+  /* Manual override: close now lasts until the end of today's window (then the
+   * shop reopens automatically); reopen clears the override. Outside opening
+   * hours there is no toggle — the schedule governs the status. */
+  let toggleLabel = null
+  let onToggleOpen
+  if (status.status === 'open' || status.status === 'no_schedule_open') {
+    toggleLabel = 'סגור עכשיו'
+    onToggleOpen = () => patchBusiness({ closed_until: manualCloseUntil(business).toISOString() })
+  } else if (status.status === 'manual_closed') {
+    toggleLabel = 'פתח עכשיו'
+    onToggleOpen = () => patchBusiness({ closed_until: null })
+  }
 
   const prefGroup = {
     id: 'preferences',
@@ -121,10 +136,13 @@ export default function B2BProfilePage() {
           coverUrl={business?.cover_url}
           logoUrl={business?.logo_url}
           isOpen={isOpen}
+          statusLabel={status.label}
+          statusHint={status.hint}
+          toggleLabel={toggleLabel}
           rating={0}
           reviewCount={0}
           onEdit={() => setEditing(true)}
-          onToggleOpen={() => patchBusiness({ is_open: !isOpen })}
+          onToggleOpen={onToggleOpen}
         />
 
         {/* About */}
@@ -146,9 +164,12 @@ export default function B2BProfilePage() {
           <ul className="biz-hours">
             {DAYS.map((d) => {
               const day = business?.opening_hours?.[d.key]
+              const isToday = d.key === todayKey()
               return (
-                <li key={d.key} className="biz-hours__row">
-                  <span className="biz-hours__day">{d.label}</span>
+                <li key={d.key} className={`biz-hours__row${isToday ? ' biz-hours__row--today' : ''}`}>
+                  <span className="biz-hours__day">
+                    {d.label}{isToday && <span className="biz-hours__today-tag">היום</span>}
+                  </span>
                   <span className="biz-hours__time">
                     {!day || day.closed ? 'סגור' : `${day.open}–${day.close}`}
                   </span>

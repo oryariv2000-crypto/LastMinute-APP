@@ -9,11 +9,14 @@ import './BusinessProfileHeader.css'
  *   address       string
  *   coverUrl      string  — optional cover image
  *   logoUrl       string  — optional logo
- *   isOpen        bool
+ *   isOpen        bool    — live open/closed state (drives the status dot)
+ *   statusLabel   string  — 'פתוח עכשיו' / 'סגור'
+ *   statusHint    string  — secondary line, e.g. 'פתוח עד 17:00' / 'ייפתח מחר ב-09:00'
+ *   toggleLabel   string  — text for the open/close button; null/'' hides it
  *   rating        number  — average star rating
  *   reviewCount   number
  *   onEdit        fn      — open edit-profile flow
- *   onToggleOpen  fn      — flip open/closed state
+ *   onToggleOpen  fn      — apply the manual open/close override
  */
 export default function BusinessProfileHeader({
   businessName,
@@ -22,6 +25,9 @@ export default function BusinessProfileHeader({
   coverUrl,
   logoUrl,
   isOpen = true,
+  statusLabel,
+  statusHint,
+  toggleLabel,
   rating = 0,
   reviewCount = 0,
   onEdit,
@@ -63,8 +69,11 @@ export default function BusinessProfileHeader({
 
           <div className="biz-profile-header__meta">
             <span className={`biz-profile-header__status${isOpen ? '' : ' biz-profile-header__status--off'}`}>
-              <span className="biz-profile-header__status-dot" /> {isOpen ? 'פתוח עכשיו' : 'סגור'}
+              <span className="biz-profile-header__status-dot" /> {statusLabel ?? (isOpen ? 'פתוח עכשיו' : 'סגור')}
             </span>
+            {statusHint && (
+              <span className="biz-profile-header__status-hint">{statusHint}</span>
+            )}
             {reviewCount > 0 && (
               <span className="biz-profile-header__rating" aria-label={`דירוג ${rating}`}>
                 <StarIcon /> {rating.toFixed(1)}
@@ -77,9 +86,11 @@ export default function BusinessProfileHeader({
             <button type="button" className="biz-profile-header__btn biz-profile-header__btn--primary" onClick={onEdit}>
               <EditIcon /> ערוך פרופיל
             </button>
-            <button type="button" className="biz-profile-header__btn biz-profile-header__btn--secondary" onClick={onToggleOpen}>
-              {isOpen ? 'סגור עסק' : 'פתח עסק'}
-            </button>
+            {toggleLabel && (
+              <button type="button" className="biz-profile-header__btn biz-profile-header__btn--secondary" onClick={onToggleOpen}>
+                {toggleLabel}
+              </button>
+            )}
           </div>
         </div>
       </div>

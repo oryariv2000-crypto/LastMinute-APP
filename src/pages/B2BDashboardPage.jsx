@@ -8,6 +8,7 @@ import DealEditModal from '../components/DealEditModal/DealEditModal'
 import Loader from '../components/Loader/Loader'
 import { getMyDeals, updateDeal, deleteDeal, setDealStatus, discountPct } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
+import { isBusinessOpen } from '../lib/businessHours'
 import './B2BPage.css'
 
 /**
@@ -85,7 +86,7 @@ export default function B2BDashboardPage() {
 
   return (
     <div className="b2b-page" dir="rtl">
-      <NavbarB2B businessName={businessName} avatarUrl={business?.logo_url} isOpen notifCount={0} />
+      <NavbarB2B businessName={businessName} avatarUrl={business?.logo_url} isOpen={isBusinessOpen(business)} notifCount={0} />
 
       <main className="b2b-page__main">
         <header className="b2b-page__greeting">
