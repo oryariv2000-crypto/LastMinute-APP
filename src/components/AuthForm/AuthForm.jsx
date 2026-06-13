@@ -1,14 +1,19 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import InputField from '../InputField/InputField'
 import SubmitButton from '../SubmitButton/SubmitButton'
+import Turnstile from '../Turnstile/Turnstile'
+import { setRemember } from '../../lib/authStorage'
 import './AuthForm.css'
 
 /**
  * AuthForm — Login section component.
  *
  * Props:
- *   onSubmit   fn(email, password) — called with credentials on valid submit
+ *   onSubmit   fn(email, password, { captchaToken }) — called with credentials
+ *              on valid submit. The remember-me preference is persisted via
+ *              setRemember() here, BEFORE onSubmit runs, so the session lands in
+ *              the correct store.
  *   loading    boolean             — disables form while request is in flight
  *   error      string              — server-side error message shown above the form
  */
@@ -16,7 +21,10 @@ export default function AuthForm({ onSubmit, loading = false, error = '' }) {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
+  const [remember, setRememberChecked] = useState(true)
+  const [captchaToken, setCaptchaToken] = useState(undefined)
   const [errors, setErrors]     = useState({})
+  const turnstileRef = useRef(null)
 
   function validate() {
     const e = {}
@@ -35,7 +43,11 @@ export default function AuthForm({ onSubmit, loading = false, error = '' }) {
       return
     }
     setErrors({})
-    onSubmit?.(email.trim(), password)
+    // Persist the remember-me preference BEFORE sign-in so the Supabase session
+    // is written to the correct store (localStorage vs sessionStorage).
+    setRemember(remember)
+    Promise.resolve(onSubmit?.(email.trim(), password, { captchaToken }))
+      .finally(() => turnstileRef.current?.reset())
   }
 
   return (
@@ -88,9 +100,23 @@ export default function AuthForm({ onSubmit, loading = false, error = '' }) {
         }
       />
 
-      <Link to="/forgot-password" className="auth-form__forgot" id="auth-forgot-link">
-        שכחת סיסמה?
-      </Link>
+      <div className="auth-form__row">
+        <label className="auth-form__remember" htmlFor="login-remember">
+          <input
+            id="login-remember"
+            type="checkbox"
+            checked={remember}
+            onChange={e => setRememberChecked(e.target.checked)}
+          />
+          <span>זכור אותי</span>
+        </label>
+
+        <Link to="/forgot-password" className="auth-form__forgot" id="auth-forgot-link">
+          שכחת סיסמה?
+        </Link>
+      </div>
+
+      <Turnstile ref={turnstileRef} onToken={setCaptchaToken} />
 
       <SubmitButton loading={loading} id="auth-submit-btn">
         כניסה

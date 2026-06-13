@@ -16,13 +16,37 @@
   text-align: center;
 }
 
+.auth-form__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: -4px;
+}
+
+.auth-form__remember {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-on-surface, inherit);
+  cursor: pointer;
+  user-select: none;
+}
+.auth-form__remember input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-brand-primary);
+  cursor: pointer;
+}
+
 .auth-form__forgot {
   font-size: var(--font-size-label-md);
   font-weight: var(--font-weight-medium);
   color: var(--color-brand-primary);
   text-align: end;
   text-decoration: none;
-  margin-top: -4px;
   transition: color var(--transition-fast);
 }
 .auth-form__forgot:hover {

@@ -16,13 +16,14 @@ export default function LoginPage() {
   const [error, setError]     = useState('')
   const navigate = useNavigate()
 
-  async function handleLogin(email, password) {
+  async function handleLogin(email, password, { captchaToken } = {}) {
     setLoading(true)
     setError('')
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: { captchaToken },
       })
       if (signInError || !data.user) {
         setError('אימייל או סיסמה שגויים')

@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import InputField from '../components/InputField/InputField'
 import SubmitButton from '../components/SubmitButton/SubmitButton'
+import Turnstile from '../components/Turnstile/Turnstile'
 import { supabase } from '../lib/supabase'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
@@ -17,6 +18,8 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [sent, setSent]       = useState(false)
+  const [captchaToken, setCaptchaToken] = useState(undefined)
+  const turnstileRef = useRef(null)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -29,6 +32,7 @@ export default function ForgotPasswordPage() {
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/reset-password`,
+        captchaToken,
       })
       if (resetError) { setError(resetError.message); return }
       setSent(true)
@@ -36,6 +40,7 @@ export default function ForgotPasswordPage() {
       setError(err?.message || 'שליחת המייל נכשלה, נסו שוב')
     } finally {
       setLoading(false)
+      turnstileRef.current?.reset()
     }
   }
 
@@ -76,6 +81,7 @@ export default function ForgotPasswordPage() {
               autoComplete="email"
               required
             />
+            <Turnstile ref={turnstileRef} onToken={setCaptchaToken} />
             <SubmitButton loading={loading}>שליחת קישור</SubmitButton>
           </form>
         )}

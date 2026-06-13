@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2B from '../components/RegisterFormB2B/RegisterFormB2B'
 import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInButton'
+import Turnstile from '../components/Turnstile/Turnstile'
 import { supabase } from '../lib/supabase'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
@@ -23,6 +24,8 @@ export default function B2BRegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [sent, setSent]       = useState(false) // email-confirmation pending
+  const [captchaToken, setCaptchaToken] = useState(undefined)
+  const turnstileRef = useRef(null)
 
   function handleRoleNext() {
     if (role === 'b2c') {
@@ -43,6 +46,7 @@ export default function B2BRegisterPage() {
         password: data.password,
         options: {
           data: { full_name: data.ownerName, role: 'business_owner' },
+          captchaToken,
         },
       })
       if (signUpError) {
@@ -75,6 +79,7 @@ export default function B2BRegisterPage() {
       setError(err?.message || 'ההרשמה נכשלה, נסה שוב')
     } finally {
       setLoading(false)
+      turnstileRef.current?.reset()
     }
   }
 
@@ -150,7 +155,10 @@ export default function B2BRegisterPage() {
                 <p style={{ margin: 0, lineHeight: 1.6 }}>שלחנו אליך מייל לאישור החשבון. אשרו אותו, התחברו, והשלימו את הקמת העסק.</p>
               </div>
             ) : (
-              <RegisterFormB2B onSubmit={handleSubmit} loading={loading} error={error} />
+              <>
+                <RegisterFormB2B onSubmit={handleSubmit} loading={loading} error={error} />
+                <Turnstile ref={turnstileRef} onToken={setCaptchaToken} />
+              </>
             )}
           </>
         )}

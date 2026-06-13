@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2C from '../components/RegisterFormB2C/RegisterFormB2C'
 import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInButton'
+import Turnstile from '../components/Turnstile/Turnstile'
 import { supabase } from '../lib/supabase'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
@@ -24,6 +25,8 @@ export default function B2CRegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [sent, setSent]       = useState(false) // email-confirmation pending
+  const [captchaToken, setCaptchaToken] = useState(undefined)
+  const turnstileRef = useRef(null)
 
   // One "המשך" click: switch to the chosen ecosystem's form, no double step.
   function handleRoleNext() {
@@ -46,6 +49,7 @@ export default function B2CRegisterPage() {
         password: data.password,
         options: {
           data: { full_name: `${data.firstName} ${data.lastName}`.trim(), role: 'customer' },
+          captchaToken,
         },
       })
       if (signUpError) {
@@ -64,6 +68,7 @@ export default function B2CRegisterPage() {
       setError(err?.message || 'ההרשמה נכשלה, נסה שוב')
     } finally {
       setLoading(false)
+      turnstileRef.current?.reset()
     }
   }
 
@@ -139,7 +144,10 @@ export default function B2CRegisterPage() {
                 <p style={{ margin: 0, lineHeight: 1.6 }}>שלחנו אליך מייל לאישור החשבון. אשרו אותו ואז התחברו.</p>
               </div>
             ) : (
-              <RegisterFormB2C onSubmit={handleSubmit} loading={loading} error={error} />
+              <>
+                <RegisterFormB2C onSubmit={handleSubmit} loading={loading} error={error} />
+                <Turnstile ref={turnstileRef} onToken={setCaptchaToken} />
+              </>
             )}
           </>
         )}
