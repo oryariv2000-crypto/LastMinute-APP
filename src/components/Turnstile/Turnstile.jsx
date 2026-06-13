@@ -54,7 +54,7 @@ const Turnstile = forwardRef(function Turnstile({ onToken }, ref) {
     let pollId = null
 
     function renderWidget() {
-      if (cancelled || !containerRef.current) return
+      if (cancelled || !containerRef.current) return false
       if (!window.turnstile || typeof window.turnstile.render !== 'function') return false
       try {
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
@@ -86,6 +86,9 @@ const Turnstile = forwardRef(function Turnstile({ onToken }, ref) {
         /* ignore cleanup errors */
       }
     }
+    // onToken is intentionally omitted: every caller passes a stable useState
+    // setter (setCaptchaToken), so the widget callbacks never go stale. Re-running
+    // this effect would tear down and re-render the widget unnecessarily.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteKey])
 
