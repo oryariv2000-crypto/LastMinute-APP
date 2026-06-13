@@ -11,6 +11,7 @@ import { getPaymentProvider, PAYMENT_STATUS } from '../lib/payments'
 import DevelopmentNotice from '../components/DevelopmentNotice/DevelopmentNotice'
 import { Price } from '../lib/formatters'
 import { useProfile } from '../lib/useProfile'
+import { ChevronRightIcon } from '../components/icons'
 import './B2CPage.css'
 
 /**
@@ -130,7 +131,7 @@ export default function B2CCheckoutPage() {
       <main className="b2c-page__main">
         <header className="b2c-page__greeting">
           <button type="button" className="b2c-page__back" onClick={() => navigate(-1)} aria-label="חזרה">
-            <ChevronStartIcon /> חזרה
+            <ChevronRightIcon /> חזרה
           </button>
           <h1 className="b2c-page__greeting-title">תשלום</h1>
           <p className="b2c-page__greeting-sub">בדיקה אחרונה לפני אישור</p>
@@ -209,11 +210,3 @@ export default function B2CCheckoutPage() {
   )
 }
 
-function ChevronStartIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}

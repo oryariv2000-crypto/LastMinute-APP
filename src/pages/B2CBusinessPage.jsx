@@ -17,6 +17,7 @@ import {
 import { businessOpenState, todayKey } from '../lib/businessHours'
 import { businessTypeLabel } from '../lib/businessTypes'
 import { useProfile } from '../lib/useProfile'
+import { MapPinIcon, ChevronRightIcon, XIcon } from '../components/icons'
 import './B2CPage.css'
 import './B2CBusinessPage.css'
 
@@ -110,7 +111,7 @@ export default function B2CBusinessPage() {
         {/* Hero: cover + logo + name + live status */}
         <header className="bizp-hero">
           <button type="button" className="bizp-hero__back" onClick={() => navigate(-1)} aria-label="חזרה">
-            <ChevronIcon />
+            <ChevronRightIcon />
           </button>
           <div
             className="bizp-hero__cover"
@@ -125,7 +126,7 @@ export default function B2CBusinessPage() {
               <h1 className="bizp-hero__name">{biz.name}</h1>
               {biz.business_type && <span className="bizp-hero__chip">{businessTypeLabel(biz.business_type)}</span>}
               {biz.address && (
-                <p className="bizp-hero__address"><PinIcon /> {biz.address}</p>
+                <p className="bizp-hero__address"><MapPinIcon /> {biz.address}</p>
               )}
               <div className="bizp-hero__meta">
                 <span className={`bizp-status${status.open ? '' : ' bizp-status--off'}`}>
@@ -236,7 +237,7 @@ export default function B2CBusinessPage() {
             </ul>
             {biz.address && (
               <button type="button" className="btn btn-secondary bizp-directions" onClick={openDirections}>
-                <PinIcon /> נווט לעסק
+                <MapPinIcon /> נווט לעסק
               </button>
             )}
           </section>
@@ -371,7 +372,7 @@ function Lightbox({ images, index, onClose, onChange }) {
   return (
     <div className="bizp-lightbox" role="dialog" aria-modal="true" aria-label="גלריית תמונות" onClick={onClose}>
       <button type="button" className="bizp-lightbox__close" onClick={onClose} aria-label="סגירה">
-        <CloseIcon />
+        <XIcon />
       </button>
 
       <figure className="bizp-lightbox__stage" onClick={(e) => e.stopPropagation()}>
@@ -389,7 +390,7 @@ function Lightbox({ images, index, onClose, onChange }) {
             onClick={(e) => { e.stopPropagation(); go(-1) }}
             aria-label="הקודם"
           >
-            <ChevronIcon />
+            <ChevronRightIcon />
           </button>
           <button
             type="button"
@@ -397,7 +398,7 @@ function Lightbox({ images, index, onClose, onChange }) {
             onClick={(e) => { e.stopPropagation(); go(1) }}
             aria-label="הבא"
           >
-            <ChevronIcon flip />
+            <ChevronRightIcon style={{ transform: 'scaleX(-1)' }} />
           </button>
         </>
       )}
@@ -448,37 +449,12 @@ function StarIcon({ filled = true }) {
     </svg>
   )
 }
-function PinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z" /><circle cx="12" cy="10" r="3" />
-    </svg>
-  )
-}
-function ChevronIcon({ flip = false }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-      style={flip ? { transform: 'scaleX(-1)' } : undefined}>
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
 function ZoomIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
       <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
-    </svg>
-  )
-}
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   )
 }

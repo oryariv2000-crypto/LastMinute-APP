@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ChevronLeftIcon } from '../icons'
 import './NewDealButton.css'
 
 /**
@@ -19,7 +20,7 @@ export default function NewDealButton({ to = '/b2b/new-deal', onClick }) {
         <span className="new-deal-btn__subtitle">המערכת תזהה מוצרים שעומדים להיגמר</span>
       </span>
       <span className="new-deal-btn__arrow" aria-hidden="true">
-        <ArrowIcon />
+        <ChevronLeftIcon />
       </span>
     </>
   )
@@ -44,14 +45,6 @@ function SparkleIcon() {
       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z" />
       <path d="M19 17l.9 2L22 19.9 19.9 21 19 23l-.9-2L16 19.9 18.1 19z" />
-    </svg>
-  )
-}
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="15 18 9 12 15 6" />
     </svg>
   )
 }

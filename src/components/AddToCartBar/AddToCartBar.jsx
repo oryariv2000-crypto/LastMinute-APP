@@ -1,4 +1,5 @@
 import { Price } from '../../lib/formatters'
+import { PlusIcon, MinusIcon, ShoppingBagIcon } from '../icons'
 import './AddToCartBar.css'
 
 /**
@@ -74,7 +75,7 @@ export default function AddToCartBar({
           <span className="add-to-cart-bar__cta-label">אזל מהמלאי</span>
         ) : (
           <>
-            <BagIcon />
+            <ShoppingBagIcon />
             <span className="add-to-cart-bar__cta-label">הוסף לסל</span>
             <Price value={total} fraction={0} className="add-to-cart-bar__cta-total" />
           </>
@@ -84,30 +85,3 @@ export default function AddToCartBar({
   )
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  )
-}
-function MinusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  )
-}
-function BagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M6 2l-2 5v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7l-2-5z" />
-      <line x1="3" y1="7" x2="21" y2="7" />
-      <path d="M16 11a4 4 0 0 1-8 0" />
-    </svg>
-  )
-}

@@ -8,6 +8,7 @@ import SwipeToConfirm from '../components/SwipeToConfirm/SwipeToConfirm'
 import { getOrderByCode, completeOrder, cancelOrder } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { isActiveStatus } from '../lib/orderStatus'
+import { CheckIcon } from '../components/icons'
 import './B2CPage.css'
 
 /**
@@ -92,7 +93,7 @@ export default function B2CConfirmationPage() {
       <main className="b2c-page__main">
         <section className={`b2c-confirm-hero${isCancelled ? ' b2c-confirm-hero--cancelled' : ''}`}>
           <span className="b2c-confirm-hero__check" aria-hidden="true">
-            <CheckIcon />
+            <CheckIcon strokeWidth={3} />
           </span>
           <h1 className="b2c-confirm-hero__title">{hero.title}</h1>
           <p className="b2c-confirm-hero__subtitle">{hero.subtitle}</p>
@@ -167,11 +168,3 @@ export default function B2CConfirmationPage() {
   )
 }
 
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-}

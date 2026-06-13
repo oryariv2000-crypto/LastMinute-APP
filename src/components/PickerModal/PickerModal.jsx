@@ -1,3 +1,4 @@
+import { CheckIcon } from '../icons'
 import '../DealEditModal/DealEditModal.css'
 import './PickerModal.css'
 
@@ -34,7 +35,7 @@ export default function PickerModal({ title, options = [], value, onSelect, onCl
                     <span className="picker__option-label">{opt.label}</span>
                     {opt.hint && <span className="picker__option-hint">{opt.hint}</span>}
                   </span>
-                  {active && <CheckIcon />}
+                  {active && <CheckIcon className="picker__check" />}
                 </button>
               </li>
             )
@@ -49,11 +50,3 @@ export default function PickerModal({ title, options = [], value, onSelect, onCl
   )
 }
 
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="picker__check">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-}

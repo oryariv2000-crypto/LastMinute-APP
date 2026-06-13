@@ -1,3 +1,4 @@
+import { MapPinIcon, StarFilledIcon, EditIcon } from '../icons'
 import './BusinessProfileHeader.css'
 
 /**
@@ -63,7 +64,7 @@ export default function BusinessProfileHeader({
           )}
           {address && (
             <p className="biz-profile-header__address">
-              <PinIcon /> {address}
+              <MapPinIcon /> {address}
             </p>
           )}
 
@@ -76,7 +77,7 @@ export default function BusinessProfileHeader({
             )}
             {reviewCount > 0 && (
               <span className="biz-profile-header__rating" aria-label={`דירוג ${rating}`}>
-                <StarIcon /> {rating.toFixed(1)}
+                <StarFilledIcon /> {rating.toFixed(1)}
                 <span className="biz-profile-header__reviews"> · {reviewCount} ביקורות</span>
               </span>
             )}
@@ -98,28 +99,3 @@ export default function BusinessProfileHeader({
   )
 }
 
-function PinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  )
-}
-function StarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
-}
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-  )
-}

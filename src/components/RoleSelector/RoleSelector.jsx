@@ -1,3 +1,4 @@
+import { UserIcon, HomeIcon, CheckIcon } from '../icons'
 import './RoleSelector.css'
 
 /**
@@ -14,7 +15,7 @@ export default function RoleSelector({ value, onChange }) {
         id="role-b2c"
         selected={value === 'b2c'}
         onSelect={() => onChange('b2c')}
-        icon={<CustomerIcon />}
+        icon={<UserIcon />}
         title="לקוח"
         description="אני מחפש/ת מוצרים במחירי הנחה לפני סגירה"
       />
@@ -22,7 +23,7 @@ export default function RoleSelector({ value, onChange }) {
         id="role-b2b"
         selected={value === 'b2b'}
         onSelect={() => onChange('b2b')}
-        icon={<BusinessIcon />}
+        icon={<HomeIcon />}
         title="עסק"
         description="אני בעל/ת עסק ורוצה למכור מוצרים עודפים"
       />
@@ -47,30 +48,3 @@ function RoleCard({ id, selected, onSelect, icon, title, description }) {
   )
 }
 
-/* ── Inline SVG icons ─────────────────────────────────────────── */
-function CustomerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  )
-}
-function BusinessIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  )
-}
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-}

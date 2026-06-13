@@ -6,6 +6,7 @@ import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInBut
 import Turnstile from '../components/Turnstile/Turnstile'
 import { supabase } from '../lib/supabase'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
+import { ChevronRightIcon } from '../components/icons'
 import './AuthPage.css'
 
 /**
@@ -182,11 +183,3 @@ export default function B2BRegisterPage() {
   )
 }
 
-function ChevronRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}

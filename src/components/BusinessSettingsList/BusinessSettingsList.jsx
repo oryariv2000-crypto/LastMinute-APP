@@ -1,3 +1,4 @@
+import { ChevronLeftIcon } from '../icons'
 import './BusinessSettingsList.css'
 
 /**
@@ -71,7 +72,7 @@ function SettingsRow({ item }) {
         {innerLeft}
         <span className="biz-settings__row-right">
           <span className="biz-settings__row-value">{value}</span>
-          <ChevronIcon />
+          <ChevronLeftIcon className="biz-settings__chevron" />
         </span>
       </button>
     )
@@ -81,18 +82,9 @@ function SettingsRow({ item }) {
     <button type="button" className="biz-settings__row" onClick={onClick}>
       {innerLeft}
       <span className="biz-settings__row-right">
-        <ChevronIcon />
+        <ChevronLeftIcon className="biz-settings__chevron" />
       </span>
     </button>
   )
 }
 
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-      className="biz-settings__chevron">
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
-  )
-}

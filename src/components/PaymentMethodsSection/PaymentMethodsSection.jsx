@@ -1,3 +1,4 @@
+import { CreditCardIcon, LockIcon } from '../icons'
 import './PaymentMethodsSection.css'
 
 /**
@@ -29,7 +30,7 @@ export default function PaymentMethodsSection({ value = 'apple', onChange, cardL
           id="pay-card"
           selected={value === 'card'}
           onSelect={() => onChange?.('card')}
-          icon={<CardIcon />}
+          icon={<CreditCardIcon />}
           title="כרטיס אשראי"
           subtitle={cardLast4 ? `Visa •••• ${cardLast4}` : 'הוסף כרטיס חדש'}
           variant="card"
@@ -69,24 +70,6 @@ function AppleIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M16.365 1.43c0 1.14-.41 2.18-1.23 2.95-.85.81-1.86 1.27-2.94 1.18-.06-1.13.45-2.27 1.27-3.06.83-.79 1.93-1.18 2.9-1.07zM20.5 17.4c-.55 1.27-.81 1.84-1.52 2.96-.99 1.56-2.39 3.51-4.12 3.52-1.54.02-1.94-1.01-4.04-1-2.1.01-2.54 1.02-4.08 1-1.73-.01-3.05-1.78-4.05-3.34C-.05 16.84-.34 11.71 2.06 8.93c1.7-1.97 4.39-3.13 6.92-3.13 1.49 0 2.5.61 3.59.61 1.07 0 1.72-.61 3.45-.61 1.4 0 2.89.76 3.95 2.07-3.47 1.9-2.91 6.85.53 8.53z"/>
-    </svg>
-  )
-}
-function CardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <line x1="2" y1="10" x2="22" y2="10" />
-    </svg>
-  )
-}
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="11" width="18" height="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   )
 }

@@ -6,6 +6,7 @@ import PublishActions from '../components/PublishActions/PublishActions'
 import { createDeal, uploadDealImage } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { isBusinessOpen } from '../lib/businessHours'
+import { ChevronRightIcon } from '../components/icons'
 import './B2BPage.css'
 
 /**
@@ -170,14 +171,6 @@ export default function B2BAiReviewPage() {
   )
 }
 
-function ChevronRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
 
 /** Map an AI Vision / parser item (snake_case schema) to the internal shape. */
 function fromScanned(it) {

@@ -6,6 +6,7 @@ import { getBusinessesForMap } from '../../lib/db'
 import { useProfile } from '../../lib/useProfile'
 import BrandLogo from '../BrandLogo/BrandLogo'
 import ModeToggle from '../ModeToggle/ModeToggle'
+import { SearchIcon, LogoutIcon, XIcon } from '../icons'
 import './NavbarB2C.css'
 
 /**
@@ -160,34 +161,3 @@ export default function NavbarB2C({
   )
 }
 
-/* ── Inline SVG Icons ─────────────────────────────────────── */
-function SearchIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  )
-}
-
-function LogoutIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  )
-}
-
-function XIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}

@@ -3,6 +3,7 @@ import '../DealEditModal/DealEditModal.css'
 import '../PickerModal/PickerModal.css'
 import './LocationPickerModal.css'
 import { REGIONS, nearestRegion, nearestCity } from '../../lib/regions'
+import { ChevronLeftIcon, ChevronRightIcon, CheckIcon } from '../icons'
 
 /**
  * LocationPickerModal — two-step location chooser: pick a region, then a city
@@ -62,7 +63,7 @@ export default function LocationPickerModal({ value, onSelect, onClose }) {
                       <span className="picker__option-label">{r.label}</span>
                       <span className="picker__option-hint">{r.cities.length} ערים ויישובים</span>
                     </span>
-                    <ChevronIcon />
+                    <ChevronLeftIcon className="picker__check" />
                   </button>
                 </li>
               ))}
@@ -71,7 +72,7 @@ export default function LocationPickerModal({ value, onSelect, onClose }) {
         ) : (
           <>
             <button type="button" className="locpick__back" onClick={() => setRegion(null)}>
-              <BackIcon /> כל האזורים
+              <ChevronRightIcon /> כל האזורים
             </button>
             <p className="locpick__step-label">{region.label}</p>
             <ul className="picker__list" role="radiogroup" aria-label={region.label}>
@@ -87,7 +88,7 @@ export default function LocationPickerModal({ value, onSelect, onClose }) {
                       onClick={() => choose(c.name, region.label)}
                     >
                       <span className="picker__option-label">{c.name}</span>
-                      {active && <CheckIcon />}
+                      {active && <CheckIcon className="picker__check" />}
                     </button>
                   </li>
                 )
@@ -111,30 +112,6 @@ function CrosshairIcon() {
       <circle cx="12" cy="12" r="8" /><line x1="12" y1="2" x2="12" y2="5" />
       <line x1="12" y1="19" x2="12" y2="22" /><line x1="2" y1="12" x2="5" y2="12" />
       <line x1="19" y1="12" x2="22" y2="12" /><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="picker__check">
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
-  )
-}
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="picker__check">
-      <polyline points="20 6 9 17 4 12" />
     </svg>
   )
 }

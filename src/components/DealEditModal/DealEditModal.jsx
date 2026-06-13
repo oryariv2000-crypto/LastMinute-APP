@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { uploadDealImage } from '../../lib/db'
 import TagSelector from '../TagSelector/TagSelector'
+import { XIcon, CameraIcon } from '../icons'
 import './DealEditModal.css'
 
 /**
@@ -94,7 +95,7 @@ export default function DealEditModal({ deal, onSave, onClose }) {
         <header className="deal-edit__header">
           <h2 className="deal-edit__title">עריכת מבצע</h2>
           <button type="button" className="deal-edit__close" onClick={onClose} aria-label="סגירה">
-            <CloseIcon />
+            <XIcon />
           </button>
         </header>
 
@@ -175,20 +176,3 @@ export default function DealEditModal({ deal, onSave, onClose }) {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
-function CameraIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-      <circle cx="12" cy="13" r="4" />
-    </svg>
-  )
-}

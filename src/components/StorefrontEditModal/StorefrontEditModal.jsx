@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { uploadDealImage } from '../../lib/db'
 import { BUSINESS_TYPES, isKnownBusinessType } from '../../lib/businessTypes'
+import { XIcon } from '../icons'
 import '../DealEditModal/DealEditModal.css'
 import './StorefrontEditModal.css'
 
@@ -110,7 +111,7 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
         <header className="deal-edit__header">
           <h2 className="deal-edit__title">עריכת דף העסק</h2>
           <button type="button" className="deal-edit__close" onClick={onClose} aria-label="סגירה">
-            <CloseIcon />
+            <XIcon />
           </button>
         </header>
 
@@ -240,14 +241,6 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
 
 /** Ensure every weekday has a well-formed entry. */
 function normalizeHours(raw) {

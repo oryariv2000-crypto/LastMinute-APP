@@ -12,6 +12,7 @@ import { updateMyProfile, updateMyBusiness, uploadDealImage } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { businessOpenState, manualCloseUntil, todayKey } from '../lib/businessHours'
 import { businessTypeLabel } from '../lib/businessTypes'
+import { BellIcon, EmailIcon, CreditCardIcon, UsersIcon, HelpCircleIcon, LogoutIcon } from '../components/icons'
 import './B2BPage.css'
 import './B2BProfilePage.css'
 
@@ -109,7 +110,7 @@ export default function B2BProfilePage() {
     items: [
       { id: 'push', icon: <BellIcon />, label: 'התראות פוש', type: 'toggle',
         checked: business?.notify_push ?? true, onChange: (v) => patchBusiness({ notify_push: v }) },
-      { id: 'email', icon: <MailIcon />, label: 'התראות מייל', type: 'toggle',
+      { id: 'email', icon: <EmailIcon />, label: 'התראות מייל', type: 'toggle',
         checked: business?.notify_email ?? false, onChange: (v) => patchBusiness({ notify_email: v }) },
     ],
   }
@@ -118,9 +119,9 @@ export default function B2BProfilePage() {
     id: 'account',
     title: 'חשבון',
     items: [
-      { id: 'payments', icon: <CardIcon />, label: 'אמצעי תשלום', type: 'value', value: <DevelopmentNotice variant="badge" label="בקרוב" />, onClick: () => {} },
+      { id: 'payments', icon: <CreditCardIcon />, label: 'אמצעי תשלום', type: 'value', value: <DevelopmentNotice variant="badge" label="בקרוב" />, onClick: () => {} },
       { id: 'team', icon: <UsersIcon />, label: 'צוות והרשאות', type: 'value', value: <DevelopmentNotice variant="badge" label="בקרוב" />, onClick: () => {} },
-      { id: 'support', icon: <HelpIcon />, label: 'עזרה ותמיכה', type: 'link',
+      { id: 'support', icon: <HelpCircleIcon />, label: 'עזרה ותמיכה', type: 'link',
         onClick: () => navigate('/support') },
       { id: 'logout', icon: <LogoutIcon />, label: 'התנתקות', type: 'link', danger: true, onClick: handleLogout },
     ],
@@ -237,22 +238,3 @@ export default function B2BProfilePage() {
   )
 }
 
-/* ── Icons ────────────────────────────────────────────────────── */
-function BellIcon() {
-  return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>)
-}
-function MailIcon() {
-  return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 4 12 13 22 4"/></svg>)
-}
-function CardIcon() {
-  return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>)
-}
-function UsersIcon() {
-  return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>)
-}
-function HelpIcon() {
-  return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>)
-}
-function LogoutIcon() {
-  return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>)
-}
