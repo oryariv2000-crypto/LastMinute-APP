@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Price } from '../../lib/formatters'
+import { isActiveStatus } from '../../lib/orderStatus'
 import './OrderHistoryCard.css'
 
 /**
@@ -12,14 +13,14 @@ import './OrderHistoryCard.css'
  *   image         string
  *   date          string  — short formatted date / "היום"
  *   itemsSummary  string  — e.g. "2 פריטים · מאפים"
- *   status        'active' | 'ready' | 'completed' | 'cancelled'
+ *   status        'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled'
  *   total         number
  *   onReorder     fn      — optional: shown for completed orders
  *   onViewQr      fn      — optional override for active "showQR" link
  */
 const STATUS_LABEL = {
   pending:   'בהמתנה לאיסוף',
-  active:    'בהמתנה לאיסוף',
+  confirmed: 'בהמתנה לאיסוף',
   ready:     'מוכן לאיסוף',
   completed: 'הושלם',
   cancelled: 'בוטל',
@@ -36,7 +37,7 @@ export default function OrderHistoryCard({
   onReorder,
   onViewQr,
 }) {
-  const isActive = status === 'pending' || status === 'active' || status === 'ready'
+  const isActive = isActiveStatus(status)
 
   return (
     <article className={`order-history-card order-history-card--${status}`} aria-label={`הזמנה ${orderCode}`}>

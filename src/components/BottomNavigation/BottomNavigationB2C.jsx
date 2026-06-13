@@ -1,10 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getMyOrders } from '../../lib/db'
+import { ACTIVE_STATUSES } from '../../lib/orderStatus'
 import './BottomNavigation.css'
-
-/** Order statuses that count as "active" (awaiting pickup) for the tab badge. */
-const ACTIVE_STATUSES = ['pending', 'active', 'ready']
 
 /**
  * BottomNavigationB2C — Fixed bottom tab bar for end customers.

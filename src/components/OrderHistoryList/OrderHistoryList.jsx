@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import OrderHistoryCard from '../OrderHistoryCard/OrderHistoryCard'
+import { ACTIVE_STATUSES } from '../../lib/orderStatus'
 import './OrderHistoryList.css'
 
 /**
@@ -15,9 +16,6 @@ const TABS = [
   { id: 'active',    label: 'פעילות' },
   { id: 'completed', label: 'הושלמו' },
 ]
-
-// "Active" = awaiting pickup (a fresh order defaults to 'pending').
-const ACTIVE_STATUSES = ['pending', 'active', 'ready']
 
 export default function OrderHistoryList({ orders = [], defaultTab = 'all', onReorder }) {
   const [tab, setTab] = useState(defaultTab)
