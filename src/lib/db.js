@@ -122,11 +122,12 @@ export async function getBusinessDeals(businessId) {
  */
 export async function createMyBusiness({ name, address, businessType, phone }) {
   const { data, error } = await supabase.rpc('create_my_business', {
-    p_name: name?.trim(),
+    p_name: name?.trim() ?? null,
     p_address: address?.trim() ?? null,
     p_business_type: businessType ?? null,
     p_phone: phone?.replace(/\s/g, '') ?? null,
   })
+  // RPC errors carry the human-readable message in .message
   if (error) throw new Error(error.message || 'יצירת העסק נכשלה')
   return data
 }
@@ -291,6 +292,7 @@ export async function createOrder({ deal_id, quantity = 1 }) {
     p_deal_id: deal_id,
     p_quantity: quantity,
   })
+  // RPC errors carry the human-readable message in .message
   if (error) throw new Error(error.message || 'יצירת ההזמנה נכשלה')
   // place_order returns the new row (or raises). Guard the empty-set case so a
   // missing row surfaces as a clear error instead of an undefined-read crash

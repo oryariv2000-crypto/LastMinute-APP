@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 /**
  * Backend CRUD + RLS tests for the LastMinute data layer (src/lib/db.js).
@@ -247,6 +247,16 @@ describe('orders — create', () => {
 })
 
 describe('createMyBusiness', () => {
+  let savedRpc
+
+  beforeEach(() => {
+    savedRpc = h.fake.rpc.bind(h.fake)
+  })
+
+  afterEach(() => {
+    h.fake.rpc = savedRpc
+  })
+
   it('calls create_my_business RPC with trimmed name, stripped phone, and returns data', async () => {
     const biz = await createMyBusiness({
       name: '  מאפייה טובה  ',
@@ -262,10 +272,9 @@ describe('createMyBusiness', () => {
   })
 
   it('throws with the RPC error message when create_my_business fails', async () => {
-    const origRpc = h.fake.rpc.bind(h.fake)
     h.fake.rpc = async (fn, args) => {
       if (fn === 'create_my_business') return { data: null, error: { message: 'שגיאת שרת' } }
-      return origRpc(fn, args)
+      return savedRpc(fn, args)
     }
     await expect(createMyBusiness({ name: 'Test', address: null, businessType: null, phone: null }))
       .rejects.toThrow('שגיאת שרת')
