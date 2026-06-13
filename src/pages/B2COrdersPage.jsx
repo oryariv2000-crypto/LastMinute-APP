@@ -6,6 +6,7 @@ import OrderHistoryList from '../components/OrderHistoryList/OrderHistoryList'
 import Loader from '../components/Loader/Loader'
 import { getMyOrders } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
+import { isActiveStatus } from '../lib/orderStatus'
 import './B2CPage.css'
 
 /**
@@ -50,9 +51,7 @@ export default function B2COrdersPage() {
     total: o.total,
   }))
 
-  const activeCount = cards.filter(
-    (o) => o.status === 'pending' || o.status === 'active' || o.status === 'ready',
-  ).length
+  const activeCount = cards.filter((o) => isActiveStatus(o.status)).length
 
   return (
     <div className="b2c-page" dir="rtl">

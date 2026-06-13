@@ -7,9 +7,8 @@ import PickupInstructions from '../components/PickupInstructions/PickupInstructi
 import SwipeToConfirm from '../components/SwipeToConfirm/SwipeToConfirm'
 import { getOrderByCode, completeOrder, cancelOrder } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
+import { isActiveStatus } from '../lib/orderStatus'
 import './B2CPage.css'
-
-const ACTIVE_STATUSES = ['pending', 'active', 'ready']
 
 /**
  * B2CConfirmationPage — Order confirmation with QR for pickup. Fetches the
@@ -45,7 +44,7 @@ export default function B2CConfirmationPage() {
   const pickupWindow = pickupStart ? pickupStart.toLocaleString('he-IL') : ''
 
   const status = order?.status
-  const isActive    = ACTIVE_STATUSES.includes(status)
+  const isActive    = isActiveStatus(status)
   const isCompleted = status === 'completed'
   const isCancelled = status === 'cancelled'
 
