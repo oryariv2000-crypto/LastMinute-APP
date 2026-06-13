@@ -63,12 +63,11 @@ describe('ProtectedRoute', () => {
     expect(await screen.findByText('תוכן מוגן')).toBeInTheDocument()
   })
 
-  // TODO(3.3): Once /b2c/open-business exists, repoint this assertion to 'פתח עסק'.
-  it('redirects a non-business user hitting a requireBusiness route to /b2c/home', async () => {
+  it('redirects a non-business user hitting a requireBusiness route to /b2c/open-business', async () => {
     h.session = { user: { id: 'u2', email: 'c@x.co' } }
     h.isBusiness = false
     renderGuard({ requireBusiness: true })
-    expect(await screen.findByText('בית לקוח')).toBeInTheDocument()
+    expect(await screen.findByText('פתח עסק')).toBeInTheDocument()
   })
 
   it('renders children for a business user on a requireBusiness route', async () => {

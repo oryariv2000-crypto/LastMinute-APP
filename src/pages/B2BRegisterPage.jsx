@@ -49,27 +49,27 @@ export default function B2BRegisterPage() {
         return
       }
 
-      // No session ⇒ email confirmation on. The business will be created after
-      // the owner confirms + logs in (their dashboard prompts to finish setup).
+      // No session ⇒ email confirmation on. No business data is written here —
+      // the user will complete business setup via OpenBusinessPage after
+      // confirming their email and logging in (requireBusiness routes now
+      // redirect there automatically).
       if (!signUpData.session) {
         setSent(true)
         return
       }
 
-      // Session exists → create the business owned by this user.
-      const { error: businessError } = await supabase.from('businesses').insert({
-        user_id: signUpData.user.id,
-        name: data.businessName,
-        address: data.address,
-        business_type: data.businessType,
-        phone: data.phone,
+      // Session exists → hand off to OpenBusinessPage with the business details
+      // pre-filled so the user completes setup in one step.
+      navigate('/b2b/open-business', {
+        state: {
+          prefill: {
+            name:         data.businessName,
+            address:      data.address,
+            businessType: data.businessType,
+            phone:        data.phone,
+          },
+        },
       })
-      if (businessError) {
-        setError(businessError.message)
-        return
-      }
-
-      navigate('/b2b/dashboard')
     } catch (err) {
       setError(err?.message || 'ההרשמה נכשלה, נסה שוב')
     } finally {

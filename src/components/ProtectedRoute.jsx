@@ -75,10 +75,10 @@ export default function ProtectedRoute({ children, requireBusiness = false, admi
     return children
   }
 
-  // B2B capability gate — non-business users are redirected to /b2c/home.
-  // TODO(3.3): redirect to /b2c/open-business once that page exists.
+  // B2B capability gate — non-business users are redirected to the business
+  // onboarding page so they can finish setting up their business.
   if (requireBusiness && !isBusiness) {
-    return <Navigate to="/b2c/home" replace />
+    return <Navigate to="/b2c/open-business" replace />
   }
 
   // Any authenticated user is allowed (B2C routes or shared pages).

@@ -7,6 +7,7 @@ import B2CRegisterPage from './pages/B2CRegisterPage'
 import B2BRegisterPage from './pages/B2BRegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import OpenBusinessPage from './pages/OpenBusinessPage'
 import B2BDashboardPage from './pages/B2BDashboardPage'
 import B2BAiReviewPage from './pages/B2BAiReviewPage'
 import B2BNewDealPage from './pages/B2BNewDealPage'
@@ -47,6 +48,10 @@ export default function App() {
       <Route path="/register" element={<Navigate to="/register/b2c" replace />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+      {/* ── Business onboarding — any authenticated user ───── */}
+      <Route path="/b2c/open-business" element={B2C(<OpenBusinessPage />)} />
+      <Route path="/b2b/open-business" element={B2C(<OpenBusinessPage />)} />
 
       {/* ── B2B (Business) — business_owner only ───────────── */}
       <Route path="/b2b/dashboard" element={B2B(<B2BDashboardPage />)} />
