@@ -503,19 +503,71 @@ export function summarizeReviews(reviews = []) {
  * Resolve a stats period id ('7d' | '30d' | '90d') into a concrete date range
  * (ISO strings) and the bucket granularity the bar chart should use.
  * Range is the last N days up to "now"; `to` is exclusive (start of tomorrow).
+ *
+ * Day boundaries are computed in Asia/Jerusalem so the buckets always align to
+ * Israeli midnight regardless of the browser's local timezone.
  */
-export function periodRange(period = '7d') {
+export function periodRange(period = '7d', _now = new Date()) {
   const days = period === '90d' ? 90 : period === '30d' ? 30 : 7
   const bucket = period === '90d' ? 'month' : period === '30d' ? 'week' : 'day'
 
-  const to = new Date()
-  to.setHours(0, 0, 0, 0)
-  to.setDate(to.getDate() + 1) // exclusive upper bound = start of tomorrow
+  // Derive the current calendar date in Asia/Jerusalem (YYYY-MM-DD).
+  const jerusalemDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem',
+  }).format(_now)
 
-  const from = new Date(to)
-  from.setDate(from.getDate() - days)
+  // Build the exclusive upper bound — start of *tomorrow* in Jerusalem time.
+  // Constructing "YYYY-MM-DDT00:00:00" in the TZ offset for that date handles
+  // DST automatically via Temporal-style parsing through the offset calculator.
+  const [year, month, day] = jerusalemDate.split('-').map(Number)
 
-  return { from: from.toISOString(), to: to.toISOString(), bucket, days }
+  // Midnight tonight Jerusalem = start of the NEXT calendar day there.
+  // We compute it by finding the UTC instant that corresponds to
+  // "tomorrow 00:00:00 Asia/Jerusalem".
+  const toJerusalem = jerusalemMidnight(year, month, day + 1)
+  const fromJerusalem = new Date(toJerusalem.getTime() - days * 86_400_000)
+
+  return {
+    from: fromJerusalem.toISOString(),
+    to: toJerusalem.toISOString(),
+    bucket,
+    days,
+  }
+}
+
+/**
+ * Return the UTC Date corresponding to midnight of a given calendar date in
+ * Asia/Jerusalem. Uses a binary search over the offset to handle DST correctly.
+ * @param {number} year  @param {number} month (1-based)  @param {number} day
+ * @returns {Date}
+ */
+function jerusalemMidnight(year, month, day) {
+  // Normalise the date arithmetic so day=32 → next month etc.
+  const ref = new Date(Date.UTC(year, month - 1, day))
+  // Try UTC midnight as a starting point, then nudge until the Jerusalem wall
+  // clock reads exactly 00:00 on the target calendar date.
+  let probe = ref.getTime()
+  for (let i = 0; i < 4; i++) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jerusalem',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date(probe))
+    const get = (t) => Number(parts.find((p) => p.type === t)?.value ?? 0)
+    const pYear = get('year'); const pMonth = get('month'); const pDay = get('day')
+    const pHour = get('hour'); const pMin = get('minute'); const pSec = get('second')
+
+    // How far away from midnight on the target date are we in Jerusalem?
+    const targetDate = new Date(Date.UTC(year, month - 1, day))
+    const probeDate  = new Date(Date.UTC(pYear, pMonth - 1, pDay))
+    const dateDeltaMs = targetDate - probeDate          // ms difference in calendar date
+    const timeDeltaMs = (pHour * 3600 + pMin * 60 + pSec) * 1000  // time past midnight
+
+    if (dateDeltaMs === 0 && timeDeltaMs === 0) break   // already exact
+    probe -= dateDeltaMs + timeDeltaMs                  // step toward exact midnight
+  }
+  return new Date(probe)
 }
 
 async function resolveBusinessId(businessId) {

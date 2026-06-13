@@ -3,13 +3,20 @@
  * the react-refresh "only-export-components" rule stays satisfied.
  */
 
-/** Render minutes-left as a fixed "HH:MM:SS" or "MM:SS" timer string. */
-export function formatTimer(minutes) {
-  const safe = Math.max(0, Math.floor(minutes || 0))
-  const h = Math.floor(safe / 60)
-  const m = safe % 60
-  if (h > 0) {
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
-  }
-  return `${String(m).padStart(2, '0')}:00`
+/**
+ * Render the remaining time until `target` as a zero-padded "HH:MM:SS" string.
+ *
+ * @param {Date|number|string} target - The expiry point (Date, ms timestamp, or
+ *   ISO string). If the target is in the past the result is clamped to
+ *   "00:00:00".
+ * @returns {string} e.g. "01:23:45"
+ */
+export function formatTimer(target) {
+  const targetMs = target instanceof Date ? target.getTime() : Number(new Date(target))
+  const remainMs = Math.max(0, targetMs - Date.now())
+  const totalSec = Math.floor(remainMs / 1000)
+  const h = Math.floor(totalSec / 3600)
+  const m = Math.floor((totalSec % 3600) / 60)
+  const s = totalSec % 60
+  return [h, m, s].map((n) => String(n).padStart(2, '0')).join(':')
 }

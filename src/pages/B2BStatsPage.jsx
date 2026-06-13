@@ -26,7 +26,6 @@ const PERIODS = [
   { id: '30d', label: '30 ימים' },
   { id: '90d', label: '90 ימים' },
 ]
-const HEB_DAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש']
 
 export default function B2BStatsPage() {
   const { business } = useProfile({ withBusiness: true })
@@ -130,11 +129,18 @@ export default function B2BStatsPage() {
   )
 }
 
-/* Label a bucket start by granularity: weekday letter / d.m / short month. */
+/* Label a bucket start by granularity: weekday letter / d.m / short month.
+ * All formatting is done in Asia/Jerusalem so labels match the server buckets
+ * regardless of the browser's local timezone. */
+const _jFmt = (opts) => new Intl.DateTimeFormat('he-IL', { timeZone: 'Asia/Jerusalem', ...opts })
+const _jDay  = _jFmt({ weekday: 'narrow' })
+const _jDate = _jFmt({ day: 'numeric', month: 'numeric' })
+const _jMon  = _jFmt({ month: 'short' })
+
 function bucketLabel(date, bucket) {
-  if (bucket === 'day')  return HEB_DAYS[date.getDay()]
-  if (bucket === 'week') return `${date.getDate()}.${date.getMonth() + 1}`
-  return date.toLocaleDateString('he-IL', { month: 'short' })
+  if (bucket === 'day')  return _jDay.format(date)
+  if (bucket === 'week') return _jDate.format(date)
+  return _jMon.format(date)
 }
 
 function periodSub(period) {

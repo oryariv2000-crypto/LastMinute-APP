@@ -26,6 +26,7 @@ import {
   createOrder,
   createMyBusiness,
   getActiveDealsPage,
+  periodRange,
 } from './db'
 
 /* ── In-memory fake Supabase with minimal RLS emulation ─────────────── */
@@ -313,6 +314,60 @@ describe('getActiveDealsPage — excludeTags filter', () => {
     await getActiveDealsPage({ excludeTags: [] })
     expect(spy.calls.not).toHaveLength(0)
     expect(spy.calls.or).toHaveLength(0)
+  })
+})
+
+/* ── periodRange — Asia/Jerusalem day boundaries ─────────────────────── */
+describe('periodRange — Asia/Jerusalem bucketing', () => {
+  it('7d: `to` lands on an Asia/Jerusalem midnight (00:00:00 local)', () => {
+    const { to } = periodRange('7d')
+    const toDate = new Date(to)
+    // Format the `to` instant in Jerusalem time and assert it is midnight
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jerusalem',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+    }).formatToParts(toDate)
+    const h = parts.find((p) => p.type === 'hour')?.value
+    const m = parts.find((p) => p.type === 'minute')?.value
+    const s = parts.find((p) => p.type === 'second')?.value
+    expect(`${h}:${m}:${s}`).toBe('00:00:00')
+  })
+
+  it('7d: `from` is exactly 7 days (604800 s) before `to`', () => {
+    const { from, to } = periodRange('7d')
+    const diff = (new Date(to) - new Date(from)) / 1000
+    expect(diff).toBe(7 * 86_400)
+  })
+
+  it('30d: `from` is 30 days before `to` and `to` is Jerusalem midnight', () => {
+    const { from, to, days, bucket } = periodRange('30d')
+    expect(days).toBe(30)
+    expect(bucket).toBe('week')
+    const diff = (new Date(to) - new Date(from)) / 1000
+    expect(diff).toBe(30 * 86_400)
+  })
+
+  it('90d: `from` is 90 days before `to` and bucket is month', () => {
+    const { from, to, days, bucket } = periodRange('90d')
+    expect(days).toBe(90)
+    expect(bucket).toBe('month')
+    const diff = (new Date(to) - new Date(from)) / 1000
+    expect(diff).toBe(90 * 86_400)
+  })
+
+  it('`to` in Asia/Jerusalem is always one day ahead of today in Jerusalem', () => {
+    // Provide a known fixed "now" to make the test deterministic.
+    // 2024-01-15 10:00 UTC = 2024-01-15 12:00 Jerusalem (UTC+2 winter)
+    const fixedNow = new Date('2024-01-15T10:00:00Z')
+    const { to } = periodRange('7d', fixedNow)
+    const toDateParts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jerusalem',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date(to))
+    const toDate = `${toDateParts.find(p=>p.type==='year').value}-${toDateParts.find(p=>p.type==='month').value}-${toDateParts.find(p=>p.type==='day').value}`
+    // "start of tomorrow" in Jerusalem = 2024-01-16
+    expect(toDate).toBe('2024-01-16')
   })
 })
 

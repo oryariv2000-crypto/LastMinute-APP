@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Price, Ltr } from '../../lib/formatters'
 import { formatTimer } from '../../lib/time'
@@ -44,6 +45,9 @@ export default function ProductCard({
 }) {
   const showTimer = timeLeftMin > 0
   const urgent = timeLeftMin > 0 && timeLeftMin <= 30
+  // Capture the expiry instant once on mount so Date.now() isn't called on
+  // every render (satisfies React Compiler's purity rule).
+  const [expiresAt] = useState(() => Date.now() + timeLeftMin * 60_000)
   const lowStock = quantityLeft != null && quantityLeft > 0 && quantityLeft <= LOW_STOCK_THRESHOLD
   // Surface dietary + product-state characteristics (vegan / baked-today / …)
   // on the compact card, up to three, so the tile stays legible. Allergens stay
@@ -82,7 +86,7 @@ export default function ProductCard({
 
         {showTimer && (
           <span className={`product-card__timer${urgent ? ' product-card__timer--urgent' : ''}`}>
-            <ClockIcon /> <Ltr>{formatTimer(timeLeftMin)}</Ltr>
+            <ClockIcon /> <Ltr>{formatTimer(expiresAt)}</Ltr>
           </span>
         )}
       </div>

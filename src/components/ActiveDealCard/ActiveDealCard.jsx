@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Price, Ltr } from '../../lib/formatters'
 import { formatTimer } from '../../lib/time'
 import './ActiveDealCard.css'
@@ -32,7 +33,10 @@ export default function ActiveDealCard({
   onDelete,
 }) {
   const urgent = timeLeftMin <= 30
-  const timeText = formatTimer(timeLeftMin)
+  // Capture the expiry instant once on mount so Date.now() isn't called on
+  // every render (satisfies React Compiler's purity rule).
+  const [expiresAt] = useState(() => Date.now() + timeLeftMin * 60_000)
+  const timeText = formatTimer(expiresAt)
   const paused = status === 'paused'
 
   return (
