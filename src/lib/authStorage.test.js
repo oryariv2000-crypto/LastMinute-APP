@@ -24,4 +24,11 @@ describe('rememberStorage', () => {
     setRemember(false)
     expect(localStorage.getItem(REMEMBER_KEY)).toBe('false')
   })
+  it('removeItem clears from both stores', () => {
+    localStorage.setItem('k', 'v1')
+    sessionStorage.setItem('k', 'v2')
+    rememberStorage.removeItem('k')
+    expect(localStorage.getItem('k')).toBe(null)
+    expect(sessionStorage.getItem('k')).toBe(null)
+  })
 })
