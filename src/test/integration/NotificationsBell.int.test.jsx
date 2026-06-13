@@ -1,12 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { renderWithRouter } from '../utils'
+import { renderWithRouter, renderWithProviders } from '../utils'
 
 const h = vi.hoisted(() => ({ deals: [], tickets: [] }))
 vi.mock('../../lib/db', () => ({
   getMyDeals: async () => h.deals,
   getMySupportTickets: async () => h.tickets,
+  getMyProfile: async () => ({ id: 'u1', full_name: 'בעל עסק', is_business: true }),
+  getMyBusiness: async () => null,
 }))
 
 import NotificationsBell from '../../components/NotificationsBell/NotificationsBell'
@@ -42,7 +44,7 @@ describe('NotificationsBell', () => {
 
 describe('NavbarB2B (smoke with its notification bell)', () => {
   it('renders the brand and the notifications bell', async () => {
-    renderWithRouter(<NavbarB2B businessName="ארומה" initials="אר" />)
+    renderWithProviders(<NavbarB2B businessName="ארומה" initials="אר" />)
     expect(screen.getByText('ארומה')).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: /התראות/ })).toBeInTheDocument()
   })

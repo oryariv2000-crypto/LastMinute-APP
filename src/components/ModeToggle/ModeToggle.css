@@ -1,0 +1,44 @@
+/* ── ModeToggle ────────────────────────────────────────────────── */
+.mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+/* Switch button: filled brand style */
+.mode-toggle--switch {
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+  border: none;
+}
+.mode-toggle--switch:hover {
+  background-color: var(--color-dark-forest);
+}
+.mode-toggle--switch:active {
+  transform: scale(0.97);
+}
+
+/* CTA link: outlined style */
+.mode-toggle--cta {
+  background-color: transparent;
+  color: var(--color-brand-primary);
+  border: 1.5px solid var(--color-brand-primary);
+}
+.mode-toggle--cta:hover {
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+}
+.mode-toggle--cta:active {
+  transform: scale(0.97);
+}

@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useProfile } from '../../lib/useProfile'
 import NotificationsBell from '../NotificationsBell/NotificationsBell'
 import BrandLogo from '../BrandLogo/BrandLogo'
+import ModeToggle from '../ModeToggle/ModeToggle'
 import './NavbarB2B.css'
 
 /**
@@ -20,6 +22,7 @@ export default function NavbarB2B({
   avatarUrl,
 }) {
   const navigate = useNavigate()
+  const { profile } = useProfile()
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -59,6 +62,9 @@ export default function NavbarB2B({
 
         {/* ── Actions ────────────────────────────────────── */}
         <div className="navbar-b2b__actions">
+          {/* Mode toggle — switch to shopping shell */}
+          <ModeToggle isBusiness={profile?.is_business ?? true} current="business" />
+
           {/* Notifications center */}
           <NotificationsBell />
 

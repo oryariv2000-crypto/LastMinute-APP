@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 const h = vi.hoisted(() => ({ businesses: [] }))
 vi.mock('../../lib/db', () => ({
   getBusinessesForMap: async () => h.businesses,
+  getMyProfile: async () => ({ id: 'u1', full_name: 'דנה', is_business: false }),
+  getMyBusiness: async () => null,
 }))
 
 import NavbarB2C from '../../components/NavbarB2C/NavbarB2C'

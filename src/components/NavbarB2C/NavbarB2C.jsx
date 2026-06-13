@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { getBusinessesForMap } from '../../lib/db'
+import { useProfile } from '../../lib/useProfile'
 import BrandLogo from '../BrandLogo/BrandLogo'
+import ModeToggle from '../ModeToggle/ModeToggle'
 import './NavbarB2C.css'
 
 /**
@@ -24,6 +26,7 @@ export default function NavbarB2C({
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
   const navigate = useNavigate()
+  const { profile } = useProfile()
 
   // Business list for the search autocomplete (shared, cached). Only fetched
   // when the search bar is actually rendered.
@@ -80,8 +83,9 @@ export default function NavbarB2C({
           <BrandLogo tone="dark" size="sm" />
         </Link>
 
-        {/* Actions: avatar + logout */}
+        {/* Actions: mode toggle + avatar + logout */}
         <div className="navbar-b2c__actions">
+          <ModeToggle isBusiness={profile?.is_business ?? false} current="shopping" />
           <Link
             to="/b2c/profile"
             className="navbar-b2c__avatar"
