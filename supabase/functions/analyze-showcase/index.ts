@@ -59,11 +59,11 @@ Deno.serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return json(401, { error: "unauthorized" });
 
-    // Role gate — only business owners may spend Gemini calls. RLS "users:
-    // read own" lets the user read their own row, so no service-role key.
+    // Capability gate: only business-capable users may spend Gemini calls.
+    // RLS "users: read own" lets the user read their own row, so no service-role key.
     const { data: profile } = await supabase
-      .from("users").select("role").eq("id", user.id).maybeSingle();
-    if (profile?.role !== "business_owner") return json(403, { error: "forbidden" });
+      .from("users").select("is_business").eq("id", user.id).maybeSingle();
+    if (profile?.is_business !== true) return json(403, { error: "forbidden" });
 
     // Cheap DoS pre-filter: reject obviously-oversized bodies before buffering.
     // ~1.4x accounts for base64 + JSON envelope overhead around the image.
