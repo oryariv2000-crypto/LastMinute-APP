@@ -24,6 +24,7 @@ import {
   updateDeal,
   deleteDeal,
   createOrder,
+  createMyBusiness,
 } from './db'
 
 /* ── In-memory fake Supabase with minimal RLS emulation ─────────────── */
@@ -106,6 +107,14 @@ function makeFake(seed) {
 
   // Minimal RPC emulation (server-side functions).
   async function rpc(fn, args = {}) {
+    if (fn === 'create_my_business') {
+      const existing = store.businesses.find((b) => b.user_id === uid)
+      const row = existing
+        ? Object.assign(existing, { name: args.p_name, address: args.p_address, business_type: args.p_business_type, phone: args.p_phone })
+        : { id: `biz-${seq++}`, user_id: uid, name: args.p_name, address: args.p_address, business_type: args.p_business_type, phone: args.p_phone, created_at: new Date().toISOString() }
+      if (!existing) store.businesses.push(row)
+      return { data: row, error: null }
+    }
     if (fn === 'place_order') {
       const deal = store.deals.find((d) => d.id === args.p_deal_id)
       if (!deal || deal.status !== 'active') {
@@ -221,5 +230,44 @@ describe('orders — create', () => {
     expect(order.subtotal).toBe(20)
     expect(order.total).toBe(20)
     expect(h.fake.store.orders).toHaveLength(1)
+  })
+
+  it('surfaces the RPC error message (e.g. self-dealing Hebrew string) when place_order fails', async () => {
+    h.fake.setUser('user-A')
+    // Simulate user-A trying to buy their own deal — RPC returns Hebrew error
+    const selfDealingMsg = 'לא ניתן לרכוש מבצע של העסק שלך'
+    const origRpc = h.fake.rpc.bind(h.fake)
+    h.fake.rpc = async (fn, args) => {
+      if (fn === 'place_order') return { data: null, error: { message: selfDealingMsg } }
+      return origRpc(fn, args)
+    }
+    await expect(createOrder({ deal_id: 'deal-A1', quantity: 1 }))
+      .rejects.toThrow(selfDealingMsg)
+  })
+})
+
+describe('createMyBusiness', () => {
+  it('calls create_my_business RPC with trimmed name, stripped phone, and returns data', async () => {
+    const biz = await createMyBusiness({
+      name: '  מאפייה טובה  ',
+      address: 'רחוב הרצל 1',
+      businessType: 'bakery',
+      phone: '050 123 4567',
+    })
+    expect(biz).toBeTruthy()
+    expect(biz.name).toBe('מאפייה טובה') // trimmed
+    expect(biz.phone).toBe('0501234567')  // whitespace stripped
+    expect(biz.business_type).toBe('bakery')
+    expect(biz.address).toBe('רחוב הרצל 1')
+  })
+
+  it('throws with the RPC error message when create_my_business fails', async () => {
+    const origRpc = h.fake.rpc.bind(h.fake)
+    h.fake.rpc = async (fn, args) => {
+      if (fn === 'create_my_business') return { data: null, error: { message: 'שגיאת שרת' } }
+      return origRpc(fn, args)
+    }
+    await expect(createMyBusiness({ name: 'Test', address: null, businessType: null, phone: null }))
+      .rejects.toThrow('שגיאת שרת')
   })
 })

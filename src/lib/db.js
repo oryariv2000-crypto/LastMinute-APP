@@ -115,6 +115,22 @@ export async function getBusinessDeals(businessId) {
   return data ?? []
 }
 
+/**
+ * Create (or upsert) the current user's business via the create_my_business RPC.
+ * The RPC is idempotent — calling it again updates the existing row.
+ * Returns the upserted businesses row.
+ */
+export async function createMyBusiness({ name, address, businessType, phone }) {
+  const { data, error } = await supabase.rpc('create_my_business', {
+    p_name: name?.trim(),
+    p_address: address?.trim() ?? null,
+    p_business_type: businessType ?? null,
+    p_phone: phone?.replace(/\s/g, '') ?? null,
+  })
+  if (error) throw new Error(error.message || 'יצירת העסק נכשלה')
+  return data
+}
+
 export async function updateMyBusiness(fields) {
   const biz = await getMyBusiness()
   if (!biz) throw new Error('לא נמצא עסק למשתמש זה.')
@@ -275,7 +291,7 @@ export async function createOrder({ deal_id, quantity = 1 }) {
     p_deal_id: deal_id,
     p_quantity: quantity,
   })
-  if (error) throw error
+  if (error) throw new Error(error.message || 'יצירת ההזמנה נכשלה')
   // place_order returns the new row (or raises). Guard the empty-set case so a
   // missing row surfaces as a clear error instead of an undefined-read crash
   // downstream (the confirmation page reads order.order_code).
