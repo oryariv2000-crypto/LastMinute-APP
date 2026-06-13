@@ -156,7 +156,7 @@ export default function B2BRegisterPage() {
         )}
 
         {/* Google OAuth */}
-        <GoogleSignInButton />
+        <GoogleSignInButton label="הרשמה עם Google" />
 
         {/* Divider */}
         <div className="auth-page__divider" aria-hidden="true"><span>או</span></div>

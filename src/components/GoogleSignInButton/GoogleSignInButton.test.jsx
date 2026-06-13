@@ -46,4 +46,16 @@ describe('GoogleSignInButton', () => {
       },
     })
   })
+
+  it('shows an alert with the error message when signInWithOAuth fails', async () => {
+    supabase.auth.signInWithOAuth.mockResolvedValue({
+      data: null,
+      error: { message: 'provider disabled' },
+    })
+
+    render(<GoogleSignInButton />)
+    await userEvent.click(screen.getByRole('button', { name: /התחברות עם Google/ }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('provider disabled')
+  })
 })

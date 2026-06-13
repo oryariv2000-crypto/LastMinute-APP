@@ -37,3 +37,16 @@
   height: 20px;
   flex-shrink: 0;
 }
+
+.google-signin:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.google-signin__error {
+  margin: 6px 0 0;
+  font-size: var(--font-size-body-sm, 0.8125rem);
+  color: var(--color-error, #b00020);
+  text-align: right;
+  direction: rtl;
+}

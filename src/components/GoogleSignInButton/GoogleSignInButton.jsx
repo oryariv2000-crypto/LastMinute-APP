@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import './GoogleSignInButton.css'
 
@@ -8,18 +9,29 @@ import './GoogleSignInButton.css'
  *   label  string  — button text (default: Hebrew "sign in with Google")
  */
 export default function GoogleSignInButton({ label = 'התחברות עם Google' }) {
+  const [error, setError] = useState(null)
+
   async function handleClick() {
-    await supabase.auth.signInWithOAuth({
+    setError(null)
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/login` },
     })
+    if (error) {
+      setError(error.message || 'ההתחברות עם Google נכשלה')
+    }
   }
 
   return (
-    <button type="button" className="google-signin" onClick={handleClick}>
-      <GoogleIcon />
-      {label}
-    </button>
+    <>
+      <button type="button" className="google-signin" onClick={handleClick}>
+        <GoogleIcon />
+        {label}
+      </button>
+      {error && (
+        <p role="alert" className="google-signin__error">{error}</p>
+      )}
+    </>
   )
 }
 
