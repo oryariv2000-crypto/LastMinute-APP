@@ -12,7 +12,7 @@ import Loader from './Loader/Loader'
  * Alongside the session it fetches the user's `is_business` from the `users`
  * table. While auth/profile is being resolved it renders the branded page
  * loader; with no session it redirects to /login; if `requireBusiness` is true
- * and the user does not have the B2B capability it redirects to /b2c/home;
+ * and the user does not have the B2B capability it redirects to /b2c/open-business;
  * otherwise it renders its children.
  *
  * @param {boolean} [requireBusiness] - when true, only users with `is_business`
