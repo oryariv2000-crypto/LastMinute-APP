@@ -274,18 +274,39 @@ describe('getActiveDealsPage — excludeTags filter', () => {
     h.fake.from = () => spy.builder
   })
 
-  it('uses a null-safe .or() filter (not .not()) so deals with empty/null tags are kept', async () => {
+  // deals.tags is NOT NULL DEFAULT '{}', so the null-admit branch (.or with
+  // tags.is.null) is unnecessary. The builder .not form passes the array value
+  // as a discrete argument — no comma ambiguity for multi-tag exclusion.
+
+  it('single tag: uses builder .not("tags","ov","{nuts}") — not .or()', async () => {
     await getActiveDealsPage({ excludeTags: ['nuts'] })
 
-    // Must use .or(), not the old .not() approach
-    expect(spy.calls.not).toHaveLength(0)
-    expect(spy.calls.or).toHaveLength(1)
+    // Must use builder .not(), NOT .or() (which has comma-ambiguity for N tags)
+    expect(spy.calls.or).toHaveLength(0)
+    expect(spy.calls.not).toHaveLength(1)
 
-    const orArg = spy.calls.or[0][0]
-    // Must admit null tags
-    expect(orArg).toContain('tags.is.null')
-    // Must still exclude deals whose tags overlap the excluded set
-    expect(orArg).toContain('not.tags.ov.{nuts}')
+    // Builder form: .not('tags', 'ov', '{nuts}')
+    const [col, op, val] = spy.calls.not[0]
+    expect(col).toBe('tags')
+    expect(op).toBe('ov')
+    expect(val).toBe('{nuts}')
+  })
+
+  it('multi-tag: array literal {nuts,dairy} stays intact as one argument — no or-separator split', async () => {
+    // This is the critical regression test. With the old .or() string approach,
+    // excludeTags.join(',') inside {nuts,dairy} collides with PostgREST's or-
+    // separator comma, potentially splitting into two broken conditions.
+    // The builder .not() form is safe: it passes the value as a discrete arg.
+    await getActiveDealsPage({ excludeTags: ['nuts', 'dairy'] })
+
+    expect(spy.calls.or).toHaveLength(0)   // no .or() used at all
+    expect(spy.calls.not).toHaveLength(1)   // exactly one .not() call
+
+    const [col, op, val] = spy.calls.not[0]
+    expect(col).toBe('tags')
+    expect(op).toBe('ov')
+    // The full array literal must arrive as a SINGLE intact value, not split
+    expect(val).toBe('{nuts,dairy}')
   })
 
   it('does not add any tag-exclusion filter when excludeTags is empty', async () => {

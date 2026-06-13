@@ -181,8 +181,10 @@ export async function getActiveDealsPage({ pageParam = 0, pageSize = 24, busines
   if (search.trim()) q = q.ilike('title', `%${search.trim()}%`)
   if (tags?.length) q = q.contains('tags', tags)
   if (excludeTags?.length) {
-    // exclude deals containing ANY excluded tag; keep deals with empty/null tags
-    q = q.or(`tags.is.null,not.tags.ov.{${excludeTags.join(',')}}`)
+    // deals.tags is NOT NULL DEFAULT '{}', so an empty-tags deal yields
+    // NOT('{}' && excluded) = true and is correctly kept. Builder form keeps
+    // the array value intact for multi-tag exclusion (no or()-comma ambiguity).
+    q = q.not('tags', 'ov', `{${excludeTags.join(',')}}`)
   }
 
   const { data, error } = await q
