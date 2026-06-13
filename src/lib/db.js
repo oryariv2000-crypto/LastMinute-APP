@@ -195,7 +195,7 @@ export async function getActiveDealsPage({ pageParam = 0, pageSize = 24, busines
 export async function getDealById(id) {
   const { data, error } = await supabase
     .from('deals')
-    .select('*, businesses ( name, address, phone, rating, business_type )')
+    .select('*, businesses ( name, address, phone, rating, business_type, user_id )')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error

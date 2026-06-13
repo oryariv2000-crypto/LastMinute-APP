@@ -26,6 +26,7 @@ export default function B2CCheckoutPage() {
   const location = useLocation()
   const { profile } = useProfile()
   const userName = profile?.full_name || 'לקוח/ה'
+  const currentUserId = profile?.id ?? null
   const queryClient = useQueryClient()
   const { dealId, quantity = 1 } = location.state || {}
 
@@ -51,6 +52,8 @@ export default function B2CCheckoutPage() {
     })()
     return () => { active = false }
   }, [dealId])
+
+  const isOwnDeal = !!currentUserId && !!deal && deal?.businesses?.user_id === currentUserId
 
   const total = deal ? deal.discount_price * quantity : 0
 
@@ -174,22 +177,34 @@ export default function B2CCheckoutPage() {
         )}
       </main>
 
-      <div className="b2c-pay-bar" role="toolbar" aria-label="תשלום">
-        <div className="b2c-pay-bar__total">
-          <span className="b2c-pay-bar__total-label">סה״כ</span>
-          <Price value={total} fraction={0} className="b2c-pay-bar__total-value" />
+      {isOwnDeal ? (
+        <div className="b2c-pay-bar" role="toolbar" aria-label="תשלום">
+          <div
+            role="status"
+            aria-label="מבצע של העסק שלך"
+            className="b2c-checkout__own-deal-notice"
+          >
+            זהו מבצע של העסק שלך — לא ניתן לרכוש אותו
+          </div>
         </div>
-        <SubmitButton
-          loading={status === PAYMENT_STATUS.PENDING}
-          variant="action"
-          onClick={handlePay}
-          fullWidth={false}
-          disabled={!agreed}
-          id="b2c-pay-btn"
-        >
-          {payment === 'apple' ? '🍎 שלם ובוא לאסוף' : 'שלם ובוא לאסוף'}
-        </SubmitButton>
-      </div>
+      ) : (
+        <div className="b2c-pay-bar" role="toolbar" aria-label="תשלום">
+          <div className="b2c-pay-bar__total">
+            <span className="b2c-pay-bar__total-label">סה״כ</span>
+            <Price value={total} fraction={0} className="b2c-pay-bar__total-value" />
+          </div>
+          <SubmitButton
+            loading={status === PAYMENT_STATUS.PENDING}
+            variant="action"
+            onClick={handlePay}
+            fullWidth={false}
+            disabled={!agreed}
+            id="b2c-pay-btn"
+          >
+            {payment === 'apple' ? '🍎 שלם ובוא לאסוף' : 'שלם ובוא לאסוף'}
+          </SubmitButton>
+        </div>
+      )}
     </div>
   )
 }

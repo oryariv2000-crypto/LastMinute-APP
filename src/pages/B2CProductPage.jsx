@@ -28,6 +28,7 @@ export default function B2CProductPage() {
   const navigate = useNavigate()
   const { profile } = useProfile()
   const userName = profile?.full_name || 'לקוח/ה'
+  const currentUserId = profile?.id ?? null
 
   const { data: deal, isLoading, isError, error } = useQuery({
     queryKey: ['deal', id],
@@ -39,10 +40,13 @@ export default function B2CProductPage() {
   if (isError)   return <Shell userName={userName}><div className="product-grid__empty" role="alert"><span>⚠️</span><p>{error?.message || 'שגיאה בטעינת המבצע'}</p></div></Shell>
   if (!deal)     return <NotFound id={id} userName={userName} />
 
+  const isOwnDeal = !!currentUserId && deal?.businesses?.user_id === currentUserId
+
   return (
     <ProductView
       deal={deal}
       userName={userName}
+      isOwnDeal={isOwnDeal}
       onCheckout={(quantity) =>
         navigate('/b2c/checkout', { state: { dealId: deal.id, quantity } })
       }
@@ -52,7 +56,7 @@ export default function B2CProductPage() {
 }
 
 /* ── Found-state view ────────────────────────────────────────── */
-function ProductView({ deal, userName, onCheckout, onOpenStore }) {
+function ProductView({ deal, userName, isOwnDeal, onCheckout, onOpenStore }) {
   const [qty, setQty]         = useState(1)
   const [loading, setLoading] = useState(false)
 
@@ -155,7 +159,13 @@ function ProductView({ deal, userName, onCheckout, onOpenStore }) {
             )}
 
             {/* Desktop: inline purchase panel inside the info column */}
-            <AddToCartBar {...buyProps} variant="inline" className="b2c-product__buy--desktop" />
+            {isOwnDeal ? (
+              <div role="status" aria-label="מבצע של העסק שלך" className="b2c-product__own-deal-notice b2c-product__buy--desktop">
+                זהו מבצע של העסק שלך — לא ניתן לרכוש אותו
+              </div>
+            ) : (
+              <AddToCartBar {...buyProps} variant="inline" className="b2c-product__buy--desktop" />
+            )}
 
             {/* Click & Collect reassurance — sets expectations + fills the column */}
             <ul className="b2c-product__trust" aria-label="איך זה עובד">
@@ -200,7 +210,13 @@ function ProductView({ deal, userName, onCheckout, onOpenStore }) {
       </main>
 
       {/* Mobile: sticky bottom bar (kept as a direct page child for stickiness) */}
-      <AddToCartBar {...buyProps} variant="sticky" className="b2c-product__buy--mobile" />
+      {isOwnDeal ? (
+        <div role="status" aria-label="מבצע של העסק שלך" className="b2c-product__own-deal-notice b2c-product__buy--mobile">
+          זהו מבצע של העסק שלך — לא ניתן לרכוש אותו
+        </div>
+      ) : (
+        <AddToCartBar {...buyProps} variant="sticky" className="b2c-product__buy--mobile" />
+      )}
     </div>
   )
 }
