@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
 // Mutable auth state the mocked supabase reads (set per test).
-const h = vi.hoisted(() => ({ session: null, role: null }))
+const h = vi.hoisted(() => ({ session: null, role: null, isBusiness: false }))
 
 vi.mock('../../lib/supabase', () => ({
   supabase: {
@@ -14,7 +14,10 @@ vi.mock('../../lib/supabase', () => ({
     from: () => ({
       select: () => ({
         eq: () => ({
-          single: async () => ({ data: h.role ? { role: h.role } : null, error: null }),
+          single: async () => ({
+            data: h.session ? { role: h.role, is_business: h.isBusiness } : null,
+            error: null,
+          }),
         }),
       }),
     }),
@@ -36,39 +39,59 @@ function renderGuard(props) {
   )
 }
 
-beforeEach(() => { h.session = null; h.role = null })
+beforeEach(() => { h.session = null; h.role = null; h.isBusiness = false })
 
 describe('ProtectedRoute', () => {
   it('redirects to /login when there is no session', async () => {
     h.session = null
-    renderGuard({ allowedRole: 'customer' })
+    renderGuard({})
     expect(await screen.findByText('דף כניסה')).toBeInTheDocument()
   })
 
-  it('renders children when the role matches', async () => {
+  it('renders children for any authenticated user on a plain B2C route (no requireBusiness)', async () => {
     h.session = { user: { id: 'u1', email: 'c@x.co' } }
     h.role = 'customer'
-    renderGuard({ allowedRole: 'customer' })
+    h.isBusiness = false
+    renderGuard({})
     expect(await screen.findByText('תוכן מוגן')).toBeInTheDocument()
   })
 
-  it('bounces a mismatched role to its own ecosystem', async () => {
-    h.session = { user: { id: 'u2', email: 'b@x.co' } }
+  it('renders children for a business user on a plain B2C route (no requireBusiness)', async () => {
+    h.session = { user: { id: 'u1b', email: 'biz@x.co' } }
     h.role = 'business_owner'
-    renderGuard({ allowedRole: 'customer' })
-    expect(await screen.findByText('דשבורד עסקי')).toBeInTheDocument()
+    h.isBusiness = true
+    renderGuard({})
+    expect(await screen.findByText('תוכן מוגן')).toBeInTheDocument()
+  })
+
+  it('redirects a non-business user hitting a requireBusiness route to /b2c/home', async () => {
+    h.session = { user: { id: 'u2', email: 'c@x.co' } }
+    h.role = 'customer'
+    h.isBusiness = false
+    renderGuard({ requireBusiness: true })
+    expect(await screen.findByText('בית לקוח')).toBeInTheDocument()
+  })
+
+  it('renders children for a business user on a requireBusiness route', async () => {
+    h.session = { user: { id: 'u3', email: 'biz@x.co' } }
+    h.role = 'business_owner'
+    h.isBusiness = true
+    renderGuard({ requireBusiness: true })
+    expect(await screen.findByText('תוכן מוגן')).toBeInTheDocument()
   })
 
   it('blocks a non-admin from an adminOnly route', async () => {
-    h.session = { user: { id: 'u3', email: 'nobody@x.co' } }
+    h.session = { user: { id: 'u4', email: 'nobody@x.co' } }
     h.role = 'customer'
+    h.isBusiness = false
     renderGuard({ adminOnly: true })
     expect(await screen.findByText('בית לקוח')).toBeInTheDocument()
   })
 
   it('allows the admin email on an adminOnly route', async () => {
-    h.session = { user: { id: 'u4', email: 'oryariv2000@gmail.com' } }
+    h.session = { user: { id: 'u5', email: 'oryariv2000@gmail.com' } }
     h.role = 'customer'
+    h.isBusiness = false
     renderGuard({ adminOnly: true })
     expect(await screen.findByText('תוכן מוגן')).toBeInTheDocument()
   })

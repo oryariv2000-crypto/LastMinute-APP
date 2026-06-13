@@ -29,8 +29,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import './styles/globals.css'
 
 /* Small helpers to keep the route table readable. */
-const B2B = (el) => <ProtectedRoute allowedRole="business_owner">{el}</ProtectedRoute>
-const B2C = (el) => <ProtectedRoute allowedRole="customer">{el}</ProtectedRoute>
+const B2B = (el) => <ProtectedRoute requireBusiness>{el}</ProtectedRoute>
+const B2C = (el) => <ProtectedRoute>{el}</ProtectedRoute>
 
 export default function App() {
   return (
