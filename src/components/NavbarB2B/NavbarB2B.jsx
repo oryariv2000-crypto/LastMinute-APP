@@ -62,7 +62,10 @@ export default function NavbarB2B({
 
         {/* ── Actions ────────────────────────────────────── */}
         <div className="navbar-b2b__actions">
-          {/* Mode toggle — switch to shopping shell */}
+          {/* Mode toggle — switch to shopping shell.
+              Default true while the profile loads: this navbar only renders
+              inside requireBusiness routes, where ProtectedRoute already
+              verified is_business, so a non-business user can't reach here. */}
           <ModeToggle isBusiness={profile?.is_business ?? true} current="business" />
 
           {/* Notifications center */}
