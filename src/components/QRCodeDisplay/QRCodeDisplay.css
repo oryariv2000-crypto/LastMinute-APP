@@ -6,6 +6,7 @@
   gap: var(--space-3);
   padding: var(--space-6) var(--space-4);
   background-color: var(--color-surface-container-lowest);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   text-align: center;

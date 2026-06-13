@@ -59,7 +59,9 @@
   line-height: 1;
 }
 .eco-impact__stat-value {
-  font-family: var(--font-family-display);
+  /* Heebo (base) has a proper ₪ / Hebrew glyph — the Latin display font
+     renders the shekel sign stretched/unclear, so use the base font here. */
+  font-family: var(--font-family-base);
   font-size: 1.125rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-brand-primary);

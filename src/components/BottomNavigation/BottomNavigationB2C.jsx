@@ -1,16 +1,37 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { getMyOrders } from '../../lib/db'
 import './BottomNavigation.css'
+
+/** Order statuses that count as "active" (awaiting pickup) for the tab badge. */
+const ACTIVE_STATUSES = ['pending', 'active', 'ready']
 
 /**
  * BottomNavigationB2C — Fixed bottom tab bar for end customers.
  *
  * Tabs: Home · Explore · Orders · Profile
  *
+ * The Orders badge shows the customer's active (awaiting-pickup) order count.
+ * By default the bar fetches it itself (shared, cached query) so every page is
+ * consistent. A page that already has the orders loaded can pass `orderCount`
+ * to override and skip the extra fetch.
+ *
  * Props:
- *   orderCount  number — badge count on Orders tab (0 = hidden)
+ *   orderCount  number — optional badge override (0 = hidden). When omitted, the
+ *               count is fetched live from Supabase.
  */
-export default function BottomNavigationB2C({ orderCount = 2 }) {
+export default function BottomNavigationB2C({ orderCount }) {
   const { pathname } = useLocation()
+
+  const { data: fetchedCount = 0 } = useQuery({
+    queryKey: ['my-orders-active-count'],
+    queryFn: async () => {
+      const rows = await getMyOrders()
+      return rows.filter((o) => ACTIVE_STATUSES.includes(o.status)).length
+    },
+    enabled: orderCount === undefined, // skip when a page supplies the count
+  })
+  const badgeCount = orderCount ?? fetchedCount
 
   const tabs = [
     {
@@ -33,7 +54,7 @@ export default function BottomNavigationB2C({ orderCount = 2 }) {
       label: 'הזמנות',
       icon:  <BagIcon />,
       match: '/b2c/orders',
-      badge: orderCount,
+      badge: badgeCount,
     },
     {
       id:    'b2c-tab-profile',
@@ -45,7 +66,7 @@ export default function BottomNavigationB2C({ orderCount = 2 }) {
   ]
 
   return (
-    <nav className="bottom-nav" aria-label="ניווט ראשי">
+    <nav className="bottom-nav bottom-nav--b2c" aria-label="ניווט ראשי">
       <div className="bottom-nav__inner">
         {tabs.map((tab) => {
           const isActive = pathname.startsWith(tab.match)

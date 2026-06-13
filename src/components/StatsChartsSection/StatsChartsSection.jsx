@@ -5,9 +5,9 @@ import './StatsChartsSection.css'
  * Pure presentational: all data is computed upstream from live orders.
  *
  * Props:
- *   bars       [{ label, value }]   — revenue per time bucket (value in ₪)
- *   categories [{ label, revenue }] — revenue per deal category
- *   barsTitle  string               — e.g. "7 ימים אחרונים"
+ *   bars       [{ label, value }]     — revenue per time bucket (value in ₪)
+ *   products   [{ product, revenue }] — revenue per top-selling product
+ *   barsTitle  string                 — e.g. "7 ימים אחרונים"
  */
 const DONUT_COLORS = [
   'var(--color-brand-primary)',
@@ -17,23 +17,23 @@ const DONUT_COLORS = [
   'var(--color-outline-variant)',
 ]
 
-export default function StatsChartsSection({ bars = [], categories = [], barsTitle = '' }) {
+export default function StatsChartsSection({ bars = [], products = [], barsTitle = '' }) {
   const maxBar = Math.max(0, ...bars.map((b) => b.value))
   const hasSales = maxBar > 0
 
-  const totalCat = categories.reduce((s, c) => s + c.revenue, 0)
-  const cats = categories.map((c, i) => ({
-    ...c,
-    pct: totalCat > 0 ? Math.round((c.revenue / totalCat) * 100) : 0,
+  const totalProd = products.reduce((s, p) => s + p.revenue, 0)
+  const items = products.map((p, i) => ({
+    ...p,
+    pct: totalProd > 0 ? Math.round((p.revenue / totalProd) * 100) : 0,
     color: DONUT_COLORS[i % DONUT_COLORS.length],
   }))
 
   // conic-gradient stops via a pure reduce (no mutation during render).
-  const conic = cats
+  const conic = items
     .reduce(
-      ({ offset, stops }, c) => ({
-        offset: offset + c.pct,
-        stops: [...stops, `${c.color} ${offset}% ${offset + c.pct}%`],
+      ({ offset, stops }, p) => ({
+        offset: offset + p.pct,
+        stops: [...stops, `${p.color} ${offset}% ${offset + p.pct}%`],
       }),
       { offset: 0, stops: [] },
     )
@@ -66,14 +66,14 @@ export default function StatsChartsSection({ bars = [], categories = [], barsTit
         )}
       </article>
 
-      {/* Donut — revenue by category */}
+      {/* Donut — revenue by top-selling product */}
       <article className="stats-charts__card">
         <header className="stats-charts__card-head">
-          <h3 className="stats-charts__card-title">פילוח קטגוריות</h3>
+          <h3 className="stats-charts__card-title">מוצרים מובילים</h3>
           <span className="stats-charts__card-sub">% מההכנסות</span>
         </header>
 
-        {totalCat > 0 ? (
+        {totalProd > 0 ? (
           <div className="stats-charts__donut-wrap">
             <div
               className="stats-charts__donut"
@@ -86,17 +86,17 @@ export default function StatsChartsSection({ bars = [], categories = [], barsTit
               </div>
             </div>
             <ul className="stats-charts__legend">
-              {cats.map((c, i) => (
+              {items.map((p, i) => (
                 <li key={i}>
-                  <span className="stats-charts__legend-dot" style={{ background: c.color }} />
-                  <span className="stats-charts__legend-label">{c.category}</span>
-                  <span className="stats-charts__legend-value">{c.pct}%</span>
+                  <span className="stats-charts__legend-dot" style={{ background: p.color }} />
+                  <span className="stats-charts__legend-label">{p.product}</span>
+                  <span className="stats-charts__legend-value">{p.pct}%</span>
                 </li>
               ))}
             </ul>
           </div>
         ) : (
-          <p className="stats-charts__empty">אין נתוני קטגוריות בתקופה זו</p>
+          <p className="stats-charts__empty">אין נתוני מכירות בתקופה זו</p>
         )}
       </article>
     </section>

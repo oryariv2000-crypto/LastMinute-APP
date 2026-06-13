@@ -1,3 +1,4 @@
+import { Price, Ltr } from '../../lib/formatters'
 import './EcoImpactStats.css'
 
 /**
@@ -26,10 +27,10 @@ export default function EcoImpactStats({
       </header>
 
       <div className="eco-impact__grid">
-        <Stat icon="🥗" value={`${savedKg} ק"ג`}    label="מזון שניצל" />
-        <Stat icon="💰" value={`₪${moneySaved}`}     label="כסף שנחסך" />
-        <Stat icon="🌍" value={`${co2Kg} ק"ג CO₂`}   label="פליטות שנמנעו" />
-        <Stat icon="🛍️" value={ordersCount}          label="הזמנות" />
+        <Stat icon="🥗" value={<><Ltr>{savedKg}</Ltr> ק״ג</>}        label="מזון שניצל" />
+        <Stat icon="💰" value={<Price value={moneySaved} fraction={0} />} label="כסף שנחסך" />
+        <Stat icon="🌍" value={<><Ltr>{co2Kg}</Ltr> ק״ג CO₂</>}      label="פליטות שנמנעו" />
+        <Stat icon="🛍️" value={<Ltr>{ordersCount}</Ltr>}             label="הזמנות" />
       </div>
     </section>
   )

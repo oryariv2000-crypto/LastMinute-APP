@@ -8,11 +8,17 @@
 }
 
 .biz-profile-header__cover {
-  height: 120px;
+  /* Width must drive the box; height follows from the ratio (capped). Without
+     an explicit width, max-height + aspect-ratio makes the browser derive the
+     width from the height, shrinking the banner to ~half the card. */
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  max-height: 200px;
   background:
     linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-dark-forest) 100%);
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .biz-profile-header__content {

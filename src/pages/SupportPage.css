@@ -3,6 +3,20 @@
   background-color: var(--color-background);
 }
 
+/* Honeypot — visually & semantically hidden, but still in the DOM so bots fill
+   it. Not display:none (some bots skip those); pushed off-screen instead. */
+.support__hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .support__top {
   position: sticky;
   top: 0;
@@ -78,6 +92,18 @@
   background: var(--color-surface, #fff);
   resize: vertical;
 }
+
+.support__hint { color: var(--color-on-error-container, #b3261e); font-size: var(--font-size-caption); }
+
+.support__counter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+.support__counter { color: var(--color-text-muted); font-size: var(--font-size-caption); margin-inline-start: auto; }
+.support__counter.is-max { color: var(--color-on-error-container, #b3261e); font-weight: var(--font-weight-bold); }
 
 .support__shot { display: flex; align-items: center; gap: var(--space-3); }
 .support__shot-preview {

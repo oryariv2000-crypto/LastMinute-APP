@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
+import { Link, useLocation } from 'react-router-dom'
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import NavbarB2C from '../components/NavbarB2C/NavbarB2C'
 import BottomNavigationB2C from '../components/BottomNavigation/BottomNavigationB2C'
 import Loader from '../components/Loader/Loader'
 import { getBusinessesForMap } from '../lib/db'
+import { geocodeAddress } from '../lib/geocode'
 import { useProfile } from '../lib/useProfile'
 import './B2CExplorePage.css'
 
@@ -36,6 +38,16 @@ function shopIcon() {
   })
 }
 
+/* Recenters the map when a search match resolves to coordinates. Lives inside
+   <MapContainer> so it can grab the Leaflet instance via useMap. */
+function FlyTo({ lat, lng }) {
+  const map = useMap()
+  useEffect(() => {
+    if (lat != null && lng != null) map.flyTo([lat, lng], 16, { duration: 0.8 })
+  }, [lat, lng, map])
+  return null
+}
+
 function haversineKm([lat1, lon1], [lat2, lon2]) {
   const R = 6371
   const toRad = (d) => (d * Math.PI) / 180
@@ -49,10 +61,13 @@ function haversineKm([lat1, lon1], [lat2, lon2]) {
 
 export default function B2CExplorePage() {
   const { profile } = useProfile()
+  const { state } = useLocation()
+  const focusBusinessId = state?.focusBusinessId ?? null // set when arriving from a search suggestion
   const [pos, setPos]         = useState(null)   // [lat, lng] once resolved
   const [ready, setReady]     = useState(false)  // geolocation settled
   const [denied, setDenied]   = useState(false)
   const [businesses, setBusinesses] = useState([])
+  const [geo, setGeo]         = useState({})     // businessId → { lat, lng } from geocoding
 
   // Resolve the user's location (falls back to Tel Aviv on denial/timeout).
   useEffect(() => {
@@ -78,38 +93,71 @@ export default function B2CExplorePage() {
     return () => { active = false }
   }, [])
 
+  // Geocode real coordinates for businesses that have an address but no stored
+  // lat/lng (cached + rate-limited in geocode.js). Resolves pins to real spots.
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      for (const b of businesses) {
+        if (b.location_lat != null && b.location_lng != null) continue
+        if (!b.address || geo[b.id]) continue
+        const coords = await geocodeAddress(b.address)
+        if (!active) return
+        if (coords) setGeo((prev) => ({ ...prev, [b.id]: coords }))
+      }
+    })()
+    return () => { active = false }
+  }, [businesses]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const center = pos || TEL_AVIV
 
-  // Real coords when present; otherwise scatter deterministically around the
-  // user so the map still illustrates "nearby businesses".
+  // Prefer stored coords, then geocoded coords; only fall back to a deterministic
+  // scatter around the user while a business still has no real location.
   const pins = useMemo(() => {
     return businesses.map((b, i) => {
-      let lat = b.location_lat
-      let lng = b.location_lng
-      if (lat == null || lng == null) {
+      let lat = b.location_lat ?? geo[b.id]?.lat
+      let lng = b.location_lng ?? geo[b.id]?.lng
+      const real = lat != null && lng != null
+      if (!real) {
         const angle = (((i * 73) % 360) * Math.PI) / 180
         const r = 0.004 + (i % 4) * 0.0025
         lat = center[0] + Math.cos(angle) * r
         lng = center[1] + Math.sin(angle) * r
       }
-      return { ...b, lat, lng, distanceKm: haversineKm(center, [lat, lng]) }
+      return { ...b, lat, lng, real, distanceKm: haversineKm(center, [lat, lng]) }
     })
-  }, [businesses, center])
+  }, [businesses, geo, center])
+
+  // Search recenters the map onto the first business whose name matches.
+  const [search, setSearch] = useState('')
+  const textMatch = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return null
+    return pins.find((p) => (p.name || '').toLowerCase().includes(q)) || null
+  }, [search, pins])
+  // A business chosen from the search dropdown takes priority over typed text.
+  const focusMatch = focusBusinessId ? pins.find((p) => p.id === focusBusinessId) : null
+  const match = focusMatch || textMatch
+  const searching = search.trim().length > 0
 
   const initials = (profile?.full_name || 'אני')
     .trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('')
 
   return (
     <div className="b2c-explore" dir="rtl">
-      <NavbarB2C location="המיקום שלי" userName={profile?.full_name || 'לקוח/ה'} showSearch={false} />
+      <NavbarB2C userName={profile?.full_name || 'לקוח/ה'} onSearch={setSearch} />
 
       <div className="b2c-explore__map-wrap">
         <div className="b2c-explore__overlay">
           <h1 className="b2c-explore__title">עסקים קרובים אליך</h1>
           <p className="b2c-explore__sub">
-            {denied
-              ? 'המיקום לא זמין — מציג את אזור תל אביב'
-              : `${pins.length} עסקים באזורך`}
+            {match
+              ? `מציג את ${match.name}`
+              : searching
+                ? 'לא נמצא עסק תואם לחיפוש'
+                : denied
+                  ? 'המיקום לא זמין — מציג את אזור תל אביב'
+                  : `${pins.length} עסקים באזורך`}
           </p>
         </div>
 
@@ -121,6 +169,7 @@ export default function B2CExplorePage() {
               attribution='&copy; OpenStreetMap'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            <FlyTo lat={match?.lat} lng={match?.lng} />
             {/* radius halo around the user, Snap-Map style */}
             <Circle
               center={center}
@@ -136,6 +185,13 @@ export default function B2CExplorePage() {
                   <strong>{p.name}</strong>
                   {p.address ? <><br />{p.address}</> : null}
                   <br />{p.distanceKm.toFixed(1)} ק״מ ממך
+                  <br />
+                  <Link
+                    to={`/b2c/business/${p.id}`}
+                    style={{ display: 'inline-block', marginTop: 6, fontWeight: 700, color: '#2D6A4F' }}
+                  >
+                    כניסה לעסק ←
+                  </Link>
                 </Popup>
               </Marker>
             ))}
@@ -143,7 +199,7 @@ export default function B2CExplorePage() {
         )}
       </div>
 
-      <BottomNavigationB2C orderCount={0} />
+      <BottomNavigationB2C />
     </div>
   )
 }

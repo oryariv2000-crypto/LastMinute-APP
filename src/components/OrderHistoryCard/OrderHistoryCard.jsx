@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Price } from '../../lib/formatters'
 import './OrderHistoryCard.css'
 
 /**
@@ -63,7 +64,7 @@ export default function OrderHistoryCard({
             {total != null && (
               <>
                 <span aria-hidden="true">·</span>
-                <span className="order-history-card__total">₪{total}</span>
+                <Price value={total} fraction={0} className="order-history-card__total" />
               </>
             )}
           </p>

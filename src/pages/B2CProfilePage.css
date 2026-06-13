@@ -1,0 +1,25 @@
+/* ── B2C Profile page ─────────────────────────────────────────── */
+
+/* Keep the settings column comfortably readable on wide desktops instead of
+   stretching across the full 1120px shell. */
+@media (min-width: 760px) {
+  .b2c-profile { max-width: 640px; margin-inline: auto; width: 100%; }
+}
+
+/* Transient feedback banner (e.g. "payments coming soon"). */
+.b2c-profile__notice {
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  animation: notice-in 0.2s ease;
+}
+@keyframes notice-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .b2c-profile__notice { animation: none; }
+}

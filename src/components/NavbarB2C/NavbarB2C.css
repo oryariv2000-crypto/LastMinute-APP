@@ -4,97 +4,75 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  width: 100%;
+  /* Full-bleed background even though the navbar sits inside the centered
+     .b2c-page column — so it spans the whole viewport like the fixed bottom
+     nav bar, with its inner content centered to the same shell width.
+     (body has overflow-x:hidden, so the 100vw breakout adds no scrollbar.) */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
   background-color: var(--color-surface-container-lowest);
   border-bottom: 1px solid var(--color-outline-variant);
   box-shadow: var(--shadow-sm);
 }
 
+/* Aligns to the page content column at every breakpoint.
+   Mobile: brand + actions on one row, search spans below.
+   Desktop: a single row — brand | search | actions. */
 .navbar-b2c__inner {
-  display: flex;
-  flex-direction: column;
-  max-width: 480px;
+  display: grid;
+  max-width: var(--shell-max);
   margin: 0 auto;
-  padding: var(--space-2) var(--space-gutter) var(--space-3);
-  gap: var(--space-2);
+  padding: var(--space-2) var(--space-gutter);
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "brand   actions"
+    "search  search";
+}
+.navbar-b2c__inner--no-search {
+  grid-template-areas: "brand actions";
 }
 
-/* ── Top row: brand + location + avatar ───────────────────── */
-.navbar-b2c__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+@media (min-width: 760px) {
+  .navbar-b2c__inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "brand search actions";
+    padding-block: var(--space-3);
+  }
 }
 
 /* Brand */
 .navbar-b2c__brand {
+  grid-area: brand;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   text-decoration: none;
 }
 
-.navbar-b2c__logo-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-default);
-  background-color: var(--color-brand-primary);
+/* Actions group (avatar + logout) */
+.navbar-b2c__actions {
+  grid-area: actions;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 16px;
+  gap: var(--space-2);
+  justify-self: end;
+}
+
+.navbar-b2c__logo-mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
 .navbar-b2c__brand-name {
   font-family: var(--font-family-display);
-  font-size: var(--font-size-label-md);
+  font-size: 1.05rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-brand-primary);
-}
-
-/* Location pill */
-.navbar-b2c__location {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background-color: var(--color-surface-container-low);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-full);
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
-  flex: 1;
-  max-width: 160px;
-  min-width: 0;
-}
-
-.navbar-b2c__location:hover {
-  background-color: var(--color-surface-container);
-  border-color: var(--color-brand-primary);
-}
-
-.navbar-b2c__location svg {
-  width: 14px;
-  height: 14px;
-  color: var(--color-brand-primary);
-  flex-shrink: 0;
-}
-
-.navbar-b2c__location-text {
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.navbar-b2c__location-chevron {
-  margin-inline-start: auto;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
+  letter-spacing: -0.01em;
 }
 
 /* Avatar */
@@ -142,10 +120,14 @@
   height: 20px;
 }
 
-/* ── Search row ───────────────────────────────────────────── */
+/* ── Search ───────────────────────────────────────────────── */
 .navbar-b2c__search-wrap {
+  grid-area: search;
   position: relative;
   width: 100%;
+}
+@media (min-width: 760px) {
+  .navbar-b2c__search-wrap { max-width: 560px; justify-self: center; }
 }
 
 .navbar-b2c__search-icon {
@@ -190,6 +172,49 @@
   border-color: var(--color-brand-primary);
   background-color: var(--color-surface-container-lowest);
   box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+}
+
+/* ── Search autocomplete dropdown ─────────────────────────── */
+.navbar-b2c__suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline: 0;
+  z-index: 60;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 340px;
+  overflow-y: auto;
+}
+.navbar-b2c__suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  text-align: start;
+  font-family: var(--font-family-base);
+}
+.navbar-b2c__suggestion:hover { background: var(--color-surface-container-high); }
+.navbar-b2c__suggestion-icon { font-size: 18px; flex-shrink: 0; }
+.navbar-b2c__suggestion-text { display: flex; flex-direction: column; min-width: 0; }
+.navbar-b2c__suggestion-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.navbar-b2c__suggestion-addr {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 /* Clear button */

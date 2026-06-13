@@ -1,27 +1,51 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { getBusinessesForMap } from '../../lib/db'
+import BrandLogo from '../BrandLogo/BrandLogo'
 import './NavbarB2C.css'
 
 /**
- * NavbarB2C — Sticky two-row top navigation for end customers.
- *
- * Row 1: brand logo  |  location pill  |  avatar
- * Row 2: full-width search bar
+ * NavbarB2C — Sticky top navigation for end customers. Aligns to the page
+ * content width (--shell-max) at every breakpoint: on mobile it's brand+avatar
+ * with the search below; on desktop it's a single row brand | search | avatar.
  *
  * Props:
- *   location      string   — current city / neighbourhood (default placeholder)
- *   userName      string   — first name shown in avatar initials
+ *   userName      string   — name shown in avatar initials
  *   onSearch      fn       — callback(query: string) when user types
+ *   showSearch    boolean  — render the search bar (default true)
  */
 export default function NavbarB2C({
-  location = 'תל אביב',
-  userName = 'דנה כהן',
+  userName = 'לקוח/ה',
   onSearch,
   showSearch = true,
 }) {
   const [query, setQuery] = useState('')
+  const [focused, setFocused] = useState(false)
   const navigate = useNavigate()
+
+  // Business list for the search autocomplete (shared, cached). Only fetched
+  // when the search bar is actually rendered.
+  const { data: businesses = [] } = useQuery({
+    queryKey: ['businesses-map'],
+    queryFn: getBusinessesForMap,
+    enabled: showSearch,
+  })
+
+  const q = query.trim().toLowerCase()
+  const suggestions = q
+    ? businesses.filter((b) => (b.name || '').toLowerCase().includes(q)).slice(0, 6)
+    : []
+  const showSuggestions = focused && suggestions.length > 0
+
+  function pickBusiness(biz) {
+    setQuery('')
+    setFocused(false)
+    onSearch?.('')
+    // Jump to the map and fly to the chosen business.
+    navigate('/b2c/explore', { state: { focusBusinessId: biz.id } })
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -49,28 +73,15 @@ export default function NavbarB2C({
 
   return (
     <header className="navbar-b2c" role="banner">
-      <div className="navbar-b2c__inner">
+      <div className={`navbar-b2c__inner${showSearch ? '' : ' navbar-b2c__inner--no-search'}`}>
 
-        {/* ── Top row ───────────────────────────────────── */}
-        <div className="navbar-b2c__top">
-          {/* Brand */}
-          <Link to="/b2c/home" className="navbar-b2c__brand" aria-label="Last Minute — דף הבית">
-            <span className="navbar-b2c__logo-mark" aria-hidden="true">🌿</span>
-            <span className="navbar-b2c__brand-name">Last Minute</span>
-          </Link>
+        {/* Brand */}
+        <Link to="/b2c/home" className="navbar-b2c__brand" aria-label="Last Minute — דף הבית">
+          <BrandLogo tone="dark" size="sm" />
+        </Link>
 
-          {/* Location picker */}
-          <button
-            className="navbar-b2c__location"
-            aria-label={`מיקום נוכחי: ${location}. לחץ לשינוי`}
-            id="b2c-nav-location"
-          >
-            <LocationPinIcon />
-            <span className="navbar-b2c__location-text">{location}</span>
-            <ChevronDownIcon className="navbar-b2c__location-chevron" />
-          </button>
-
-          {/* Avatar / Profile */}
+        {/* Actions: avatar + logout */}
+        <div className="navbar-b2c__actions">
           <Link
             to="/b2c/profile"
             className="navbar-b2c__avatar"
@@ -79,8 +90,6 @@ export default function NavbarB2C({
           >
             {initials}
           </Link>
-
-          {/* Logout */}
           <button
             className="navbar-b2c__logout"
             onClick={handleLogout}
@@ -91,7 +100,7 @@ export default function NavbarB2C({
           </button>
         </div>
 
-        {/* ── Search row ────────────────────────────────── */}
+        {/* ── Search ────────────────────────────────────── */}
         {showSearch && (
           <div className="navbar-b2c__search-wrap">
             <span className="navbar-b2c__search-icon" aria-hidden="true">
@@ -101,10 +110,12 @@ export default function NavbarB2C({
               id="b2c-nav-search"
               className="navbar-b2c__search-input"
               type="search"
-              placeholder="חפש מסעדות, מאפיות, קופה..."
+              placeholder="חפש עסקים — מאפיות, בתי קפה, מסעדות..."
               value={query}
               onChange={handleChange}
-              aria-label="חיפוש עסקים ומבצעים"
+              onFocus={() => setFocused(true)}
+              onBlur={() => setTimeout(() => setFocused(false), 150)}
+              aria-label="חיפוש עסקים"
               autoComplete="off"
             />
             {query && (
@@ -115,6 +126,27 @@ export default function NavbarB2C({
               >
                 <XIcon />
               </button>
+            )}
+
+            {showSuggestions && (
+              <ul className="navbar-b2c__suggestions" role="listbox" aria-label="עסקים תואמים">
+                {suggestions.map((b) => (
+                  <li key={b.id} role="option" aria-selected="false">
+                    <button
+                      type="button"
+                      className="navbar-b2c__suggestion"
+                      onMouseDown={(e) => e.preventDefault()} /* keep input from blurring first */
+                      onClick={() => pickBusiness(b)}
+                    >
+                      <span className="navbar-b2c__suggestion-icon" aria-hidden="true">🏪</span>
+                      <span className="navbar-b2c__suggestion-text">
+                        <span className="navbar-b2c__suggestion-name">{b.name}</span>
+                        {b.address && <span className="navbar-b2c__suggestion-addr">{b.address}</span>}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}
@@ -131,26 +163,6 @@ function SearchIcon() {
       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  )
-}
-
-function LocationPinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  )
-}
-
-function ChevronDownIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      style={{ width: 12, height: 12 }} aria-hidden="true">
-      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }

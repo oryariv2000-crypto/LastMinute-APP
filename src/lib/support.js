@@ -15,17 +15,35 @@ export const TICKET_CATEGORIES = [
   { id: 'request',  label: 'בקשה' },
 ]
 
-/* Predefined subjects for the "נושא" picker. 'other' reveals a free-text box. */
-export const TICKET_TOPICS = [
-  { id: 'order',    label: 'בעיה בהזמנה או באיסוף' },
-  { id: 'payment',  label: 'תשלום וחיוב' },
-  { id: 'tech',     label: 'תקלה טכנית באפליקציה' },
-  { id: 'product',  label: 'שאלה על מבצע או מוצר' },
-  { id: 'account',  label: 'ניהול חשבון ופרופיל' },
-  { id: 'business', label: 'ניהול עסק ומבצעים' },
-  { id: 'idea',     label: 'הצעה לשיפור' },
-  { id: 'other',    label: 'אחר' },
+/* First field on the public form: who is reaching out. Maps to the `role`
+   column (the admin board already shows it as לקוח / בעל עסק). */
+export const SUPPORT_AUDIENCES = [
+  { id: 'customer',       label: 'לקוח' },
+  { id: 'business_owner', label: 'בעל עסק' },
 ]
+
+/* The "נושא הפנייה" options depend on the chosen audience. Each list ends with
+   'other', which reveals a free-text field. */
+export const TOPICS_BY_AUDIENCE = {
+  customer: [
+    { id: 'order',   label: 'בעיה בהזמנה או באיסוף' },
+    { id: 'payment', label: 'תשלום וחיוב' },
+    { id: 'product', label: 'שאלה על מבצע או מוצר' },
+    { id: 'account', label: 'ניהול חשבון ופרופיל' },
+    { id: 'tech',    label: 'תקלה טכנית באפליקציה' },
+    { id: 'other',   label: 'אחר' },
+  ],
+  business_owner: [
+    { id: 'deals',      label: 'ניהול מבצעים ומלאי' },
+    { id: 'storefront', label: 'עמוד העסק והגדרות' },
+    { id: 'billing',    label: 'חיוב ותשלומים לעסק' },
+    { id: 'verify',     label: 'אימות ורישום העסק' },
+    { id: 'tech',       label: 'תקלה טכנית' },
+    { id: 'idea',       label: 'הצעה לשיפור' },
+    { id: 'other',      label: 'אחר' },
+  ],
+}
+
 export const TICKET_PRIORITIES = [
   { id: 'low',    label: 'נמוכה' },
   { id: 'normal', label: 'רגילה' },

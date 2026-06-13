@@ -1,0 +1,52 @@
+/* DevelopmentNotice — standard "not real yet" marker (badge + banner). */
+
+.dev-notice {
+  unicode-bidi: isolate;
+}
+
+/* ── Badge: small inline pill (settings rows, etc.) ─────────────────── */
+.dev-notice--badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-tertiary-fixed);
+  color: var(--color-tertiary);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* ── Banner: full-width notice (checkout payment placeholder, etc.) ──── */
+.dev-notice--banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-tertiary-fixed-dim);
+  border-radius: var(--radius-md);
+  background-color: var(--color-tertiary-fixed);
+  color: var(--color-on-surface);
+}
+
+.dev-notice__icon {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.dev-notice__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dev-notice__title {
+  font-size: var(--font-size-label-md);
+  font-weight: 700;
+  color: var(--color-tertiary);
+}
+
+.dev-notice__body {
+  font-size: var(--font-size-label-md);
+  color: var(--color-on-surface-variant);
+}

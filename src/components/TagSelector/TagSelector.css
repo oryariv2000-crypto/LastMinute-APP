@@ -1,0 +1,73 @@
+/* ── TagSelector — grouped multi-select chips ─────────────────── */
+.tag-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tag-selector__group {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0; /* fieldset default min-width breaks flex shrinking */
+}
+
+.tag-selector__legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface-variant);
+}
+
+.tag-selector__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The chip itself — a smaller cousin of .filter-chip, reused on the feed too. */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+.tag-chip:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+.tag-chip:active {
+  transform: scale(0.97);
+}
+
+.tag-chip--active {
+  background-color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.tag-chip--active:hover {
+  background-color: var(--color-dark-forest);
+  border-color: var(--color-dark-forest);
+  color: var(--color-on-primary);
+}
+
+.tag-chip__icon {
+  font-size: 14px;
+  line-height: 1;
+}

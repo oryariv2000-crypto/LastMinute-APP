@@ -1,3 +1,4 @@
+import { Price } from '../../lib/formatters'
 import './OrderSummarySection.css'
 
 /**
@@ -34,11 +35,9 @@ export default function OrderSummarySection({ items = [], serviceFee = 0 }) {
               <span className="order-summary__row-biz">{it.businessName}</span>
             </span>
             <span className="order-summary__row-price">
-              <span>₪{it.price * it.quantity}</span>
+              <Price value={it.price * it.quantity} fraction={0} />
               {it.originalPrice && it.originalPrice > it.price && (
-                <span className="order-summary__row-original">
-                  ₪{it.originalPrice * it.quantity}
-                </span>
+                <Price value={it.originalPrice * it.quantity} fraction={0} className="order-summary__row-original" />
               )}
             </span>
           </li>
@@ -48,23 +47,23 @@ export default function OrderSummarySection({ items = [], serviceFee = 0 }) {
       <dl className="order-summary__totals">
         <div>
           <dt>סכום ביניים</dt>
-          <dd>₪{subtotal}</dd>
+          <dd><Price value={subtotal} fraction={0} /></dd>
         </div>
         {serviceFee > 0 && (
           <div>
             <dt>דמי שירות</dt>
-            <dd>₪{serviceFee}</dd>
+            <dd><Price value={serviceFee} fraction={0} /></dd>
           </div>
         )}
         {savings > 0 && (
           <div className="order-summary__savings">
             <dt>חיסכון 🌿</dt>
-            <dd>-₪{savings}</dd>
+            <dd><Price value={savings} fraction={0} currency="−₪" /></dd>
           </div>
         )}
         <div className="order-summary__grand">
           <dt>סה״כ לתשלום</dt>
-          <dd>₪{total}</dd>
+          <dd><Price value={total} fraction={0} /></dd>
         </div>
       </dl>
     </section>

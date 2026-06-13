@@ -125,10 +125,11 @@ begin
 
   return query
   select
-    coalesce(nullif(trim(d.category), ''), 'אחר') as category,
-    coalesce(sum(o.total), 0)::numeric            as revenue
+    coalesce(c.name, 'אחר')            as category,
+    coalesce(sum(o.total), 0)::numeric as revenue
   from public.orders o
   join public.deals d on d.id = o.deal_id
+  left join public.categories c on c.id = d.category_id
   where d.business_id = p_business_id
     and o.status <> 'cancelled'
     and (p_from is null or o.created_at >= p_from)

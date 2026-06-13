@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm/AuthForm'
 import { supabase } from '../lib/supabase'
+import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
 
 /**
@@ -53,8 +54,7 @@ export default function LoginPage() {
 
         {/* Brand header */}
         <div className="auth-page__brand" aria-label="Last Minute — דף ראשי">
-          <span className="auth-page__logo-mark" aria-hidden="true">🌿</span>
-          <span className="auth-page__brand-name">Last Minute</span>
+          <BrandLogo tone="dark" size="lg" />
         </div>
 
         {/* Headline */}

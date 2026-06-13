@@ -5,11 +5,13 @@ import BottomNavigationB2B from '../components/BottomNavigation/BottomNavigation
 import BusinessProfileHeader from '../components/BusinessProfileHeader/BusinessProfileHeader'
 import BusinessSettingsList from '../components/BusinessSettingsList/BusinessSettingsList'
 import StorefrontEditModal from '../components/StorefrontEditModal/StorefrontEditModal'
+import DevelopmentNotice from '../components/DevelopmentNotice/DevelopmentNotice'
 import Loader from '../components/Loader/Loader'
 import { supabase } from '../lib/supabase'
 import { updateMyProfile, updateMyBusiness, uploadDealImage } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { businessOpenState, manualCloseUntil, todayKey } from '../lib/businessHours'
+import { businessTypeLabel } from '../lib/businessTypes'
 import './B2BPage.css'
 import './B2BProfilePage.css'
 
@@ -116,8 +118,8 @@ export default function B2BProfilePage() {
     id: 'account',
     title: 'חשבון',
     items: [
-      { id: 'payments', icon: <CardIcon />, label: 'אמצעי תשלום', type: 'value', value: 'בקרוב', onClick: () => {} },
-      { id: 'team', icon: <UsersIcon />, label: 'צוות והרשאות', type: 'value', value: 'בקרוב', onClick: () => {} },
+      { id: 'payments', icon: <CardIcon />, label: 'אמצעי תשלום', type: 'value', value: <DevelopmentNotice variant="badge" label="בקרוב" />, onClick: () => {} },
+      { id: 'team', icon: <UsersIcon />, label: 'צוות והרשאות', type: 'value', value: <DevelopmentNotice variant="badge" label="בקרוב" />, onClick: () => {} },
       { id: 'support', icon: <HelpIcon />, label: 'עזרה ותמיכה', type: 'link',
         onClick: () => navigate('/support') },
       { id: 'logout', icon: <LogoutIcon />, label: 'התנתקות', type: 'link', danger: true, onClick: handleLogout },
@@ -154,7 +156,7 @@ export default function B2BProfilePage() {
                 ＋ הוסיפו תיאור קצר שיוצג ללקוחות
               </button>}
           {business?.business_type && (
-            <span className="biz-section__chip">{business.business_type}</span>
+            <span className="biz-section__chip">{businessTypeLabel(business.business_type)}</span>
           )}
         </section>
 

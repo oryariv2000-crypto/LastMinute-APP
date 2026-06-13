@@ -1,4 +1,6 @@
+import { useRef, useState } from 'react'
 import InputField from '../InputField/InputField'
+import TagSelector from '../TagSelector/TagSelector'
 import './ReviewListItem.css'
 
 /**
@@ -11,32 +13,41 @@ import './ReviewListItem.css'
  *   id             string  — item id (for input/label association)
  *   image          string  — preview image URL (or null)
  *   title          string  — item name (editable)
- *   category       string  — AI category label (shown as a chip)
  *   originalPrice  number   — regular price (editable)
  *   suggestedPrice number   — sale price (editable, the "manual price")
  *   quantity       number   — quantity (controlled)
+ *   tags           string[] — selected characteristic slugs (diet/state/allergen)
  *   onTitleChange  fn(next)            — updated title
  *   onQtyChange    fn(next)            — updated quantity
  *   onPriceChange  fn(field, value)    — field is 'originalPrice' | 'suggestedPrice'
  *   onImageChange  fn({ url, file })   — owner picked a photo for this deal
+ *   onTagsChange   fn(nextSlugs)       — updated characteristic tags
  *   onRemove       fn                  — remove this row from the list
  */
 export default function ReviewListItem({
   id,
   image,
   title,
-  category,
   originalPrice = 0,
   suggestedPrice = 0,
   quantity,
+  tags = [],
   onTitleChange,
   onQtyChange,
   onPriceChange,
   onImageChange,
+  onTagsChange,
   onRemove,
 }) {
   const dec = () => onQtyChange?.(Math.max(0, quantity - 1))
   const inc = () => onQtyChange?.(quantity + 1)
+
+  // Photo source picker: tapping the tile opens a menu to either shoot a new
+  // photo (camera) or pick an existing file. Two inputs back the two paths —
+  // only the camera one carries `capture` so the file path opens the gallery.
+  const [menuOpen, setMenuOpen] = useState(false)
+  const cameraRef = useRef(null)
+  const fileRef = useRef(null)
 
   const pct =
     originalPrice > 0 && originalPrice > suggestedPrice
@@ -55,31 +66,51 @@ export default function ReviewListItem({
     if (!file) return
     onImageChange?.({ url: URL.createObjectURL(file), file })
     e.target.value = ''
+    setMenuOpen(false)
   }
 
   return (
     <li className="review-item">
-      {/* Per-deal photo picker */}
-      <label className="review-item__media" aria-label={`הוסף תמונה ל${title}`}>
-        {image ? (
-          <img src={image} alt="" className="review-item__img" />
-        ) : (
-          <div className="review-item__img review-item__img--placeholder" aria-hidden="true">🥖</div>
+      {/* Per-deal photo picker — tile opens a camera / file choice menu */}
+      <div className="review-item__media-wrap">
+        <button
+          type="button"
+          className="review-item__media"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label={`הוסף תמונה ל${title}`}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+        >
+          {image ? (
+            <img src={image} alt="" className="review-item__img" />
+          ) : (
+            <div className="review-item__img review-item__img--placeholder" aria-hidden="true">🥖</div>
+          )}
+          <span className="review-item__media-overlay" aria-hidden="true">
+            <CameraIcon />
+          </span>
+        </button>
+
+        {menuOpen && (
+          <>
+            <div className="review-item__media-backdrop" onClick={() => setMenuOpen(false)} />
+            <div className="review-item__media-menu" role="menu">
+              <button type="button" role="menuitem" onClick={() => cameraRef.current?.click()}>
+                <CameraIcon /> צלם תמונה
+              </button>
+              <button type="button" role="menuitem" onClick={() => fileRef.current?.click()}>
+                <ImageIcon /> בחר מהקבצים
+              </button>
+            </div>
+          </>
         )}
-        <span className="review-item__media-overlay" aria-hidden="true">
-          <CameraIcon />
-        </span>
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          hidden
-          onChange={handleImage}
-        />
-      </label>
+
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={handleImage} />
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleImage} />
+      </div>
 
       <div className="review-item__body">
-        {/* Editable title + AI category chip */}
+        {/* Editable title */}
         <div className="review-item__head">
           <div className="review-item__title-field">
             <InputField
@@ -90,7 +121,6 @@ export default function ReviewListItem({
               aria-label="שם המוצר"
             />
           </div>
-          {category && <span className="review-item__category">{category}</span>}
         </div>
 
         {/* Editable pricing */}
@@ -135,6 +165,16 @@ export default function ReviewListItem({
             </span>
           )}
         </div>
+
+        {/* Characteristics (dietary / state / allergens) — collapsed by default
+            so the row stays compact; a count badge shows when any are picked. */}
+        <details className="review-item__tags">
+          <summary className="review-item__tags-summary">
+            <TagIcon />
+            מאפיינים{tags.length > 0 ? ` (${tags.length})` : ''}
+          </summary>
+          <TagSelector value={tags} onChange={(next) => onTagsChange?.(next)} />
+        </details>
 
         <div className="review-item__controls">
           <div className="review-item__qty" role="group" aria-label={`כמות ${title}`}>
@@ -181,12 +221,31 @@ function CameraIcon() {
     </svg>
   )
 }
+function ImageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  )
+}
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+}
+function TagIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
     </svg>
   )
 }

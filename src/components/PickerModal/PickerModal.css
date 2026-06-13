@@ -1,0 +1,39 @@
+/* ── PickerModal ─────────────────────────────────────────────── */
+.picker { max-width: 420px; }
+
+.picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.picker__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 12px var(--space-3);
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+.picker__option:hover { background-color: var(--color-surface-container-low); }
+.picker__option--active {
+  border-color: var(--color-brand-primary);
+  background-color: var(--color-secondary-container);
+}
+
+.picker__option-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.picker__option-label { font-weight: var(--font-weight-semibold); }
+.picker__option-hint { font-size: var(--font-size-caption); color: var(--color-text-muted); }
+
+.picker__check { width: 18px; height: 18px; color: var(--color-brand-primary); flex-shrink: 0; }

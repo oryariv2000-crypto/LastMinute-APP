@@ -44,6 +44,10 @@ export default function B2BAiReviewPage() {
     setItems(prev => prev.map(it => (it.id === id ? { ...it, title } : it)))
   }
 
+  function setTags(id, tags) {
+    setItems(prev => prev.map(it => (it.id === id ? { ...it, tags } : it)))
+  }
+
   function setQty(id, qty) {
     setItems(prev => prev.map(it => (it.id === id ? { ...it, quantity: qty } : it)))
   }
@@ -64,7 +68,7 @@ export default function B2BAiReviewPage() {
     const id = globalThis.crypto?.randomUUID?.() ?? `tmp-${Math.random().toString(36).slice(2)}`
     setItems(prev => [
       ...prev,
-      { id, title: '', category: '', originalPrice: 0, suggestedPrice: 0, quantity: 1, image: null, imageFile: null },
+      { id, title: '', tags: [], originalPrice: 0, suggestedPrice: 0, quantity: 1, image: null, imageFile: null },
     ])
   }
 
@@ -99,7 +103,7 @@ export default function B2BAiReviewPage() {
         if (it.imageFile) imageUrl = await uploadDealImage(it.imageFile)
         await createDeal({
           title: it.title.trim(),
-          category: it.category || null,
+          tags: it.tags || [],
           // With no separate regular price, treat the sale price as the
           // baseline so the deal stores a consistent (0%-discount) pair.
           original_price: it.originalPrice > 0 ? it.originalPrice : it.suggestedPrice,
@@ -148,6 +152,7 @@ export default function B2BAiReviewPage() {
           onQtyChange={setQty}
           onPriceChange={setPrice}
           onImageChange={setImage}
+          onTagsChange={setTags}
           onRemove={remove}
           onAdd={addItem}
           suggestedTotal={total}
@@ -179,7 +184,7 @@ function fromScanned(it) {
   return {
     id: it.id || (globalThis.crypto?.randomUUID?.() ?? `tmp-${Math.random().toString(36).slice(2)}`),
     title: it.title || '',
-    category: it.category || '',
+    tags: Array.isArray(it.tags) ? it.tags : [],
     originalPrice: Number(it.original_price) || 0,
     suggestedPrice: Number(it.discount_price) || 0,
     quantity: Number(it.quantity) || 0,
@@ -194,7 +199,7 @@ const INITIAL_ITEMS = [
     id: 'r1',
     title: 'בייגלה שומשום טרי',
     category: 'מאפים',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=800&q=80&auto=format&fit=crop',
     originalPrice: 18,
     suggestedPrice: 9,
     discountPct: 50,
@@ -204,7 +209,7 @@ const INITIAL_ITEMS = [
     id: 'r2',
     title: 'סלט קינואה וירקות',
     category: 'סלטים',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=800&q=80&auto=format&fit=crop',
     originalPrice: 42,
     suggestedPrice: 25,
     discountPct: 40,
@@ -214,7 +219,7 @@ const INITIAL_ITEMS = [
     id: 'r3',
     title: 'מאפה גבינה בולגרית',
     category: 'מאפים',
-    image: 'https://images.unsplash.com/photo-1565299543923-37dd37887442?w=400&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1565299543923-37dd37887442?w=800&h=800&q=80&auto=format&fit=crop',
     originalPrice: 28,
     suggestedPrice: 18,
     discountPct: 35,
@@ -224,7 +229,7 @@ const INITIAL_ITEMS = [
     id: 'r4',
     title: 'קרואסון שוקולד',
     category: 'מאפים',
-    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&h=800&q=80&auto=format&fit=crop',
     originalPrice: 14,
     suggestedPrice: 7,
     discountPct: 50,

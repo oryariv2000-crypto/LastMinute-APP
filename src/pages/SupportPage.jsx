@@ -1,102 +1,112 @@
 import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { submitSupportTicket, getMySupportTickets } from '../lib/db'
 import {
-  createSupportTicket, getMySupportTickets, uploadDealImage,
-} from '../lib/db'
-import { useProfile } from '../lib/useProfile'
-import {
-  TICKET_CATEGORIES, TICKET_PRIORITIES, TICKET_STATUSES, TICKET_TOPICS, labelOf, isAdminEmail,
+  SUPPORT_AUDIENCES, TOPICS_BY_AUDIENCE,
+  TICKET_CATEGORIES, TICKET_STATUSES, labelOf, isAdminEmail,
 } from '../lib/support'
 import Loader from '../components/Loader/Loader'
 import './SupportPage.css'
 
+const DESC_MAX = 250
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const PHONE_RE = /^[\d\s\-+()]{9,15}$/
+
+/** Map the granular form topic to the table's category enum (bug/question/request). */
+function topicToCategory(topic) {
+  if (topic === 'tech') return 'bug'
+  if (topic === 'idea') return 'request'
+  return 'question'
+}
+
 /**
- * SupportPage — help & support for ANY signed-in user (customer or owner).
- * Submit a ticket (category, priority, subject, description, contact,
- * screenshot) and see the status of your previous tickets.
+ * SupportPage — public help & support form (lean MVP). Anyone (guest or signed
+ * in) picks an audience (לקוח / בעל עסק) and a topic, leaves contact details and
+ * a short message, and submits. The ticket is written straight to the
+ * `support_tickets` table via db.js — no Edge Function, email or Turnstile.
+ * A hidden Honeypot field blocks naive bots. Signed-in users also see the
+ * status of their previous tickets.
  *
- * Route: /support
+ * Route: /support (public)
  */
 export default function SupportPage() {
   const navigate = useNavigate()
-  const { profile } = useProfile()
-  const [email, setEmail] = useState(null)
-
-  const [form, setForm] = useState({
-    category: 'question', priority: 'normal',
-    topic: TICKET_TOPICS[0].id, subjectOther: '',
-    description: '', contact: '',
-  })
-  const [shot, setShot]       = useState(null)   // { url, uploading }
+  const [email, setEmail]     = useState(null)
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving]   = useState(false)
   const [sent, setSent]       = useState(false)
   const [error, setError]     = useState('')
 
+  const {
+    register, handleSubmit, watch, setValue, reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: {
+      role: 'customer', topic: '', subjectOther: '',
+      email: '', phone: '', description: '',
+      company: '', // honeypot — must stay empty
+    },
+  })
+
+  const role = watch('role')
+  const topic = watch('topic')
+  const description = watch('description') ?? ''
+  const topics = TOPICS_BY_AUDIENCE[role] ?? []
+
+  // Reset the topic whenever the audience changes (the options differ).
+  useEffect(() => { setValue('topic', '') }, [role, setValue])
+
+  // Prefill email + load "my tickets" history for signed-in users only.
   useEffect(() => {
     let active = true
     ;(async () => {
       try {
         const { data } = await supabase.auth.getUser()
-        if (active) setEmail(data.user?.email ?? null)
-        const rows = await getMySupportTickets()
-        if (active) setTickets(rows)
-      } catch (err) {
-        if (active) setError(err?.message || 'שגיאה בטעינת הפניות')
+        const u = data.user
+        if (active && u?.email) {
+          setEmail(u.email)
+          setValue('email', u.email)
+          const rows = await getMySupportTickets()
+          if (active) setTickets(rows)
+        }
+      } catch {
+        /* guest — no history, that's fine */
       } finally {
         if (active) setLoading(false)
       }
     })()
     return () => { active = false }
-  }, [])
+  }, [setValue])
 
-  const set = (name) => (e) => setForm((p) => ({ ...p, [name]: e.target.value }))
+  async function onSubmit(values) {
+    setError(''); setSent(false)
 
-  async function handleShot(e) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    setShot({ uploading: true })
+    // Honeypot: a real user never sees/fills this. If it's filled, silently
+    // "succeed" without writing anything — the bot gets no signal.
+    if (values.company) { setSent(true); reset({ ...values, company: '', description: '' }); return }
+
+    const subject = values.topic === 'other'
+      ? values.subjectOther.trim()
+      : labelOf(topics, values.topic)
+    if (!subject) { setError('יש לבחור נושא לפנייה'); return }
+
     try {
-      const url = await uploadDealImage(file)
-      setShot({ url, uploading: false })
-    } catch (err) {
-      setError(err?.message || 'העלאת צילום המסך נכשלה')
-      setShot(null)
-    }
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    // Resolve the subject from the topic picker (free text when "אחר").
-    const subject = form.topic === 'other'
-      ? form.subjectOther.trim()
-      : labelOf(TICKET_TOPICS, form.topic)
-    if (!subject) { setError('יש לכתוב נושא לפניה'); return }
-    if (!form.contact.trim()) { setError('יש למלא פרטי קשר לחזרה אליך'); return }
-
-    setError('')
-    setSaving(true)
-    try {
-      const created = await createSupportTicket({
-        role: profile?.role ?? null,
-        category: form.category,
-        priority: form.priority,
+      const contact = [values.email.trim(), values.phone.trim()].filter(Boolean).join(' · ')
+      const ticket = await submitSupportTicket({
+        role: values.role,
+        category: topicToCategory(values.topic),
+        priority: 'normal',
         subject,
-        description: form.description.trim(),
-        contact: form.contact.trim(),
-        screenshot_url: shot?.url ?? null,
+        description: values.description.trim(),
+        contact,
       })
-      setTickets((t) => [created, ...t])
-      setForm({ category: 'question', priority: 'normal', topic: TICKET_TOPICS[0].id, subjectOther: '', description: '', contact: '' })
-      setShot(null)
       setSent(true)
+      if (ticket) setTickets((t) => [ticket, ...t])
+      reset({ role: values.role, topic: '', subjectOther: '', email: email ?? '', phone: '', description: '', company: '' })
     } catch (err) {
-      setError(err?.message || 'שליחת הפניה נכשלה')
-    } finally {
-      setSaving(false)
+      setError(err?.message || 'שליחת הפנייה נכשלה')
     }
   }
 
@@ -111,96 +121,143 @@ export default function SupportPage() {
       </header>
 
       <main className="support__main">
-        <p className="support__intro">נתקלת בבעיה או יש לך שאלה? פתח/י פניה ונחזור אליך.</p>
+        <p className="support__intro">נתקלת בבעיה או יש לך שאלה? מלא/י את הטופס ונחזור אליך בהקדם.</p>
 
         {sent && (
           <div className="support__toast" role="status">
-            ✓ הפניה נשלחה! נטפל בה בהקדם. אפשר לעקוב אחרי הסטטוס למטה.
+            ✓ הפנייה נשלחה! קיבלנו אותה ונחזור אליך דרך פרטי הקשר שהשארת.
           </div>
         )}
         {error && <div className="support__error" role="alert">{error}</div>}
 
-        <form className="support__form card" onSubmit={handleSubmit}>
-          <div className="support__row">
-            <label className="support__field">
-              <span>קטגוריה</span>
-              <select value={form.category} onChange={set('category')}>
-                {TICKET_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-              </select>
-            </label>
-            <label className="support__field">
-              <span>דחיפות</span>
-              <select value={form.priority} onChange={set('priority')}>
-                {TICKET_PRIORITIES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-              </select>
-            </label>
-          </div>
+        <form className="support__form card" onSubmit={handleSubmit(onSubmit)} noValidate>
+          {/* Honeypot — hidden from humans; bots tend to fill every field. */}
+          <input
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="support__hp"
+            {...register('company')}
+          />
 
+          {/* Audience → drives the topic list below */}
           <label className="support__field">
-            <span>נושא</span>
-            <select value={form.topic} onChange={set('topic')}>
-              {TICKET_TOPICS.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            <span>אני פונה בתור</span>
+            <select {...register('role')}>
+              {SUPPORT_AUDIENCES.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
             </select>
           </label>
 
-          {form.topic === 'other' && (
+          {/* Topic — depends on the chosen audience */}
+          <label className="support__field">
+            <span>נושא הפנייה</span>
+            <select {...register('topic', { required: 'יש לבחור נושא' })}>
+              <option value="" disabled>בחר/י נושא…</option>
+              {topics.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+            {errors.topic && <small className="support__hint">{errors.topic.message}</small>}
+          </label>
+
+          {topic === 'other' && (
             <label className="support__field">
               <span>פירוט הנושא</span>
-              <input type="text" value={form.subjectOther} onChange={set('subjectOther')} required placeholder="במשפט אחד — על מה הפניה?" />
+              <input
+                type="text"
+                placeholder="במשפט אחד — על מה הפנייה?"
+                {...register('subjectOther', {
+                  validate: (v) => topic !== 'other' || v.trim().length > 0 || 'יש לפרט את הנושא',
+                })}
+              />
+              {errors.subjectOther && <small className="support__hint">{errors.subjectOther.message}</small>}
             </label>
           )}
 
-          <label className="support__field">
-            <span>תיאור</span>
-            <textarea value={form.description} onChange={set('description')} required rows={4} placeholder="פרט/י מה קרה, מה ציפית שיקרה, וכל מידע שיעזור לנו." />
-          </label>
-
-          <label className="support__field">
-            <span>פרטי קשר לחזרה (טלפון/מייל) *</span>
-            <input type="text" value={form.contact} onChange={set('contact')} required placeholder="כדי ששירות הלקוחות יוכל לחזור אליך" />
-          </label>
-
-          <div className="support__field">
-            <span>צילום מסך (אופציונלי)</span>
-            <div className="support__shot">
-              {shot?.url && <img src={shot.url} alt="" className="support__shot-preview" />}
-              <label className="btn btn-ghost support__shot-btn">
-                {shot?.uploading ? 'מעלה…' : shot?.url ? 'החלף תמונה' : 'צרף תמונה'}
-                <input type="file" accept="image/*" hidden onChange={handleShot} />
-              </label>
-            </div>
+          {/* Contact — both required */}
+          <div className="support__row">
+            <label className="support__field">
+              <span>אימייל *</span>
+              <input
+                type="email"
+                inputMode="email"
+                placeholder="name@example.com"
+                {...register('email', {
+                  required: 'יש למלא אימייל',
+                  pattern: { value: EMAIL_RE, message: 'כתובת אימייל לא תקינה' },
+                })}
+              />
+              {errors.email && <small className="support__hint">{errors.email.message}</small>}
+            </label>
+            <label className="support__field">
+              <span>טלפון *</span>
+              <input
+                type="tel"
+                inputMode="tel"
+                placeholder="050-0000000"
+                {...register('phone', {
+                  required: 'יש למלא טלפון',
+                  pattern: { value: PHONE_RE, message: 'מספר טלפון לא תקין' },
+                })}
+              />
+              {errors.phone && <small className="support__hint">{errors.phone.message}</small>}
+            </label>
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={saving || shot?.uploading}>
-            {saving ? 'שולח…' : 'שליחת פניה'}
+          {/* Description with a live character counter */}
+          <label className="support__field">
+            <span>תיאור הפנייה</span>
+            <textarea
+              rows={4}
+              maxLength={DESC_MAX}
+              placeholder="פרט/י מה קרה, מה ציפית שיקרה, וכל מידע שיעזור לנו."
+              {...register('description', {
+                required: 'יש לכתוב תיאור',
+                maxLength: { value: DESC_MAX, message: `עד ${DESC_MAX} תווים` },
+              })}
+            />
+            <div className="support__counter-row">
+              {errors.description
+                ? <small className="support__hint">{errors.description.message}</small>
+                : <span />}
+              <small className={`support__counter ${description.length >= DESC_MAX ? 'is-max' : ''}`}>
+                {description.length}/{DESC_MAX}
+              </small>
+            </div>
+          </label>
+
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'שולח…' : 'שליחת פנייה'}
           </button>
         </form>
 
-        <section className="support__history">
-          <h2 className="support__history-title">הפניות שלי</h2>
-          {loading ? (
-            <Loader label="טוען…" />
-          ) : tickets.length === 0 ? (
-            <p className="support__empty">עדיין לא פתחת פניות.</p>
-          ) : (
-            <ul className="support__list">
-              {tickets.map((t) => (
-                <li key={t.id} className="support__ticket">
-                  <div className="support__ticket-head">
-                    <span className="support__ticket-subject">{t.subject}</span>
-                    <span className={`support__badge support__badge--${t.status}`}>
-                      {labelOf(TICKET_STATUSES, t.status)}
-                    </span>
-                  </div>
-                  <div className="support__ticket-meta">
-                    {labelOf(TICKET_CATEGORIES, t.category)} · {new Date(t.created_at).toLocaleDateString('he-IL')}
-                  </div>
-                  <p className="support__ticket-desc">{t.description}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {/* History — only meaningful for signed-in users */}
+        {email && (
+          <section className="support__history">
+            <h2 className="support__history-title">הפניות שלי</h2>
+            {loading ? (
+              <Loader label="טוען…" />
+            ) : tickets.length === 0 ? (
+              <p className="support__empty">עדיין לא פתחת פניות.</p>
+            ) : (
+              <ul className="support__list">
+                {tickets.map((t) => (
+                  <li key={t.id} className="support__ticket">
+                    <div className="support__ticket-head">
+                      <span className="support__ticket-subject">{t.subject}</span>
+                      <span className={`support__badge support__badge--${t.status}`}>
+                        {labelOf(TICKET_STATUSES, t.status)}
+                      </span>
+                    </div>
+                    <div className="support__ticket-meta">
+                      {labelOf(TICKET_CATEGORIES, t.category)} · {new Date(t.created_at).toLocaleDateString('he-IL')}
+                    </div>
+                    <p className="support__ticket-desc">{t.description}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </main>
     </div>
   )

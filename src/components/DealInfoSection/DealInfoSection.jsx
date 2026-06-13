@@ -18,7 +18,8 @@ import './DealInfoSection.css'
  *   price         number
  *   discountPct   number
  *   description   string
- *   tags          string[] — small chips beneath title
+ *   tags          string[] — small chips beneath title (category + characteristics)
+ *   allergens     string[] — "contains" warning labels
  *   pickupWindow  string  — e.g. "היום 17:00-19:30"
  *   address       string
  *   onOpenStore   fn
@@ -35,6 +36,7 @@ export default function DealInfoSection({
   discountPct,
   description,
   tags = [],
+  allergens = [],
   pickupWindow,
   address,
   onOpenStore,
@@ -59,10 +61,10 @@ export default function DealInfoSection({
       </header>
 
       <div className="deal-info__pricing">
-        <Price value={price} className="deal-info__price" />
+        <Price value={price} fraction={0} className="deal-info__price" />
         {originalPrice && originalPrice > price && (
           <>
-            <Price value={originalPrice} className="deal-info__original" />
+            <Price value={originalPrice} fraction={0} className="deal-info__original" />
             {discountPct > 0 && (
               <span className="deal-info__save">
                 חיסכון של <Price value={originalPrice - price} fraction={0} />
@@ -102,6 +104,15 @@ export default function DealInfoSection({
         <div className="deal-info__block">
           <h2 className="deal-info__block-title">תיאור</h2>
           <p className="deal-info__block-body">{description}</p>
+        </div>
+      )}
+
+      {allergens.length > 0 && (
+        <div className="deal-info__block">
+          <h2 className="deal-info__block-title">מכיל אלרגנים</h2>
+          <ul className="deal-info__allergens" aria-label="מכיל אלרגנים">
+            {allergens.map((a) => <li key={a}>{a}</li>)}
+          </ul>
         </div>
       )}
 

@@ -26,7 +26,8 @@ export default function DealHeroImage({
   onToggleSave,
 }) {
   const navigate = useNavigate()
-  const urgent = timeLeftMin <= 30
+  const showTimer = timeLeftMin > 0
+  const urgent = timeLeftMin > 0 && timeLeftMin <= 30
   const hours = Math.floor(timeLeftMin / 60)
   const mins  = timeLeftMin % 60
   const timeText = hours > 0
@@ -81,9 +82,11 @@ export default function DealHeroImage({
             -{discountPct}%
           </span>
         )}
-        <span className={`deal-hero__timer${urgent ? ' deal-hero__timer--urgent' : ''}`}>
-          <ClockIcon /> נותרו {timeText}
-        </span>
+        {showTimer && (
+          <span className={`deal-hero__timer${urgent ? ' deal-hero__timer--urgent' : ''}`}>
+            <ClockIcon /> נותרו {timeText}
+          </span>
+        )}
       </div>
     </section>
   )

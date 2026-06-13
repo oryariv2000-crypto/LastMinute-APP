@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2C from '../components/RegisterFormB2C/RegisterFormB2C'
 import { supabase } from '../lib/supabase'
+import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
 
 /**
@@ -21,6 +22,7 @@ export default function B2CRegisterPage() {
   const [role, setRole]       = useState('b2c')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
+  const [sent, setSent]       = useState(false) // email-confirmation pending
 
   // One "המשך" click: switch to the chosen ecosystem's form, no double step.
   function handleRoleNext() {
@@ -35,32 +37,24 @@ export default function B2CRegisterPage() {
     setLoading(true)
     setError('')
     try {
-      // 1. Create the auth user
+      // Create the auth user. The profile row in `users` is created server-side
+      // by the handle_new_user trigger from this metadata (works with email
+      // confirmation on, where the client has no session yet).
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+          data: { full_name: `${data.firstName} ${data.lastName}`.trim(), role: 'customer' },
+        },
       })
       if (signUpError) {
         setError(signUpError.message)
         return
       }
 
-      const user = signUpData.user
-      if (!user) {
-        // Happens when email confirmation is enabled — no session yet.
-        setError('נשלח אליך מייל לאימות. אשר אותו כדי להשלים את ההרשמה.')
-        return
-      }
-
-      // 2. Insert the profile row into `users` with role = customer
-      const { error: profileError } = await supabase.from('users').insert({
-        id: user.id,
-        email: data.email,
-        full_name: `${data.firstName} ${data.lastName}`.trim(),
-        role: 'customer',
-      })
-      if (profileError) {
-        setError(profileError.message)
+      // No session ⇒ email confirmation is enabled — tell them to check email.
+      if (!signUpData.session) {
+        setSent(true)
         return
       }
 
@@ -78,8 +72,7 @@ export default function B2CRegisterPage() {
 
         {/* Brand */}
         <div className="auth-page__brand">
-          <span className="auth-page__logo-mark" aria-hidden="true">🌿</span>
-          <span className="auth-page__brand-name">Last Minute</span>
+          <BrandLogo tone="dark" size="lg" />
         </div>
 
         {/* Step indicators */}
@@ -135,7 +128,18 @@ export default function B2CRegisterPage() {
               </p>
             </div>
 
-            <RegisterFormB2C onSubmit={handleSubmit} loading={loading} error={error} />
+            {sent ? (
+              <div
+                className="auth-page__notice"
+                role="status"
+                style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: 'var(--space-4)' }}
+              >
+                <span aria-hidden="true" style={{ fontSize: 40 }}>📩</span>
+                <p style={{ margin: 0, lineHeight: 1.6 }}>שלחנו אליך מייל לאישור החשבון. אשרו אותו ואז התחברו.</p>
+              </div>
+            ) : (
+              <RegisterFormB2C onSubmit={handleSubmit} loading={loading} error={error} />
+            )}
           </>
         )}
 

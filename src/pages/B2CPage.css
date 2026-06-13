@@ -5,7 +5,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  max-width: 480px;
+  /* Shared content width — the top bar and bottom nav center their content to
+     the same --shell-max, so all three line up at every breakpoint. */
+  max-width: var(--shell-max);
   margin: 0 auto;
   background-color: var(--color-background);
   /* Anchor every text node to the inline-start edge (right in RTL) so
@@ -20,18 +22,6 @@
   text-align: start;
 }
 
-/* Wider canvas on tablet+ */
-@media (min-width: 700px) {
-  .b2c-page {
-    max-width: 720px;
-  }
-}
-@media (min-width: 1100px) {
-  .b2c-page {
-    max-width: 1100px;
-  }
-}
-
 .b2c-page__main {
   flex: 1;
   display: flex;
@@ -43,11 +33,14 @@
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Deal info: hero is full-bleed, body below uses normal gutter */
+/* Deal info: hero is full-bleed, body below uses normal gutter. Keep the
+   bottom-nav reservation so the last section (e.g. storefront reviews) isn't
+   hidden behind the fixed nav. Pages with a sticky bar (.b2c-page--with-bar)
+   override this back to 0 via higher specificity. */
 .b2c-page__main--flush {
   padding: 0;
   gap: 0;
-  padding-bottom: 0;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 .b2c-page__inset {
   padding: var(--space-4) var(--space-gutter);
@@ -56,6 +49,69 @@
 /* Pages with a sticky bottom bar replace the bottom-nav reservation */
 .b2c-page--with-bar .b2c-page__main {
   padding-bottom: 0;
+}
+
+/* ── Characteristic filters (dietary / state) ─────────────────── */
+.feed-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: calc(-1 * var(--space-2));
+}
+.feed-filters__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+.feed-filters__toggle--active {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+.feed-filters__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-primary);
+  color: var(--color-on-primary);
+}
+.feed-filters__clear {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label-md);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.feed-filters__panel {
+  padding: var(--space-3);
+  background-color: var(--color-surface-container-lowest);
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+}
+
+/* ── Infinite-scroll end-of-feed note */
+.b2c-feed__end {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label-md);
+  padding: var(--space-4) 0 var(--space-2);
+  margin: 0;
 }
 
 /* ── Greeting block */
@@ -76,6 +132,10 @@
   font-size: var(--font-size-label-md);
   color: var(--color-text-muted);
   margin: 0;
+}
+@media (min-width: 840px) {
+  .b2c-page__greeting-title { font-size: 1.85rem; letter-spacing: -0.01em; }
+  .b2c-page__greeting-sub   { font-size: var(--font-size-body-md); }
 }
 
 .b2c-page__back {
@@ -188,4 +248,81 @@
 }
 .b2c-confirm-done:hover {
   background-color: var(--color-secondary-container);
+}
+
+/* ── Self-pickup acknowledgement (checkout) ──────────────────── */
+.b2c-pickup-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-label-md);
+  line-height: 1.5;
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+.b2c-pickup-ack input {
+  margin-top: 3px;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+.b2c-pickup-ack--checked {
+  border-color: var(--color-primary);
+  background: var(--color-secondary-container);
+}
+
+.b2c-checkout-hint {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  text-align: center;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+/* ── Click & Collect handoff + cancellation ──────────────────── */
+.b2c-confirm-collect {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.b2c-confirm-collect__hint {
+  margin: 0;
+  text-align: center;
+  font-size: var(--font-size-caption);
+  color: var(--color-on-surface-variant);
+}
+
+.b2c-confirm-cancel {
+  align-self: stretch;
+  padding: 12px var(--space-6);
+  background: transparent;
+  color: var(--color-error);
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+.b2c-confirm-cancel:hover { text-decoration: underline; }
+.b2c-confirm-cancel:disabled { opacity: 0.5; cursor: default; text-decoration: none; }
+
+.b2c-confirm-cancel-note {
+  align-self: stretch;
+  margin: 0;
+  text-align: center;
+  font-size: var(--font-size-caption);
+  color: var(--color-on-surface-variant);
+}
+
+/* Cancelled order: tone the celebratory check down to a neutral grey. */
+.b2c-confirm-hero--cancelled .b2c-confirm-hero__check {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
 }

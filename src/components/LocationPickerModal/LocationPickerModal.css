@@ -1,0 +1,53 @@
+/* ── LocationPickerModal ─────────────────────────────────────── */
+.locpick__detect {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 11px var(--space-3);
+  border: 1.5px solid var(--color-brand-primary);
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-container);
+  color: var(--color-brand-primary);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+.locpick__detect:hover:not(:disabled) { background-color: var(--color-secondary-fixed-dim); }
+.locpick__detect:disabled { opacity: 0.7; cursor: progress; }
+.locpick__detect svg { width: 18px; height: 18px; }
+
+.locpick__spinner {
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(45, 106, 79, 0.35);
+  border-top-color: var(--color-brand-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.locpick__error { color: var(--color-error); font-size: var(--font-size-caption); margin: 0; }
+
+.locpick__step-label {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.locpick__back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--color-brand-primary);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  padding: 0;
+}
+.locpick__back svg { width: 16px; height: 16px; }

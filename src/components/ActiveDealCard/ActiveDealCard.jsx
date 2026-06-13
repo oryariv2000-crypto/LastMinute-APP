@@ -1,4 +1,5 @@
-import { Price, Ltr, formatTimer } from '../../lib/formatters'
+import { Price, Ltr } from '../../lib/formatters'
+import { formatTimer } from '../../lib/time'
 import './ActiveDealCard.css'
 
 /**

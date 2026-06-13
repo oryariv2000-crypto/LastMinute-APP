@@ -5,8 +5,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'node',
+    // jsdom so React component tests (Testing Library) have a DOM + localStorage.
+    // The existing pure-logic lib tests run fine under jsdom too.
+    environment: 'jsdom',
     globals: true,
+    setupFiles: ['./src/test/setup.js'],
     include: ['src/**/*.{test,spec}.{js,jsx}'],
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
   },
 })

@@ -26,6 +26,14 @@
   height: 60px;
 }
 
+/* B2C: align the tab bar to the same content width as the top bar so the two
+   bars read as a matching frame around the page (instead of a narrow pill that
+   mismatches the full-width top bar on desktop). */
+.bottom-nav--b2c .bottom-nav__inner {
+  max-width: var(--shell-max);
+  padding-inline: var(--space-gutter);
+}
+
 /* ── Tab item ─────────────────────────────────────────────── */
 .bottom-nav__tab {
   flex: 1;

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './LandingPage.css'
 
 /**
@@ -15,8 +16,7 @@ export default function LandingPage() {
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="landing__header">
         <Link to="/" className="landing__brand" aria-label="Last Minute">
-          <span className="landing__logo" aria-hidden="true">🌿</span>
-          <span className="landing__brand-name">Last Minute</span>
+          <BrandLogo tone="dark" size="sm" />
         </Link>
         <nav className="landing__nav">
           <Link to="/login" className="btn btn-ghost" id="landing-login">כניסה</Link>
@@ -57,7 +57,7 @@ export default function LandingPage() {
               {/* featured deal */}
               <div className="landing__app-feature">
                 <img
-                  src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80&auto=format&fit=crop"
+                  src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1000&q=80&auto=format&fit=crop"
                   alt=""
                   loading="eager"
                 />
@@ -73,7 +73,7 @@ export default function LandingPage() {
 
               {/* mini deal rows */}
               <div className="landing__app-row">
-                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=70&auto=format&fit=crop" alt="" loading="lazy" />
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80&auto=format&fit=crop" alt="" loading="lazy" />
                 <div className="landing__app-row-text">
                   <strong>מגש סלטים טריים</strong>
                   <span className="landing__app-row-price">₪30 <s>₪60</s></span>
@@ -81,7 +81,7 @@ export default function LandingPage() {
                 <span className="landing__app-add">+</span>
               </div>
               <div className="landing__app-row">
-                <img src="https://images.unsplash.com/photo-1565299543923-37dd37887442?w=200&q=70&auto=format&fit=crop" alt="" loading="lazy" />
+                <img src="https://images.unsplash.com/photo-1565299543923-37dd37887442?w=400&q=80&auto=format&fit=crop" alt="" loading="lazy" />
                 <div className="landing__app-row-text">
                   <strong>קישים גבינה</strong>
                   <span className="landing__app-row-price">₪22 <s>₪35</s></span>
@@ -159,7 +159,8 @@ export default function LandingPage() {
 
       {/* ── Footer ─────────────────────────────────────────── */}
       <footer className="landing__footer">
-        <p>🌿 Last Minute — פחות בזבוז, יותר טעם.</p>
+        <BrandLogo tone="dark" size="md" className="landing__footer-logo" />
+        <p>פחות בזבוז, יותר טעם.</p>
         <p className="landing__footer-links">
           <Link to="/login" className="landing__link">כניסה</Link>
           <span aria-hidden="true"> · </span>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { uploadDealImage } from '../../lib/db'
+import TagSelector from '../TagSelector/TagSelector'
 import './DealEditModal.css'
 
 /**
@@ -17,6 +18,7 @@ export default function DealEditModal({ deal, onSave, onClose }) {
     discount_price: deal.discount_price ?? deal.price ?? '',
     quantity_left:    deal.quantity_left ?? deal.quantity ?? 1,
     status:           deal.status ?? 'active',
+    tags:             Array.isArray(deal.tags) ? deal.tags : [],
   })
   // Image: keep the current URL; preview a newly-picked file before upload.
   const currentImage = deal.image_url ?? deal.image ?? null
@@ -30,6 +32,18 @@ export default function DealEditModal({ deal, onSave, onClose }) {
   useEffect(() => () => {
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
   }, [])
+
+  // Esc closes the dialog.
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const savingsPct =
+    Number(form.original_price) > 0 && Number(form.original_price) > Number(form.discount_price)
+      ? Math.round((1 - Number(form.discount_price) / Number(form.original_price)) * 100)
+      : 0
 
   function set(field) {
     return (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
@@ -61,6 +75,7 @@ export default function DealEditModal({ deal, onSave, onClose }) {
         discount_price: Number(form.discount_price),
         quantity_left: Number(form.quantity_left),
         status: form.status,
+        tags: form.tags,
       }
       // Upload the new image only when the owner actually picked one.
       if (imageFile) {
@@ -75,46 +90,56 @@ export default function DealEditModal({ deal, onSave, onClose }) {
 
   return (
     <div className="deal-edit__backdrop" role="dialog" aria-modal="true" aria-label="עריכת מבצע" onClick={onClose}>
-      <form className="deal-edit__panel card" dir="rtl" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
-        <h2 className="deal-edit__title">עריכת מבצע</h2>
+      <form className="deal-edit__panel" dir="rtl" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+        <header className="deal-edit__header">
+          <h2 className="deal-edit__title">עריכת מבצע</h2>
+          <button type="button" className="deal-edit__close" onClick={onClose} aria-label="סגירה">
+            <CloseIcon />
+          </button>
+        </header>
 
-        {error && <p className="deal-edit__error" role="alert">{error}</p>}
+        <div className="deal-edit__body">
+          {error && <p className="deal-edit__error" role="alert">{error}</p>}
 
-        {/* ── Display image ───────────────────────────────── */}
-        <div className="deal-edit__image-field">
-          <span className="deal-edit__image-label">תמונה לתצוגה</span>
-          <div className="deal-edit__image-row">
-            <div className="deal-edit__image-preview">
-              {imagePreview ? (
-                <img src={imagePreview} alt="" />
-              ) : (
-                <span aria-hidden="true">🥗</span>
-              )}
+          {/* ── Display image ───────────────────────────────── */}
+          <div className="deal-edit__image-field">
+            <span className="deal-edit__image-label">תמונה לתצוגה</span>
+            <div className="deal-edit__image-row">
+              <div className="deal-edit__image-preview">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="" />
+                ) : (
+                  <span aria-hidden="true">🥗</span>
+                )}
+              </div>
+              <label className="deal-edit__image-pick">
+                <CameraIcon />
+                {imageFile ? 'תמונה נבחרה — שנה/י' : 'שנה/י תמונה'}
+                <input type="file" accept="image/*" onChange={handlePickImage} hidden />
+              </label>
             </div>
-            <label className="deal-edit__image-pick btn btn-ghost">
-              {imageFile ? 'תמונה נבחרה — שנה/י' : 'שנה/י תמונה'}
-              <input type="file" accept="image/*" onChange={handlePickImage} hidden />
-            </label>
           </div>
-        </div>
 
-        <label className="deal-edit__field">
-          <span>שם המבצע</span>
-          <input type="text" value={form.title} onChange={set('title')} required />
-        </label>
-
-        <div className="deal-edit__row">
           <label className="deal-edit__field">
-            <span>מחיר מקורי (₪)</span>
-            <input type="number" min="0" step="0.5" value={form.original_price} onChange={set('original_price')} required />
+            <span>שם המבצע</span>
+            <input type="text" value={form.title} onChange={set('title')} required />
           </label>
-          <label className="deal-edit__field">
-            <span>מחיר מבצע (₪)</span>
-            <input type="number" min="0" step="0.5" value={form.discount_price} onChange={set('discount_price')} required />
-          </label>
-        </div>
 
-        <div className="deal-edit__row">
+          <div className="deal-edit__row">
+            <label className="deal-edit__field">
+              <span>מחיר מקורי (₪)</span>
+              <input type="number" min="0" step="0.5" value={form.original_price} onChange={set('original_price')} required />
+            </label>
+            <label className="deal-edit__field">
+              <span>מחיר מבצע (₪)</span>
+              <input type="number" min="0" step="0.5" value={form.discount_price} onChange={set('discount_price')} required />
+            </label>
+            {savingsPct > 0 && (
+              <span className="deal-edit__savings" aria-label={`הנחה ${savingsPct} אחוז`}>-{savingsPct}%</span>
+            )}
+          </div>
+
+          <div className="deal-edit__row">
           <label className="deal-edit__field">
             <span>מלאי</span>
             <input type="number" min="0" step="1" value={form.quantity_left} onChange={set('quantity_left')} required />
@@ -124,22 +149,46 @@ export default function DealEditModal({ deal, onSave, onClose }) {
             <select value={form.status} onChange={set('status')}>
               <option value="active">פעיל</option>
               <option value="paused">מושהה</option>
-              <option value="draft">טיוטה</option>
-              <option value="sold_out">אזל</option>
-              <option value="expired">הסתיים</option>
             </select>
           </label>
         </div>
 
-        <div className="deal-edit__actions">
+          <div className="deal-edit__field">
+            <span>מאפיינים</span>
+            <TagSelector
+              value={form.tags}
+              onChange={(next) => setForm((p) => ({ ...p, tags: next }))}
+            />
+          </div>
+        </div>
+
+        <footer className="deal-edit__actions">
           <button type="button" className="btn btn-ghost" onClick={onClose} disabled={saving}>
             ביטול
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? 'שומר…' : 'שמור שינויים'}
           </button>
-        </div>
+        </footer>
       </form>
     </div>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
   )
 }

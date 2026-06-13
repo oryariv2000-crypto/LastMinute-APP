@@ -11,12 +11,11 @@
 const isolate = { display: 'inline-block', unicodeBidi: 'isolate' }
 
 /**
- * Format a numeric price with the shekel sign in Hebrew reading order.
- * Renders as: "<amount> ₪", with the whole expression isolated as LTR
- * so the digits and symbol never swap.
+ * Format a numeric price with the shekel sign on the LEFT (₪ before the
+ * amount), isolated as an LTR atom so the digits and symbol never swap.
  *
- *   <Price value={25} />          → "25.00 ₪"
- *   <Price value={25} fraction={0} /> → "25 ₪"
+ *   <Price value={25} />              → "₪25.00"
+ *   <Price value={25} fraction={0} /> → "₪25"
  */
 export function Price({ value, fraction = 2, currency = '₪', className }) {
   const amount = Number(value).toLocaleString('en-US', {
@@ -25,7 +24,7 @@ export function Price({ value, fraction = 2, currency = '₪', className }) {
   })
   return (
     <span dir="ltr" style={isolate} className={className}>
-      {amount} {currency}
+      {currency}{amount}
     </span>
   )
 }
@@ -40,15 +39,4 @@ export function Ltr({ children, className }) {
       {children}
     </span>
   )
-}
-
-/** Render minutes-left as a fixed "HH:MM:SS" or "MM:SS" timer string. */
-export function formatTimer(minutes) {
-  const safe = Math.max(0, Math.floor(minutes || 0))
-  const h = Math.floor(safe / 60)
-  const m = safe % 60
-  if (h > 0) {
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
-  }
-  return `${String(m).padStart(2, '0')}:00`
 }

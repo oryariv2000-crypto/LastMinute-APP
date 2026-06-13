@@ -8,7 +8,7 @@ import {
   periodRange,
   fetchBusinessStats,
   fetchSalesTimeseries,
-  fetchCategoryBreakdown,
+  fetchTopProducts,
 } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { isBusinessOpen } from '../lib/businessHours'
@@ -34,7 +34,7 @@ export default function B2BStatsPage() {
   const [period, setPeriod]   = useState('7d')
   const [stats, setStats]     = useState(null)
   const [bars, setBars]       = useState([])
-  const [cats, setCats]       = useState([])
+  const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')
 
@@ -45,15 +45,15 @@ export default function B2BStatsPage() {
       setLoading(true)
       setError('')
       try {
-        const [s, series, breakdown] = await Promise.all([
+        const [s, series, top] = await Promise.all([
           fetchBusinessStats({ from, to }),
           fetchSalesTimeseries({ from, to, bucket }),
-          fetchCategoryBreakdown({ from, to }),
+          fetchTopProducts({ from, to }),
         ])
         if (!active) return
         setStats(s)
         setBars(series.map((r) => ({ label: bucketLabel(r.start, bucket), value: r.revenue })))
-        setCats(breakdown)
+        setProducts(top)
       } catch (err) {
         if (active) setError(err?.message || 'שגיאה בטעינת הסטטיסטיקות')
       } finally {
@@ -120,7 +120,7 @@ export default function B2BStatsPage() {
               />
             </div>
 
-            <StatsChartsSection bars={bars} categories={cats} barsTitle={periodSub(period)} />
+            <StatsChartsSection bars={bars} products={products} barsTitle={periodSub(period)} />
           </>
         )}
       </main>

@@ -13,6 +13,7 @@ const h = vi.hoisted(() => ({ fake: null }))
 vi.mock('./supabase', () => ({
   supabase: {
     from: (table) => h.fake.from(table),
+    rpc: (fn, args) => h.fake.rpc(fn, args),
     auth: { getUser: () => h.fake.auth.getUser() },
   },
 }))
@@ -103,10 +104,35 @@ function makeFake(seed) {
     return { data: scoped, error: null }
   }
 
+  // Minimal RPC emulation (server-side functions).
+  async function rpc(fn, args = {}) {
+    if (fn === 'place_order') {
+      const deal = store.deals.find((d) => d.id === args.p_deal_id)
+      if (!deal || deal.status !== 'active') {
+        return { data: null, error: { message: 'deal not available' } }
+      }
+      const qty = Math.max(1, args.p_quantity ?? 1)
+      if ((deal.quantity_left ?? 0) < qty) {
+        return { data: null, error: { message: 'אזל מהמלאי' } }
+      }
+      const amount = deal.discount_price * qty // server-computed, not client-sent
+      deal.quantity_left -= qty
+      const row = {
+        id: `id-${seq++}`, user_id: uid, deal_id: deal.id, quantity: qty,
+        subtotal: amount, total: amount, status: 'pending',
+        order_code: `LM-${seq}`, created_at: new Date().toISOString(),
+      }
+      store.orders.push(row)
+      return { data: row, error: null }
+    }
+    return { data: null, error: { message: `unknown rpc: ${fn}` } }
+  }
+
   return {
     store,
     setUser: (id) => { uid = id },
     from,
+    rpc,
     auth: { getUser: async () => ({ data: { user: { id: uid } }, error: null }) },
   }
 }
@@ -146,7 +172,16 @@ describe('deals — create', () => {
     expect(created.business_id).toBe('biz-A') // derived from the owner, not the client
     expect(created.quantity_total).toBe(6)
     expect(created.quantity_left).toBe(6)
+    expect(created.tags).toEqual([]) // defaults to empty when none picked
     expect(h.fake.store.deals.length).toBe(before + 1)
+  })
+
+  it('persists the chosen characteristic tags on the deal', async () => {
+    const created = await createDeal({
+      title: 'Vegan loaf', original_price: 20, discount_price: 12, quantity: 3,
+      tags: ['vegan', 'baked_today'],
+    })
+    expect(created.tags).toEqual(['vegan', 'baked_today'])
   })
 })
 
@@ -176,9 +211,11 @@ describe('deals — update / delete (RLS)', () => {
 })
 
 describe('orders — create', () => {
-  it('creating an order links it to the customer (user_id) and the correct deal', async () => {
+  it('placing an order links it to the customer + deal and prices it server-side', async () => {
     h.fake.setUser('cust-1')
-    const order = await createOrder({ deal_id: 'deal-A1', quantity: 2, total: 20 })
+    // Note: no `total` passed — the server computes it from the deal price
+    // (deal-A1 discount_price 10 × qty 2 = 20), so the client can't tamper.
+    const order = await createOrder({ deal_id: 'deal-A1', quantity: 2 })
     expect(order.deal_id).toBe('deal-A1')
     expect(order.user_id).toBe('cust-1')
     expect(order.subtotal).toBe(20)

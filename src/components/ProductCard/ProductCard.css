@@ -3,7 +3,8 @@
   display: flex;
   flex-direction: column;
   background-color: var(--color-surface-container-lowest);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
   text-decoration: none;
@@ -12,7 +13,7 @@
 }
 .product-card:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 .product-card:active { transform: translateY(0); }
 
@@ -37,14 +38,38 @@
 .product-card__discount {
   position: absolute;
   top: 8px;
-  inset-inline-start: 8px;
-  background-color: var(--color-accent);
+  /* Physical left (not logical) so it never collides with the stock pill on the
+     right — `direction: ltr` below would otherwise flip inset-inline-start. */
+  left: 8px;
+  background-image: linear-gradient(135deg, var(--color-accent), #e86d3f);
   color: #fff;
-  font-size: var(--font-size-caption);
+  font-size: var(--font-size-label-md);
   font-weight: var(--font-weight-bold);
-  padding: 4px 10px;
+  padding: 4px 11px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(255, 127, 81, 0.45);
+  letter-spacing: 0.01em;
+  /* Keep "-50%" laid out LTR so the minus sits before the number (RTL would
+     render it as "50%-"). */
+  direction: ltr;
+}
+
+/* Low-stock urgency pill — top-right corner, opposite the discount (top-left). */
+.product-card__stock {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--color-action-red);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  padding: 3px 9px;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
 }
 
 .product-card__timer {
@@ -72,62 +97,105 @@
   50%      { opacity: 0.7; }
 }
 
-/* ── Body */
+/* ── Body (compact) */
 .product-card__body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: var(--space-3) var(--space-4) var(--space-4);
+  gap: 4px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
   flex: 1;
   min-width: 0;
 }
 
 .product-card__tag {
   align-self: flex-start;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-on-secondary-container);
   background-color: var(--color-secondary-container);
-  padding: 2px 8px;
+  padding: 1px 7px;
   border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .product-card__title {
-  font-size: var(--font-size-body-md);
+  font-size: var(--font-size-label-md);
   font-weight: var(--font-weight-semibold);
   color: var(--color-on-surface);
   line-height: 1.3;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.product-card__biz {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--font-size-caption);
-  color: var(--color-text-muted);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.product-card__biz svg { width: 12px; height: 12px; flex-shrink: 0; }
-.product-card__distance { color: var(--color-text-muted); }
+
+/* Dietary badges — emoji + short label, wrap to a second line if needed */
+.product-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.product-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-brand-primary);
+  background-color: var(--color-secondary-container);
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  line-height: 1.6;
+  max-width: 100%;
+}
+.product-card__badge-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* One compact meta line: business · rating · distance */
+.product-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  margin: 0;
+  min-width: 0;
+}
+.product-card__biz {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.product-card__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+}
+.product-card__rating svg { width: 11px; height: 11px; color: var(--color-accent); }
+.product-card__distance { flex-shrink: 0; }
 
 .product-card__pricing {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   margin-top: auto;
+  padding-top: 2px;
 }
 .product-card__price {
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-brand-primary);
 }
@@ -135,4 +203,39 @@
   font-size: var(--font-size-caption);
   color: var(--color-text-muted);
   text-decoration: line-through;
+}
+
+@media (min-width: 1120px) {
+  .product-card__title { font-size: var(--font-size-body-md); }
+  .product-card__price { font-size: 1.125rem; }
+}
+
+/* ── Skeleton placeholder (loading state) */
+.product-card--skeleton {
+  pointer-events: none;
+}
+.product-card--skeleton .product-card__media,
+.skeleton-line {
+  background: linear-gradient(100deg,
+    var(--color-surface-container) 30%,
+    var(--color-surface-container-low) 50%,
+    var(--color-surface-container) 70%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+.skeleton-line {
+  height: 10px;
+  border-radius: var(--radius-full);
+  margin: 6px var(--space-3);
+}
+.skeleton-line--title { width: 75%; height: 12px; margin-top: var(--space-3); }
+.skeleton-line--meta  { width: 50%; }
+.skeleton-line--price { width: 35%; height: 14px; margin-bottom: var(--space-3); }
+@media (prefers-reduced-motion: reduce) {
+  .product-card--skeleton .product-card__media,
+  .skeleton-line { animation: none; }
+}
+@keyframes skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
 }

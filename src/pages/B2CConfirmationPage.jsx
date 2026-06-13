@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import NavbarB2C from '../components/NavbarB2C/NavbarB2C'
 import QRCodeDisplay from '../components/QRCodeDisplay/QRCodeDisplay'
 import PickupInstructions from '../components/PickupInstructions/PickupInstructions'
-import { getOrderByCode } from '../lib/db'
+import SwipeToConfirm from '../components/SwipeToConfirm/SwipeToConfirm'
+import { getOrderByCode, completeOrder, cancelOrder } from '../lib/db'
+import { useProfile } from '../lib/useProfile'
 import './B2CPage.css'
+
+const ACTIVE_STATUSES = ['pending', 'active', 'ready']
 
 /**
  * B2CConfirmationPage — Order confirmation with QR for pickup. Fetches the
@@ -16,8 +21,12 @@ export default function B2CConfirmationPage() {
   const [searchParams] = useSearchParams()
   const orderCode = searchParams.get('code') || ''
   const navigate = useNavigate()
+  const { profile } = useProfile()
+  const queryClient = useQueryClient()
 
   const [order, setOrder] = useState(null)
+  const [busy, setBusy]   = useState(false)
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     if (!orderCode) return
@@ -32,42 +41,105 @@ export default function B2CConfirmationPage() {
   const businessName = shop?.name || 'העסק'
   const address = shop?.address || ''
   const phone = shop?.phone || ''
-  const pickupWindow = order?.deals?.pickup_start
-    ? new Date(order.deals.pickup_start).toLocaleString('he-IL')
-    : ''
+  const pickupStart = order?.deals?.pickup_start ? new Date(order.deals.pickup_start) : null
+  const pickupWindow = pickupStart ? pickupStart.toLocaleString('he-IL') : ''
+
+  const status = order?.status
+  const isActive    = ACTIVE_STATUSES.includes(status)
+  const isCompleted = status === 'completed'
+  const isCancelled = status === 'cancelled'
+
+  // Cancellation closes once the pickup window opens (NULL window = always open).
+  // `mountedAt` captures the time once (lazy init keeps the read out of render);
+  // the server (cancel_order) re-checks the window authoritatively anyway.
+  const [mountedAt] = useState(() => Date.now())
+  const canCancel = isActive && (!pickupStart || mountedAt < pickupStart.getTime())
+
+  async function runAction(fn) {
+    if (!order?.id || busy) return null
+    setBusy(true)
+    setActionError('')
+    try {
+      const updated = await fn(order.id)
+      setOrder((prev) => ({ ...prev, ...updated }))
+      // The active-orders badge + impact totals depend on this order's status.
+      queryClient.invalidateQueries({ queryKey: ['my-orders-active-count'] })
+      queryClient.invalidateQueries({ queryKey: ['my-impact'] })
+      return updated
+    } catch (err) {
+      setActionError(err?.message || 'הפעולה נכשלה')
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function handleCancel() {
+    if (!window.confirm('לבטל את ההזמנה? המלאי יוחזר לעסק.')) return
+    runAction(cancelOrder)
+  }
+
+  // Hero copy reflects the live status.
+  const hero = isCompleted
+    ? { title: 'ההזמנה נאספה — תודה! 🌿', subtitle: `נאספה ב${businessName}` }
+    : isCancelled
+      ? { title: 'ההזמנה בוטלה', subtitle: `הביטול נקלט. המלאי הוחזר ל${businessName}` }
+      : { title: 'ההזמנה אושרה!', subtitle: `ההזמנה ממתינה לאיסוף ב${businessName}` }
 
   return (
     <div className="b2c-page" dir="rtl">
-      <NavbarB2C location="תל אביב" userName="דנה כהן" />
+      <NavbarB2C userName={profile?.full_name || 'לקוח/ה'} showSearch={false} />
 
       <main className="b2c-page__main">
-        <section className="b2c-confirm-hero">
+        <section className={`b2c-confirm-hero${isCancelled ? ' b2c-confirm-hero--cancelled' : ''}`}>
           <span className="b2c-confirm-hero__check" aria-hidden="true">
             <CheckIcon />
           </span>
-          <h1 className="b2c-confirm-hero__title">ההזמנה אושרה!</h1>
-          <p className="b2c-confirm-hero__subtitle">
-            ההזמנה ממתינה לאיסוף ב{businessName}
-          </p>
+          <h1 className="b2c-confirm-hero__title">{hero.title}</h1>
+          <p className="b2c-confirm-hero__subtitle">{hero.subtitle}</p>
         </section>
 
-        <QRCodeDisplay
-          value={orderCode}
-          orderCode={orderCode}
-          businessName={businessName}
-        />
+        {/* QR + pickup details are only useful while the order is still open. */}
+        {!isCancelled && (
+          <>
+            <QRCodeDisplay
+              value={orderCode}
+              orderCode={orderCode}
+              businessName={businessName}
+            />
 
-        <PickupInstructions
-          businessName={businessName}
-          address={address}
-          pickupWindow={pickupWindow}
-          onGetDirections={() => {
-            if (!address) return
-            const q = encodeURIComponent(address)
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}`, '_blank', 'noopener')
-          }}
-          onCallStore={() => { if (phone) window.location.href = `tel:${phone}` }}
-        />
+            <PickupInstructions
+              businessName={businessName}
+              address={address}
+              pickupWindow={pickupWindow}
+              onGetDirections={() => {
+                if (!address) return
+                const q = encodeURIComponent(address)
+                window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}`, '_blank', 'noopener')
+              }}
+              onCallStore={() => { if (phone) window.location.href = `tel:${phone}` }}
+            />
+          </>
+        )}
+
+        {actionError && (
+          <p className="b2c-page__greeting-sub" role="alert" style={{ color: 'var(--color-error)' }}>
+            {actionError}
+          </p>
+        )}
+
+        {/* Click & Collect handoff: the customer slides this at the counter. */}
+        {isActive && order?.id && (
+          <div className="b2c-confirm-collect">
+            <p className="b2c-confirm-collect__hint">בקופה? החלק לאישור האיסוף מול העובד/ת</p>
+            <SwipeToConfirm
+              label="החלק לאישור איסוף"
+              confirmedLabel="נאסף ✓"
+              loading={busy}
+              onConfirm={() => runAction(completeOrder)}
+            />
+          </div>
+        )}
 
         <button
           type="button"
@@ -76,6 +148,21 @@ export default function B2CConfirmationPage() {
         >
           להזמנות שלי
         </button>
+
+        {/* Cancellation closes once the pickup window opens. */}
+        {canCancel && (
+          <button
+            type="button"
+            className="b2c-confirm-cancel"
+            onClick={handleCancel}
+            disabled={busy}
+          >
+            בטל הזמנה
+          </button>
+        )}
+        {isActive && !canCancel && (
+          <p className="b2c-confirm-cancel-note">חלון האיסוף התחיל — לא ניתן לבטל. נתראה בקופה!</p>
+        )}
       </main>
     </div>
   )

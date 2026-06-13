@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import InputField from '../InputField/InputField'
 import SubmitButton from '../SubmitButton/SubmitButton'
+import { BUSINESS_TYPES as BUSINESS_TYPE_LIST } from '../../lib/businessTypes'
 import './RegisterFormB2B.css'
 
 /**
@@ -11,13 +12,12 @@ import './RegisterFormB2B.css'
  *   loading   boolean   — shows spinner while request is in flight
  */
 
-const BUSINESS_TYPES = [
+// Options for the picker = the shared business-type taxonomy + a placeholder
+// and an "Other" escape hatch that reveals a free-text field.
+const TYPE_OPTIONS = [
   { value: '', label: 'בחר סוג עסק' },
-  { value: 'restaurant', label: 'מסעדה / בית קפה' },
-  { value: 'bakery',     label: 'מאפייה' },
-  { value: 'grocery',    label: 'מכולת / סופרמרקט' },
-  { value: 'deli',       label: 'דלי / קצביה' },
-  { value: 'other',      label: 'אחר' },
+  ...BUSINESS_TYPE_LIST.map((t) => ({ value: t.slug, label: `${t.icon} ${t.label}` })),
+  { value: 'other', label: 'אחר…' },
 ]
 
 export default function RegisterFormB2B({ onSubmit, loading = false, error = '' }) {
@@ -27,6 +27,7 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
     email:         '',
     phone:         '',
     businessType:  '',
+    businessTypeOther: '',
     address:       '',
     password:      '',
     confirmPassword: '',
@@ -52,6 +53,8 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
     else if (!/^05\d{8}$/.test(form.phone.replace(/\s/g, '')))
       e.phone = 'מספר טלפון לא תקין (למשל: 0501234567)'
     if (!form.businessType)        e.businessType = 'יש לבחור סוג עסק'
+    else if (form.businessType === 'other' && !form.businessTypeOther.trim())
+      e.businessTypeOther = 'יש להזין את סוג העסק'
     if (!form.address.trim())      e.address      = 'יש להזין כתובת'
     if (!form.password)            e.password     = 'יש להזין סיסמה'
     else if (form.password.length < 8) e.password = 'הסיסמה חייבת להכיל לפחות 8 תווים'
@@ -64,7 +67,12 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
     setErrors({})
-    onSubmit?.({ ...form })
+    // Resolve "Other" to the typed free text so a single value (slug or custom
+    // text) is persisted to businesses.business_type.
+    const businessType = form.businessType === 'other'
+      ? form.businessTypeOther.trim()
+      : form.businessType
+    onSubmit?.({ ...form, businessType })
   }
 
   return (
@@ -115,7 +123,7 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
               aria-invalid={!!errors.businessType}
               aria-describedby={errors.businessType ? 'b2b-business-type-error' : undefined}
             >
-              {BUSINESS_TYPES.map(opt => (
+              {TYPE_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value} disabled={opt.value === ''}>
                   {opt.label}
                 </option>
@@ -129,6 +137,20 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
             </p>
           )}
         </div>
+
+        {form.businessType === 'other' && (
+          <InputField
+            id="b2b-business-type-other"
+            label="סוג העסק"
+            type="text"
+            value={form.businessTypeOther}
+            onChange={set('businessTypeOther')}
+            placeholder="לדוגמה: פלאפל, חומוסייה…"
+            required
+            error={errors.businessTypeOther}
+            icon={<StorefrontIcon />}
+          />
+        )}
 
         <InputField
           id="b2b-address"

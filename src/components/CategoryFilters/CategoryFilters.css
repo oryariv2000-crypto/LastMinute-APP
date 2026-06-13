@@ -22,6 +22,10 @@
   /* Hide scrollbar but keep scrolling */
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  /* Soft fade at both ends so chips that scroll past the edge taper out
+     instead of being hard-clipped mid-word — signals "scroll for more". */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
 }
 .category-filters__scroll::-webkit-scrollbar {
   display: none;
@@ -29,4 +33,17 @@
 
 .category-filters__scroll > * {
   scroll-snap-align: start;
+}
+
+/* On wider screens there's room to show every chip — wrap to rows instead of
+   horizontally scrolling (and clipping the last chip mid-word on the web). */
+@media (min-width: 840px) {
+  .category-filters { margin-inline: 0; }
+  .category-filters__scroll {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-inline: 0;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
 }

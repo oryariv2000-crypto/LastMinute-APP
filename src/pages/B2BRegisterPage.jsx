@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2B from '../components/RegisterFormB2B/RegisterFormB2B'
 import { supabase } from '../lib/supabase'
+import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
 
 /**
@@ -20,6 +21,7 @@ export default function B2BRegisterPage() {
   const [role, setRole]       = useState('b2b')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
+  const [sent, setSent]       = useState(false) // email-confirmation pending
 
   function handleRoleNext() {
     if (role === 'b2c') {
@@ -33,38 +35,30 @@ export default function B2BRegisterPage() {
     setLoading(true)
     setError('')
     try {
-      // 1. Create the auth user
+      // Create the auth user. The `users` profile row (role=business_owner) is
+      // created server-side by the handle_new_user trigger from this metadata.
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+          data: { full_name: data.ownerName, role: 'business_owner' },
+        },
       })
       if (signUpError) {
         setError(signUpError.message)
         return
       }
 
-      const user = signUpData.user
-      if (!user) {
-        // Happens when email confirmation is enabled — no session yet.
-        setError('נשלח אליך מייל לאימות. אשר אותו כדי להשלים את ההרשמה.')
+      // No session ⇒ email confirmation on. The business will be created after
+      // the owner confirms + logs in (their dashboard prompts to finish setup).
+      if (!signUpData.session) {
+        setSent(true)
         return
       }
 
-      // 2. Insert the profile row into `users` with role = business_owner
-      const { error: profileError } = await supabase.from('users').insert({
-        id: user.id,
-        email: data.email,
-        full_name: data.ownerName,
-        role: 'business_owner',
-      })
-      if (profileError) {
-        setError(profileError.message)
-        return
-      }
-
-      // 3. Insert the business record owned by this user (owner = user_id).
+      // Session exists → create the business owned by this user.
       const { error: businessError } = await supabase.from('businesses').insert({
-        user_id: user.id,
+        user_id: signUpData.user.id,
         name: data.businessName,
         address: data.address,
         business_type: data.businessType,
@@ -89,8 +83,7 @@ export default function B2BRegisterPage() {
 
         {/* Brand */}
         <div className="auth-page__brand">
-          <span className="auth-page__logo-mark" aria-hidden="true">🌿</span>
-          <span className="auth-page__brand-name">Last Minute</span>
+          <BrandLogo tone="dark" size="lg" />
         </div>
 
         {/* Step indicators */}
@@ -146,7 +139,18 @@ export default function B2BRegisterPage() {
               </p>
             </div>
 
-            <RegisterFormB2B onSubmit={handleSubmit} loading={loading} error={error} />
+            {sent ? (
+              <div
+                className="auth-page__notice"
+                role="status"
+                style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: 'var(--space-4)' }}
+              >
+                <span aria-hidden="true" style={{ fontSize: 40 }}>📩</span>
+                <p style={{ margin: 0, lineHeight: 1.6 }}>שלחנו אליך מייל לאישור החשבון. אשרו אותו, התחברו, והשלימו את הקמת העסק.</p>
+              </div>
+            ) : (
+              <RegisterFormB2B onSubmit={handleSubmit} loading={loading} error={error} />
+            )}
           </>
         )}
 

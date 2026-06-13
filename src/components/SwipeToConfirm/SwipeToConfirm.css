@@ -1,0 +1,75 @@
+.swipe-confirm {
+  position: relative;
+  width: 100%;
+  height: 60px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline-variant);
+  overflow: hidden;
+  user-select: none;
+  touch-action: none; /* let us own the horizontal drag */
+}
+
+/* Green progress fill that grows as the thumb slides. */
+.swipe-confirm__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: var(--color-primary-container);
+  width: 0;
+  transition: width 0.18s ease;
+}
+
+.swipe-confirm__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface-variant);
+  pointer-events: none;
+  /* leave room for the thumb on the left so text doesn't sit under it */
+  padding-inline-start: 56px;
+}
+
+.swipe-confirm__thumb {
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-start: 4px;
+  width: 52px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: var(--shadow-sm);
+  transition: inset-inline-start 0.18s ease, background 0.18s ease;
+}
+.swipe-confirm__thumb:active { cursor: grabbing; }
+.swipe-confirm__thumb:focus-visible {
+  outline: 3px solid var(--color-primary-fixed-dim);
+  outline-offset: 2px;
+}
+
+.swipe-confirm--done .swipe-confirm__fill { background: var(--color-success); }
+.swipe-confirm--done .swipe-confirm__thumb { background: var(--color-success); }
+.swipe-confirm--done .swipe-confirm__label { color: var(--color-on-primary-container); }
+
+.swipe-confirm--locked { opacity: 0.85; }
+.swipe-confirm--locked .swipe-confirm__thumb { cursor: default; }
+
+/* While dragging, kill transitions so the thumb tracks the finger 1:1. */
+.swipe-confirm--dragging .swipe-confirm__fill,
+.swipe-confirm--dragging .swipe-confirm__thumb { transition: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-confirm__fill,
+  .swipe-confirm__thumb { transition: none; }
+}

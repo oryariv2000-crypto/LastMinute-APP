@@ -1,3 +1,4 @@
+import { Price } from '../../lib/formatters'
 import './AddToCartBar.css'
 
 /**
@@ -10,6 +11,10 @@ import './AddToCartBar.css'
  *   onQtyChange  fn(next)
  *   onAdd        fn       — primary CTA handler
  *   loading      boolean  — disables and spins the CTA
+ *   variant      'sticky' | 'inline' — sticky bottom bar (mobile) or in-flow
+ *                block inside a column (desktop). Default 'sticky'.
+ *   className    string   — extra classes (used to toggle visibility per
+ *                breakpoint when both variants are rendered)
  */
 export default function AddToCartBar({
   price,
@@ -18,15 +23,22 @@ export default function AddToCartBar({
   onQtyChange,
   onAdd,
   loading = false,
+  variant = 'sticky',
+  className = '',
 }) {
   const total = price * quantity
-  const disabled = loading || quantity < 1 || maxQuantity < 1
+  const soldOut = maxQuantity < 1
+  const disabled = loading || quantity < 1 || soldOut
 
   const dec = () => onQtyChange?.(Math.max(1, quantity - 1))
   const inc = () => onQtyChange?.(Math.min(maxQuantity, quantity + 1))
 
   return (
-    <div className="add-to-cart-bar" role="toolbar" aria-label="הוספה לעגלה">
+    <div
+      className={`add-to-cart-bar add-to-cart-bar--${variant}${className ? ` ${className}` : ''}`}
+      role="toolbar"
+      aria-label="הוספה לעגלה"
+    >
       <div className="add-to-cart-bar__qty" role="group" aria-label="כמות">
         <button
           type="button"
@@ -58,11 +70,13 @@ export default function AddToCartBar({
       >
         {loading ? (
           <span className="add-to-cart-bar__spinner" aria-label="מוסיף..." />
+        ) : soldOut ? (
+          <span className="add-to-cart-bar__cta-label">אזל מהמלאי</span>
         ) : (
           <>
             <BagIcon />
             <span className="add-to-cart-bar__cta-label">הוסף לסל</span>
-            <span className="add-to-cart-bar__cta-total">₪{total}</span>
+            <Price value={total} fraction={0} className="add-to-cart-bar__cta-total" />
           </>
         )}
       </button>

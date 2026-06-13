@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import NavbarB2C from '../components/NavbarB2C/NavbarB2C'
 import BottomNavigationB2C from '../components/BottomNavigation/BottomNavigationB2C'
 import OrderHistoryList from '../components/OrderHistoryList/OrderHistoryList'
@@ -15,6 +15,7 @@ import './B2CPage.css'
  * Route: /b2c/orders
  */
 export default function B2COrdersPage() {
+  const navigate = useNavigate()
   const { profile } = useProfile()
   const [orders, setOrders]   = useState([])
   const [loading, setLoading] = useState(true)
@@ -39,6 +40,7 @@ export default function B2COrdersPage() {
 
   const cards = orders.map((o) => ({
     id: o.id,
+    dealId: o.deal_id,
     orderCode: o.order_code,
     businessName: o.deals?.businesses?.name ?? '',
     image: o.deals?.image_url,
@@ -54,7 +56,7 @@ export default function B2COrdersPage() {
 
   return (
     <div className="b2c-page" dir="rtl">
-      <NavbarB2C location="תל אביב" userName={profile?.full_name || 'לקוח/ה'} />
+      <NavbarB2C userName={profile?.full_name || 'לקוח/ה'} showSearch={false} />
 
       <main className="b2c-page__main">
         <header className="b2c-page__greeting">
@@ -95,12 +97,15 @@ export default function B2COrdersPage() {
             <p style={{ margin: 0, maxWidth: 320, color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
               ההזמנות שתבצע יופיעו כאן. צא לגלות מבצעים אחרונים בקרבתך.
             </p>
-            <Link to="/b2c/home" className="btn btn-primary" style={{ marginTop: 'var(--space-2)', minWidth: 180 }}>
+            <Link to="/b2c/explore" className="btn btn-primary" style={{ marginTop: 'var(--space-2)', minWidth: 180 }}>
               גלה מבצעים
             </Link>
           </div>
         ) : (
-          <OrderHistoryList orders={cards} onReorder={() => {}} />
+          <OrderHistoryList
+            orders={cards}
+            onReorder={(dealId) => dealId && navigate(`/b2c/product/${dealId}`)}
+          />
         )}
       </main>
 

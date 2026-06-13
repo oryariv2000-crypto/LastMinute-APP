@@ -3,14 +3,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   background-color: var(--color-surface-container-lowest);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   border-inline-start: 4px solid transparent;
   transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
-.order-history-card:hover { box-shadow: var(--shadow-md); }
+.order-history-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
 .order-history-card--active   { border-inline-start-color: var(--color-accent); }
 .order-history-card--ready    { border-inline-start-color: var(--color-mint-green); }

@@ -6,9 +6,9 @@ import './OrderHistoryList.css'
  * OrderHistoryList — Filterable list of orders grouped by status.
  *
  * Props:
- *   orders        array  — OrderHistoryCard prop objects
- *   defaultTab    string — 'active' | 'completed' | 'all' (default: 'all')
- *   onReorder     fn(id) — bubbled to each card
+ *   orders        array     — OrderHistoryCard prop objects
+ *   defaultTab    string    — 'active' | 'completed' | 'all' (default: 'all')
+ *   onReorder     fn(dealId)— bubbled to each card (re-open the product page)
  */
 const TABS = [
   { id: 'all',       label: 'הכל' },
@@ -16,18 +16,20 @@ const TABS = [
   { id: 'completed', label: 'הושלמו' },
 ]
 
+// "Active" = awaiting pickup (a fresh order defaults to 'pending').
+const ACTIVE_STATUSES = ['pending', 'active', 'ready']
+
 export default function OrderHistoryList({ orders = [], defaultTab = 'all', onReorder }) {
   const [tab, setTab] = useState(defaultTab)
 
   const counts = useMemo(() => ({
     all:       orders.length,
-    active:    orders.filter(o => o.status === 'active' || o.status === 'ready').length,
+    active:    orders.filter(o => ACTIVE_STATUSES.includes(o.status)).length,
     completed: orders.filter(o => o.status === 'completed').length,
   }), [orders])
 
   const filtered = useMemo(() => {
-    if (tab === 'all')       return orders
-    if (tab === 'active')    return orders.filter(o => o.status === 'active' || o.status === 'ready')
+    if (tab === 'active')    return orders.filter(o => ACTIVE_STATUSES.includes(o.status))
     if (tab === 'completed') return orders.filter(o => o.status === 'completed')
     return orders
   }, [orders, tab])
@@ -63,7 +65,7 @@ export default function OrderHistoryList({ orders = [], defaultTab = 'all', onRe
             <OrderHistoryCard
               key={o.id}
               {...o}
-              onReorder={() => onReorder?.(o.id)}
+              onReorder={() => onReorder?.(o.dealId)}
             />
           ))}
         </div>

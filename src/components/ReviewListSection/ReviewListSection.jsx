@@ -19,6 +19,7 @@ export default function ReviewListSection({
   onQtyChange,
   onPriceChange,
   onImageChange,
+  onTagsChange,
   onRemove,
   onAdd,
   suggestedTotal,
@@ -57,6 +58,7 @@ export default function ReviewListSection({
               onQtyChange={(q) => onQtyChange?.(it.id, q)}
               onPriceChange={(field, value) => onPriceChange?.(it.id, field, value)}
               onImageChange={(payload) => onImageChange?.(it.id, payload)}
+              onTagsChange={(next) => onTagsChange?.(it.id, next)}
               onRemove={() => onRemove?.(it.id)}
             />
           ))}

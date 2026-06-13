@@ -1,42 +1,57 @@
 import { Link } from 'react-router-dom'
-import { Price, Ltr, formatTimer } from '../../lib/formatters'
+import { Price, Ltr } from '../../lib/formatters'
+import { formatTimer } from '../../lib/time'
+import { resolveTagsInGroup } from '../../lib/productTags'
 import './ProductCard.css'
 
 /**
- * ProductCard — Compact deal tile used inside the customer feed.
+ * ProductCard — compact deal tile for the customer catalogue. Built to stay
+ * legible at 2-up on mobile and 5-up on desktop: fixed image ratio, single-line
+ * title, one compact meta row (rating · distance), and price with the saving
+ * highlighted. The countdown timer and rating only render when there's data,
+ * so the card never shows placeholder noise like "00:00" or an empty star.
  *
  * Props:
- *   id            string|number  — used to build the deal info link
- *   image         string         — image URL
- *   title         string         — deal title
- *   businessName  string
- *   distanceKm    number         — distance to the business
- *   originalPrice number
- *   price         number         — discounted price
- *   discountPct   number
- *   timeLeftMin   number         — minutes until expiry (timer)
- *   tag           string         — optional tag label (e.g. "Vegan")
- *   to            string         — override link target
- *   asLink        boolean        — render the card as a <Link> (default true).
- *                                  Pass `false` when an outer <Link> already
- *                                  wraps the card to avoid nested anchors.
+ *   id, image, title, businessName
+ *   distanceKm    number — omit until real coordinates exist
+ *   rating        number — average stars (omit/0 hides the chip)
+ *   originalPrice, price, discountPct
+ *   timeLeftMin   number — minutes to expiry (0 hides the timer)
+ *   quantityLeft  number — units left; shows a "נשארו X" urgency pill when low
+ *   tag           string — category chip
+ *   tags          string[] — characteristic slugs; dietary ones show as badges
+ *   to            string — link override
+ *   asLink        bool   — false when an outer <Link> wraps the card
  */
+const LOW_STOCK_THRESHOLD = 5
+
 export default function ProductCard({
   id,
   image,
   title,
   businessName,
   distanceKm,
+  rating = 0,
   originalPrice,
   price,
   discountPct,
   timeLeftMin = 0,
+  quantityLeft,
   tag,
+  tags = [],
   to,
   asLink = true,
 }) {
-  const urgent = timeLeftMin <= 30
-  const timeText = formatTimer(timeLeftMin)
+  const showTimer = timeLeftMin > 0
+  const urgent = timeLeftMin > 0 && timeLeftMin <= 30
+  const lowStock = quantityLeft != null && quantityLeft > 0 && quantityLeft <= LOW_STOCK_THRESHOLD
+  // Surface dietary + product-state characteristics (vegan / baked-today / …)
+  // on the compact card, up to three, so the tile stays legible. Allergens stay
+  // on the product page only.
+  const dietBadges = [
+    ...resolveTagsInGroup(tags, 'diet'),
+    ...resolveTagsInGroup(tags, 'state'),
+  ].slice(0, 3)
 
   const href = to ?? `/b2c/product/${id}`
   const Wrapper = asLink ? Link : 'article'
@@ -48,7 +63,7 @@ export default function ProductCard({
     <Wrapper {...wrapperProps}>
       <div className="product-card__media">
         {image ? (
-          <img src={image} alt="" className="product-card__img" loading="lazy" />
+          <img src={image} alt="" className="product-card__img" loading="lazy" decoding="async" />
         ) : (
           <div className="product-card__img product-card__img--placeholder" aria-hidden="true">🥗</div>
         )}
@@ -59,25 +74,50 @@ export default function ProductCard({
           </span>
         )}
 
-        <span className={`product-card__timer${urgent ? ' product-card__timer--urgent' : ''}`}>
-          <ClockIcon /> <Ltr>{timeText}</Ltr>
-        </span>
+        {lowStock && (
+          <span className="product-card__stock" aria-label={`נשארו ${quantityLeft} במלאי`}>
+            🔥 נשארו {quantityLeft}
+          </span>
+        )}
+
+        {showTimer && (
+          <span className={`product-card__timer${urgent ? ' product-card__timer--urgent' : ''}`}>
+            <ClockIcon /> <Ltr>{formatTimer(timeLeftMin)}</Ltr>
+          </span>
+        )}
       </div>
 
       <div className="product-card__body">
         {tag && <span className="product-card__tag">{tag}</span>}
         <h3 className="product-card__title">{title}</h3>
-        <p className="product-card__biz">
-          <StoreIcon /> {businessName}
+
+        {dietBadges.length > 0 && (
+          <ul className="product-card__badges" aria-label="מאפיינים תזונתיים">
+            {dietBadges.map((t) => (
+              <li key={t.slug} className="product-card__badge" title={t.label}>
+                <span aria-hidden="true">{t.icon}</span>
+                <span className="product-card__badge-label">{t.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <p className="product-card__meta">
+          <span className="product-card__biz">{businessName}</span>
+          {rating > 0 && (
+            <span className="product-card__rating" aria-label={`דירוג ${rating.toFixed(1)}`}>
+              <StarIcon /> {rating.toFixed(1)}
+            </span>
+          )}
           {distanceKm != null && (
-            <span className="product-card__distance"> · {formatDistance(distanceKm)}</span>
+            <span className="product-card__distance">· {formatDistance(distanceKm)}</span>
           )}
         </p>
 
         <div className="product-card__pricing">
-          <Price value={price} className="product-card__price" />
-          {originalPrice && originalPrice > price && (
-            <Price value={originalPrice} className="product-card__original" />
+          <Price value={price} fraction={0} className="product-card__price" />
+          {originalPrice > price && (
+            <Price value={originalPrice} fraction={0} className="product-card__original" />
           )}
         </div>
       </div>
@@ -99,13 +139,10 @@ function ClockIcon() {
     </svg>
   )
 }
-function StoreIcon() {
+function StarIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 9l1-6h16l1 6" />
-      <path d="M3 9a2 2 0 1 0 4 0 2 2 0 1 0 4 0 2 2 0 1 0 4 0 2 2 0 1 0 4 0" />
-      <path d="M5 9v12h14V9" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   )
 }

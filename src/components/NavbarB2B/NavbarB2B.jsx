@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import NotificationsBell from '../NotificationsBell/NotificationsBell'
+import BrandLogo from '../BrandLogo/BrandLogo'
 import './NavbarB2B.css'
 
 /**
@@ -41,11 +42,7 @@ export default function NavbarB2B({
 
         {/* ── Brand ─────────────────────────────────────── */}
         <Link to="/b2b/dashboard" className="navbar-b2b__brand" aria-label="Last Minute — דף הבית">
-          <span className="navbar-b2b__logo-mark" aria-hidden="true">🌿</span>
-          <span>
-            <span className="navbar-b2b__brand-name">Last Minute</span>
-            <span className="navbar-b2b__brand-tag">לעסקים</span>
-          </span>
+          <BrandLogo tone="light" size="sm" tagline="לעסקים" />
         </Link>
 
         {/* ── Business Info ──────────────────────────────── */}

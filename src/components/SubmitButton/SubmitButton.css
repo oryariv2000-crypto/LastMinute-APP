@@ -57,10 +57,22 @@
   background-color: var(--color-secondary-container);
 }
 
-/* ── Disabled / loading */
+/* ── Disabled / loading — clearly inert grey, not a faded brand colour
+   (a washed-out orange button reads as "active but broken"). */
 .submit-btn:disabled {
-  opacity: 0.55;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-text-muted);
+  border-color: transparent;
+  box-shadow: none;
   cursor: not-allowed;
+}
+/* A spinning button is "working", not inert — keep its colour. */
+.submit-btn:disabled[aria-busy='true'] {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+.submit-btn--primary:disabled[aria-busy='true'] {
+  background-color: var(--color-brand-primary);
 }
 
 /* ── Spinner */

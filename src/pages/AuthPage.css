@@ -34,13 +34,15 @@
 .auth-page__brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   text-decoration: none;
 }
 
-.auth-page__logo-mark {
-  font-size: 28px;
-  line-height: 1;
+.auth-page__logo {
+  width: auto;
+  height: 88px;
+  object-fit: contain;
 }
 
 .auth-page__brand-name {

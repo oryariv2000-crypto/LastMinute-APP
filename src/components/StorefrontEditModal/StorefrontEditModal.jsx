@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { uploadDealImage } from '../../lib/db'
+import { BUSINESS_TYPES, isKnownBusinessType } from '../../lib/businessTypes'
 import '../DealEditModal/DealEditModal.css'
 import './StorefrontEditModal.css'
 
@@ -26,13 +27,18 @@ const DAYS = [
 const DEFAULT_DAY = { open: '09:00', close: '17:00', closed: false }
 
 export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
+  // business_type stores a slug for a known type, or free text for a custom one.
+  // Map a custom value onto the "other" select option + its free-text field.
+  const storedType = initial.business_type ?? ''
+  const knownType = isKnownBusinessType(storedType)
   const [values, setValues] = useState({
-    name:          initial.name ?? '',
-    full_name:     initial.full_name ?? '',
-    address:       initial.address ?? '',
-    phone:         initial.phone ?? '',
-    business_type: initial.business_type ?? '',
-    description:   initial.description ?? '',
+    name:              initial.name ?? '',
+    full_name:         initial.full_name ?? '',
+    address:           initial.address ?? '',
+    phone:             initial.phone ?? '',
+    business_type:     knownType ? storedType : (storedType ? 'other' : ''),
+    business_type_other: knownType ? '' : storedType,
+    description:       initial.description ?? '',
   })
   const [logo, setLogo]   = useState(initial.logo_url || null)
   const [cover, setCover] = useState(initial.cover_url || null)
@@ -42,6 +48,13 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
   const [error, setError] = useState('')
   const logoRef  = useRef(null)
   const coverRef = useRef(null)
+
+  // Esc closes the dialog.
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   function set(name) {
     return (e) => setValues((p) => ({ ...p, [name]: e.target.value }))
@@ -72,8 +85,14 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
     setError('')
     setSaving(true)
     try {
+      // Resolve "Other" back to the typed text; drop the helper field.
+      const { business_type_other, ...rest } = values
+      const business_type = values.business_type === 'other'
+        ? business_type_other.trim()
+        : values.business_type
       await onSave({
-        ...values,
+        ...rest,
+        business_type,
         name: values.name.trim(),
         logo_url: logo,
         cover_url: cover,
@@ -87,12 +106,19 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
 
   return (
     <div className="deal-edit__backdrop" role="dialog" aria-modal="true" aria-label="עריכת חנות" onClick={onClose}>
-      <form className="deal-edit__panel card sf-edit" dir="rtl" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
-        <h2 className="deal-edit__title">עריכת דף העסק</h2>
-        {error && <p className="deal-edit__error" role="alert">{error}</p>}
+      <form className="deal-edit__panel sf-edit" dir="rtl" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+        <header className="deal-edit__header">
+          <h2 className="deal-edit__title">עריכת דף העסק</h2>
+          <button type="button" className="deal-edit__close" onClick={onClose} aria-label="סגירה">
+            <CloseIcon />
+          </button>
+        </header>
 
-        {/* Cover + logo */}
-        <div className="sf-edit__media">
+        <div className="deal-edit__body">
+          {error && <p className="deal-edit__error" role="alert">{error}</p>}
+
+          {/* Cover + logo */}
+          <div className="sf-edit__media">
           <button
             type="button"
             className="sf-edit__cover"
@@ -122,10 +148,28 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
             <input type="text" value={values.name} onChange={set('name')} required />
           </label>
           <label className="deal-edit__field">
-            <span>קטגוריה</span>
-            <input type="text" value={values.business_type} onChange={set('business_type')} placeholder="בית קפה, מאפייה…" />
+            <span>סוג העסק</span>
+            <select value={values.business_type} onChange={set('business_type')}>
+              <option value="">בחר סוג עסק</option>
+              {BUSINESS_TYPES.map((t) => (
+                <option key={t.slug} value={t.slug}>{t.icon} {t.label}</option>
+              ))}
+              <option value="other">אחר…</option>
+            </select>
           </label>
         </div>
+
+        {values.business_type === 'other' && (
+          <label className="deal-edit__field">
+            <span>סוג העסק (טקסט חופשי)</span>
+            <input
+              type="text"
+              value={values.business_type_other}
+              onChange={set('business_type_other')}
+              placeholder="לדוגמה: פלאפל, חומוסייה…"
+            />
+          </label>
+        )}
 
         <label className="deal-edit__field">
           <span>שם בעל/ת העסק</span>
@@ -183,15 +227,25 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
             )
           })}
         </div>
+        </div>
 
-        <div className="deal-edit__actions">
+        <footer className="deal-edit__actions">
           <button type="button" className="btn btn-ghost" onClick={onClose} disabled={saving}>ביטול</button>
           <button type="submit" className="btn btn-primary" disabled={saving || busy}>
             {saving ? 'שומר…' : 'שמור'}
           </button>
-        </div>
+        </footer>
       </form>
     </div>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
   )
 }
 

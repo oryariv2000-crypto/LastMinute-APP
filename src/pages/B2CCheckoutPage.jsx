@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import NavbarB2C from '../components/NavbarB2C/NavbarB2C'
 import OrderSummarySection from '../components/OrderSummarySection/OrderSummarySection'
 import PaymentMethodsSection from '../components/PaymentMethodsSection/PaymentMethodsSection'
 import SubmitButton from '../components/SubmitButton/SubmitButton'
 import Loader from '../components/Loader/Loader'
 import { getDealById, createOrder } from '../lib/db'
+import { getPaymentProvider, PAYMENT_STATUS } from '../lib/payments'
+import DevelopmentNotice from '../components/DevelopmentNotice/DevelopmentNotice'
+import { Price } from '../lib/formatters'
+import { useProfile } from '../lib/useProfile'
 import './B2CPage.css'
 
 /**
@@ -19,12 +24,16 @@ import './B2CPage.css'
 export default function B2CCheckoutPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { profile } = useProfile()
+  const userName = profile?.full_name || 'לקוח/ה'
+  const queryClient = useQueryClient()
   const { dealId, quantity = 1 } = location.state || {}
 
   const [payment, setPayment] = useState('apple')
+  const [agreed, setAgreed]   = useState(false) // must confirm self-pickup before paying
   const [deal, setDeal]       = useState(null)
   const [loadingDeal, setLoadingDeal] = useState(!!dealId)
-  const [paying, setPaying]   = useState(false)
+  const [status, setStatus]   = useState(PAYMENT_STATUS.IDLE) // idle → pending → success/failed
   const [error, setError]     = useState('')
 
   useEffect(() => {
@@ -58,15 +67,38 @@ export default function B2CCheckoutPage() {
     : []
 
   async function handlePay() {
-    if (!deal) return
-    setPaying(true)
+    if (!deal || !agreed) return
+    setStatus(PAYMENT_STATUS.PENDING)
     setError('')
     try {
-      const order = await createOrder({ deal_id: deal.id, quantity, total })
+      // 1) Authorize through the payment provider. Currently a placeholder that
+      //    does NOT charge (see lib/payments.js); swap getPaymentProvider() for
+      //    a real Stripe/Tranzila provider to go live — no changes needed here.
+      const provider = getPaymentProvider()
+      const payment_result = await provider.authorize({
+        amount: total,
+        method: payment,
+        metadata: { dealId: deal.id, quantity },
+      })
+      if (payment_result.status !== PAYMENT_STATUS.SUCCESS) {
+        setError(payment_result.error || 'התשלום נכשל')
+        setStatus(PAYMENT_STATUS.FAILED)
+        return
+      }
+
+      // 2) Payment authorized → place the order. The TOTAL is recomputed
+      //    server-side by place_order() (never trusted from the client).
+      const order = await createOrder({ deal_id: deal.id, quantity })
+      // Order placed: stock changed server-side + a new active order exists,
+      // so drop the caches that reflect them.
+      queryClient.invalidateQueries({ queryKey: ['my-orders-active-count'] })
+      queryClient.invalidateQueries({ queryKey: ['my-impact'] })
+      queryClient.invalidateQueries({ queryKey: ['deal', deal.id] })
+      setStatus(PAYMENT_STATUS.SUCCESS)
       navigate(`/b2c/confirmation?code=${encodeURIComponent(order.order_code)}`)
     } catch (err) {
       setError(err?.message || 'יצירת ההזמנה נכשלה')
-      setPaying(false)
+      setStatus(PAYMENT_STATUS.FAILED)
     }
   }
 
@@ -74,7 +106,7 @@ export default function B2CCheckoutPage() {
   if (!dealId && !loadingDeal) {
     return (
       <div className="b2c-page" dir="rtl">
-        <NavbarB2C location="תל אביב" userName="דנה כהן" />
+        <NavbarB2C userName={userName} showSearch={false} />
         <main className="b2c-page__main">
           <div className="product-grid__empty">
             <span aria-hidden="true">🛒</span>
@@ -90,7 +122,7 @@ export default function B2CCheckoutPage() {
 
   return (
     <div className="b2c-page b2c-page--with-bar" dir="rtl">
-      <NavbarB2C location="תל אביב" userName="דנה כהן" />
+      <NavbarB2C userName={userName} showSearch={false} />
 
       <main className="b2c-page__main">
         <header className="b2c-page__greeting">
@@ -112,7 +144,32 @@ export default function B2CCheckoutPage() {
         ) : (
           <>
             <OrderSummarySection items={summaryItems} serviceFee={0} />
-            <PaymentMethodsSection value={payment} onChange={setPayment} cardLast4="4242" />
+
+            {/* Self-pickup acknowledgement — required before paying, so no one
+                mistakes this for a delivery service. Kept high on the page so
+                it's always visible (not hidden behind the sticky pay bar). */}
+            <label className={`b2c-pickup-ack${agreed ? ' b2c-pickup-ack--checked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+              />
+              <span>
+                קראתי והבנתי שמדובר ב<strong>איסוף עצמי בלבד</strong> מסניף {deal?.businesses?.name || 'העסק'} — ללא משלוח
+              </span>
+            </label>
+
+            <PaymentMethodsSection value={payment} onChange={setPayment} />
+
+            <DevelopmentNotice variant="banner" title="תכונה בפיתוח — תשלום">
+              זהו מציין מקום לאינטגרציית תשלום אמיתית (Stripe / טרנזילה). לא יבוצע חיוב אמיתי.
+            </DevelopmentNotice>
+
+            {!agreed && (
+              <p className="b2c-checkout-hint" role="note">
+                כדי להמשיך — סמן/י שהבנת שמדובר באיסוף עצמי
+              </p>
+            )}
           </>
         )}
       </main>
@@ -120,16 +177,17 @@ export default function B2CCheckoutPage() {
       <div className="b2c-pay-bar" role="toolbar" aria-label="תשלום">
         <div className="b2c-pay-bar__total">
           <span className="b2c-pay-bar__total-label">סה״כ</span>
-          <span className="b2c-pay-bar__total-value">₪{total}</span>
+          <Price value={total} fraction={0} className="b2c-pay-bar__total-value" />
         </div>
         <SubmitButton
-          loading={paying}
+          loading={status === PAYMENT_STATUS.PENDING}
           variant="action"
           onClick={handlePay}
           fullWidth={false}
+          disabled={!agreed}
           id="b2c-pay-btn"
         >
-          {payment === 'apple' ? '🍎 שלם עם Apple Pay' : 'שלם בכרטיס'}
+          {payment === 'apple' ? '🍎 שלם ובוא לאסוף' : 'שלם ובוא לאסוף'}
         </SubmitButton>
       </div>
     </div>

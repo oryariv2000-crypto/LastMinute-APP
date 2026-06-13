@@ -1,15 +1,21 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import Loader from './components/Loader/Loader'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import B2CRegisterPage from './pages/B2CRegisterPage'
 import B2BRegisterPage from './pages/B2BRegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import B2BDashboardPage from './pages/B2BDashboardPage'
 import B2BAiReviewPage from './pages/B2BAiReviewPage'
 import B2BNewDealPage from './pages/B2BNewDealPage'
 import B2BStatsPage from './pages/B2BStatsPage'
 import B2BProfilePage from './pages/B2BProfilePage'
 import B2CHomePage from './pages/B2CHomePage'
-import B2CExplorePage from './pages/B2CExplorePage'
+// Lazy — pulls in leaflet/react-leaflet (~200KB) only when the map is opened.
+const B2CExplorePage = lazy(() => import('./pages/B2CExplorePage'))
+import B2CBusinessPage from './pages/B2CBusinessPage'
 import B2CProductPage from './pages/B2CProductPage'
 import B2CCheckoutPage from './pages/B2CCheckoutPage'
 import B2CConfirmationPage from './pages/B2CConfirmationPage'
@@ -28,6 +34,7 @@ const B2C = (el) => <ProtectedRoute allowedRole="customer">{el}</ProtectedRoute>
 
 export default function App() {
   return (
+    <Suspense fallback={<Loader fullscreen />}>
     <Routes>
       {/* Public landing page */}
       <Route path="/" element={<LandingPage />} />
@@ -38,6 +45,8 @@ export default function App() {
       <Route path="/register/b2b" element={<B2BRegisterPage />} />
       {/* Convenience alias: bare /register → B2C registration */}
       <Route path="/register" element={<Navigate to="/register/b2c" replace />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* ── B2B (Business) — business_owner only ───────────── */}
       <Route path="/b2b/dashboard" element={B2B(<B2BDashboardPage />)} />
@@ -50,14 +59,16 @@ export default function App() {
       <Route path="/b2c/home"          element={B2C(<B2CHomePage />)} />
       {/* "גלה" tab — interactive map of nearby businesses */}
       <Route path="/b2c/explore"       element={B2C(<B2CExplorePage />)} />
+      {/* Customer-facing storefront for one business */}
+      <Route path="/b2c/business/:id"  element={B2C(<B2CBusinessPage />)} />
       <Route path="/b2c/product/:id"   element={B2C(<B2CProductPage />)} />
       <Route path="/b2c/checkout"      element={B2C(<B2CCheckoutPage />)} />
       <Route path="/b2c/confirmation"  element={B2C(<B2CConfirmationPage />)} />
       <Route path="/b2c/orders"        element={B2C(<B2COrdersPage />)} />
       <Route path="/b2c/profile"       element={B2C(<B2CProfilePage />)} />
 
-      {/* ── Shared — any signed-in user ─────────────────────── */}
-      <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+      {/* ── Public support form — open to anyone (logged in or not) ── */}
+      <Route path="/support" element={<SupportPage />} />
       {/* ── Support team only (email allowlist) ─────────────── */}
       <Route path="/admin/support" element={<ProtectedRoute adminOnly><AdminSupportPage /></ProtectedRoute>} />
 
@@ -68,6 +79,7 @@ export default function App() {
       {/* ── Global catch-all → login (no blank pages) ──────── */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </Suspense>
   )
 }
 
