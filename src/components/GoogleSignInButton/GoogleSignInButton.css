@@ -1,0 +1,39 @@
+/* ── GoogleSignInButton ─────────────────────────────────────── */
+.google-signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 24px;
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.google-signin:hover {
+  background-color: var(--color-surface-container);
+  box-shadow: var(--shadow-sm);
+}
+
+.google-signin:active {
+  transform: scale(0.97);
+}
+
+.google-signin__icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

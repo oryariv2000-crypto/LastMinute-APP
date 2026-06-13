@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import RoleSelector from '../components/RoleSelector/RoleSelector'
 import RegisterFormB2B from '../components/RegisterFormB2B/RegisterFormB2B'
+import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInButton'
 import { supabase } from '../lib/supabase'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
@@ -153,6 +154,9 @@ export default function B2BRegisterPage() {
             )}
           </>
         )}
+
+        {/* Google OAuth */}
+        <GoogleSignInButton />
 
         {/* Divider */}
         <div className="auth-page__divider" aria-hidden="true"><span>או</span></div>

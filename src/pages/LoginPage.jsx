@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm/AuthForm'
+import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInButton'
 import { supabase } from '../lib/supabase'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import './AuthPage.css'
@@ -67,6 +68,9 @@ export default function LoginPage() {
 
         {/* Form */}
         <AuthForm onSubmit={handleLogin} loading={loading} error={error} />
+
+        {/* Google OAuth */}
+        <GoogleSignInButton />
 
         {/* Divider */}
         <div className="auth-page__divider" aria-hidden="true">
