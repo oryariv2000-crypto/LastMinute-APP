@@ -25,6 +25,7 @@ import {
   deleteDeal,
   createOrder,
   createMyBusiness,
+  getActiveDealsPage,
 } from './db'
 
 /* ── In-memory fake Supabase with minimal RLS emulation ─────────────── */
@@ -243,6 +244,54 @@ describe('orders — create', () => {
     }
     await expect(createOrder({ deal_id: 'deal-A1', quantity: 1 }))
       .rejects.toThrow(selfDealingMsg)
+  })
+})
+
+/* ── Query-builder spy for getActiveDealsPage ────────────────────────── */
+function makeQuerySpy() {
+  const calls = { not: [], or: [] }
+  const builder = {
+    select() { return builder },
+    eq() { return builder },
+    gt() { return builder },
+    order() { return builder },
+    range() { return builder },
+    in() { return builder },
+    ilike() { return builder },
+    contains() { return builder },
+    not(...args) { calls.not.push(args); return builder },
+    or(...args) { calls.or.push(args); return builder },
+    then(resolve) { return Promise.resolve({ data: [], error: null }).then(resolve) },
+  }
+  return { builder, calls }
+}
+
+describe('getActiveDealsPage — excludeTags filter', () => {
+  let spy
+
+  beforeEach(() => {
+    spy = makeQuerySpy()
+    h.fake.from = () => spy.builder
+  })
+
+  it('uses a null-safe .or() filter (not .not()) so deals with empty/null tags are kept', async () => {
+    await getActiveDealsPage({ excludeTags: ['nuts'] })
+
+    // Must use .or(), not the old .not() approach
+    expect(spy.calls.not).toHaveLength(0)
+    expect(spy.calls.or).toHaveLength(1)
+
+    const orArg = spy.calls.or[0][0]
+    // Must admit null tags
+    expect(orArg).toContain('tags.is.null')
+    // Must still exclude deals whose tags overlap the excluded set
+    expect(orArg).toContain('not.tags.ov.{nuts}')
+  })
+
+  it('does not add any tag-exclusion filter when excludeTags is empty', async () => {
+    await getActiveDealsPage({ excludeTags: [] })
+    expect(spy.calls.not).toHaveLength(0)
+    expect(spy.calls.or).toHaveLength(0)
   })
 })
 

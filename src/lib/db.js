@@ -180,7 +180,10 @@ export async function getActiveDealsPage({ pageParam = 0, pageSize = 24, busines
   if (businessTypes?.length) q = q.in('businesses.business_type', businessTypes)
   if (search.trim()) q = q.ilike('title', `%${search.trim()}%`)
   if (tags?.length) q = q.contains('tags', tags)
-  if (excludeTags?.length) q = q.not('tags', 'ov', `{${excludeTags.join(',')}}`)
+  if (excludeTags?.length) {
+    // exclude deals containing ANY excluded tag; keep deals with empty/null tags
+    q = q.or(`tags.is.null,not.tags.ov.{${excludeTags.join(',')}}`)
+  }
 
   const { data, error } = await q
   if (error) throw error
