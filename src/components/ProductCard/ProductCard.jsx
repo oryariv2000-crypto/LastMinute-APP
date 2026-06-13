@@ -47,6 +47,7 @@ export default function ProductCard({
   const urgent = timeLeftMin > 0 && timeLeftMin <= 30
   // Capture the expiry instant once on mount so Date.now() isn't called on
   // every render (satisfies React Compiler's purity rule).
+  // expiresAt is intentionally frozen at mount — won't re-derive if timeLeftMin prop changes; acceptable as the timer doesn't tick.
   const [expiresAt] = useState(() => Date.now() + timeLeftMin * 60_000)
   const lowStock = quantityLeft != null && quantityLeft > 0 && quantityLeft <= LOW_STOCK_THRESHOLD
   // Surface dietary + product-state characteristics (vegan / baked-today / …)

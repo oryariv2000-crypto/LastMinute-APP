@@ -537,37 +537,35 @@ export function periodRange(period = '7d', _now = new Date()) {
 
 /**
  * Return the UTC Date corresponding to midnight of a given calendar date in
- * Asia/Jerusalem. Uses a binary search over the offset to handle DST correctly.
+ * Asia/Jerusalem. Asia/Jerusalem is always UTC+2 (winter/standard) or UTC+3
+ * (DST/summer) — no fractional offsets. We try exactly those two candidate UTC
+ * instants and return whichever one formatToParts confirms reads 00:00:00 in
+ * Jerusalem. Terminates unconditionally and is correct across both DST
+ * transitions (spring-forward and fall-back).
  * @param {number} year  @param {number} month (1-based)  @param {number} day
  * @returns {Date}
  */
 function jerusalemMidnight(year, month, day) {
-  // Normalise the date arithmetic so day=32 → next month etc.
+  // Normalise overflow (e.g. day 32 → next month) via UTC Date constructor.
   const ref = new Date(Date.UTC(year, month - 1, day))
-  // Try UTC midnight as a starting point, then nudge until the Jerusalem wall
-  // clock reads exactly 00:00 on the target calendar date.
-  let probe = ref.getTime()
-  for (let i = 0; i < 4; i++) {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Jerusalem',
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-      hour12: false,
-    }).formatToParts(new Date(probe))
-    const get = (t) => Number(parts.find((p) => p.type === t)?.value ?? 0)
-    const pYear = get('year'); const pMonth = get('month'); const pDay = get('day')
-    const pHour = get('hour'); const pMin = get('minute'); const pSec = get('second')
-
-    // How far away from midnight on the target date are we in Jerusalem?
-    const targetDate = new Date(Date.UTC(year, month - 1, day))
-    const probeDate  = new Date(Date.UTC(pYear, pMonth - 1, pDay))
-    const dateDeltaMs = targetDate - probeDate          // ms difference in calendar date
-    const timeDeltaMs = (pHour * 3600 + pMin * 60 + pSec) * 1000  // time past midnight
-
-    if (dateDeltaMs === 0 && timeDeltaMs === 0) break   // already exact
-    probe -= dateDeltaMs + timeDeltaMs                  // step toward exact midnight
+  const y = ref.getUTCFullYear(), m = ref.getUTCMonth() + 1, d = ref.getUTCDate()
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  })
+  for (const offsetH of [2, 3]) {
+    const candidate = new Date(Date.UTC(y, m - 1, d) - offsetH * 3_600_000)
+    const parts = fmt.formatToParts(candidate)
+    const get = (t) => Number(parts.find((p) => p.type === t)?.value ?? NaN)
+    // hour12:false can render midnight as '24' in some environments; treat both as 0.
+    if (get('year') === y && get('month') === m && get('day') === d &&
+        (get('hour') % 24) === 0 && get('minute') === 0 && get('second') === 0) {
+      return candidate
+    }
   }
-  return new Date(probe)
+  // Fallback — should be unreachable for Asia/Jerusalem (always UTC+2 or +3).
+  return new Date(Date.UTC(y, m - 1, d) - 2 * 3_600_000)
 }
 
 async function resolveBusinessId(businessId) {

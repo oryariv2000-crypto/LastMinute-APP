@@ -319,8 +319,12 @@ describe('getActiveDealsPage — excludeTags filter', () => {
 
 /* ── periodRange — Asia/Jerusalem day boundaries ─────────────────────── */
 describe('periodRange — Asia/Jerusalem bucketing', () => {
+  // All tests use a pinned _now so the suite is deterministic year-round.
+  // 2024-01-15T10:00:00Z = 2024-01-15 12:00 Jerusalem (UTC+2 winter).
+  const PINNED_NOW = new Date('2024-01-15T10:00:00Z')
+
   it('7d: `to` lands on an Asia/Jerusalem midnight (00:00:00 local)', () => {
-    const { to } = periodRange('7d')
+    const { to } = periodRange('7d', PINNED_NOW)
     const toDate = new Date(to)
     // Format the `to` instant in Jerusalem time and assert it is midnight
     const parts = new Intl.DateTimeFormat('en-CA', {
@@ -328,20 +332,23 @@ describe('periodRange — Asia/Jerusalem bucketing', () => {
       hour: '2-digit', minute: '2-digit', second: '2-digit',
       hour12: false,
     }).formatToParts(toDate)
-    const h = parts.find((p) => p.type === 'hour')?.value
-    const m = parts.find((p) => p.type === 'minute')?.value
-    const s = parts.find((p) => p.type === 'second')?.value
-    expect(`${h}:${m}:${s}`).toBe('00:00:00')
+    const hv = parts.find((p) => p.type === 'hour')?.value
+    const mv = parts.find((p) => p.type === 'minute')?.value
+    const sv = parts.find((p) => p.type === 'second')?.value
+    // hour12:false may render midnight as '24' on some platforms; normalise.
+    expect(Number(hv) % 24).toBe(0)
+    expect(mv).toBe('00')
+    expect(sv).toBe('00')
   })
 
   it('7d: `from` is exactly 7 days (604800 s) before `to`', () => {
-    const { from, to } = periodRange('7d')
+    const { from, to } = periodRange('7d', PINNED_NOW)
     const diff = (new Date(to) - new Date(from)) / 1000
     expect(diff).toBe(7 * 86_400)
   })
 
   it('30d: `from` is 30 days before `to` and `to` is Jerusalem midnight', () => {
-    const { from, to, days, bucket } = periodRange('30d')
+    const { from, to, days, bucket } = periodRange('30d', PINNED_NOW)
     expect(days).toBe(30)
     expect(bucket).toBe('week')
     const diff = (new Date(to) - new Date(from)) / 1000
@@ -349,7 +356,7 @@ describe('periodRange — Asia/Jerusalem bucketing', () => {
   })
 
   it('90d: `from` is 90 days before `to` and bucket is month', () => {
-    const { from, to, days, bucket } = periodRange('90d')
+    const { from, to, days, bucket } = periodRange('90d', PINNED_NOW)
     expect(days).toBe(90)
     expect(bucket).toBe('month')
     const diff = (new Date(to) - new Date(from)) / 1000
@@ -357,17 +364,31 @@ describe('periodRange — Asia/Jerusalem bucketing', () => {
   })
 
   it('`to` in Asia/Jerusalem is always one day ahead of today in Jerusalem', () => {
-    // Provide a known fixed "now" to make the test deterministic.
-    // 2024-01-15 10:00 UTC = 2024-01-15 12:00 Jerusalem (UTC+2 winter)
-    const fixedNow = new Date('2024-01-15T10:00:00Z')
-    const { to } = periodRange('7d', fixedNow)
+    const { to } = periodRange('7d', PINNED_NOW)
     const toDateParts = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Jerusalem',
       year: 'numeric', month: '2-digit', day: '2-digit',
     }).formatToParts(new Date(to))
     const toDate = `${toDateParts.find(p=>p.type==='year').value}-${toDateParts.find(p=>p.type==='month').value}-${toDateParts.find(p=>p.type==='day').value}`
-    // "start of tomorrow" in Jerusalem = 2024-01-16
+    // "start of tomorrow" in Jerusalem relative to 2024-01-15 = 2024-01-16
     expect(toDate).toBe('2024-01-16')
+  })
+
+  it('DST spring-forward eve regression: `to` is 2025-03-28 00:00 Jerusalem (2025-03-27T22:00:00.000Z)', () => {
+    // Israel DST 2025: clocks spring forward 2025-03-28 02:00 -> 03:00 (UTC+2 -> UTC+3).
+    // On the eve, now = 2025-03-27T12:00:00Z (14:00 Jerusalem, UTC+2).
+    // The next-day midnight is 2025-03-28 00:00 Jerusalem — still UTC+2 (transition
+    // happens at 02:00, after midnight). So `to` must equal 2025-03-27T22:00:00.000Z.
+    // The old iterative code diverged here, landing ~8 days too early.
+    const springForwardEve = new Date('2025-03-27T12:00:00Z')
+    const { to, from } = periodRange('7d', springForwardEve)
+
+    // `to` must be the exact UTC instant for 2025-03-28 00:00 Jerusalem.
+    expect(to).toBe('2025-03-27T22:00:00.000Z')
+
+    // `from` must be exactly 7 × 86400 s earlier.
+    expect((new Date(to) - new Date(from)) / 1000).toBe(7 * 86_400)
+    expect(from).toBe('2025-03-20T22:00:00.000Z')
   })
 })
 

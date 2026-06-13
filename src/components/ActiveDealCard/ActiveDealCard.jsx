@@ -35,6 +35,7 @@ export default function ActiveDealCard({
   const urgent = timeLeftMin <= 30
   // Capture the expiry instant once on mount so Date.now() isn't called on
   // every render (satisfies React Compiler's purity rule).
+  // expiresAt is intentionally frozen at mount — won't re-derive if timeLeftMin prop changes; acceptable as the timer doesn't tick.
   const [expiresAt] = useState(() => Date.now() + timeLeftMin * 60_000)
   const timeText = formatTimer(expiresAt)
   const paused = status === 'paused'
