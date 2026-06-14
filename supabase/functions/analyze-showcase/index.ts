@@ -8,7 +8,9 @@ const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/he
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type",
+  // supabase-js (functions.invoke) auto-sends authorization, apikey, and
+  // x-client-info — all must be allowed or the browser blocks the preflight.
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
