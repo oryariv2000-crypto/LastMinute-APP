@@ -13,12 +13,19 @@ export default function GoogleSignInButton({ label = 'התחברות עם Google
 
   async function handleClick() {
     setError(null)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/login` },
-    })
-    if (error) {
-      setError(error.message || 'ההתחברות עם Google נכשלה')
+    // try/catch so the button can NEVER fail silently: signInWithOAuth can
+    // either return { error } OR reject (network/provider/redirect-uri issues).
+    // Both paths surface a visible Hebrew message instead of a dead click.
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/login` },
+      })
+      if (error) {
+        setError(error.message || 'ההתחברות עם Google נכשלה')
+      }
+    } catch (err) {
+      setError(err?.message || 'ההתחברות עם Google נכשלה')
     }
   }
 

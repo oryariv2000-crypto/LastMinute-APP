@@ -58,4 +58,15 @@ describe('GoogleSignInButton', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('provider disabled')
   })
+
+  it('surfaces an error instead of failing silently when signInWithOAuth REJECTS', async () => {
+    // A rejected promise (network / unsupported provider / redirect_uri mismatch)
+    // must NOT result in a silently dead button — it must show a message.
+    supabase.auth.signInWithOAuth.mockRejectedValue(new Error('redirect_uri mismatch'))
+
+    render(<GoogleSignInButton />)
+    await userEvent.click(screen.getByRole('button', { name: /התחברות עם Google/ }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('redirect_uri mismatch')
+  })
 })
