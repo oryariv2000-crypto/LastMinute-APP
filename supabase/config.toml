@@ -223,6 +223,9 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
+# ACTIVATION: flip to `true` only AFTER Resend SMTP is configured (set
+# RESEND_SMTP_PASSWORD). Business creation is decoupled from signup
+# (create_my_business RPC), so requiring confirmation no longer loses B2B data.
 enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
@@ -233,26 +236,42 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
-# [auth.email.smtp]
-# enabled = true
-# host = "smtp.sendgrid.net"
-# port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# Production SMTP via Resend — white-labels the sender as "רגע אחרון".
+# ACTIVATION (when ready): in Resend, verify your sending domain (SPF + DKIM)
+# and create an SMTP credential; set RESEND_SMTP_PASSWORD in the project env;
+# set admin_email to your verified from-address. Until then this is inert for
+# the dashboard-managed production project (it only takes effect via the
+# Supabase CLI / config apply).
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_SMTP_PASSWORD)"
+admin_email = "no-reply@last-minute.app"
+sender_name = "רגע אחרון"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Branded Hebrew (RTL) email templates. {{ .ConfirmationURL }} is substituted
+# by GoTrue at send time.
+[auth.email.template.confirmation]
+subject = "אישור הרשמה — רגע אחרון"
+content_path = "./supabase/templates/confirmation.html"
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./templates/password_changed_notification.html"
+[auth.email.template.recovery]
+subject = "איפוס סיסמה — רגע אחרון"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "קישור התחברות — רגע אחרון"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "אישור שינוי כתובת אימייל — רגע אחרון"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.invite]
+subject = "הוזמנת לרגע אחרון"
+content_path = "./supabase/templates/invite.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
