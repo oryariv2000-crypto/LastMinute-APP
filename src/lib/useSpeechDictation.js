@@ -49,6 +49,17 @@ export function useSpeechDictation({ lang = 'he-IL', onResult } = {}) {
   }, [])
 
   const startMeter = useCallback(async () => {
+    // The meter needs its OWN getUserMedia stream. On touch devices (esp.
+    // Android) the mic is EXCLUSIVE: that second stream starves the
+    // SpeechRecognition engine, which then returns no transcript even though
+    // audio is captured (the button still pulses). Desktop allows concurrent
+    // capture, so we only run the meter there. Recognition is the priority.
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(pointer: coarse)')?.matches
+    ) {
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream

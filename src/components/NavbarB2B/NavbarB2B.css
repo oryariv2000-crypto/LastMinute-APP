@@ -201,9 +201,11 @@
     padding-inline: var(--space-3);
   }
 
-  .navbar-b2b__brand .brand-logo__icon { width: 28px; height: 28px; }
-  .navbar-b2b__brand .brand-logo__name { font-size: 0.92rem; }
-  .navbar-b2b__brand .brand-logo__tag  { font-size: 0.66rem; }
+  /* The wordmark + centred name + toggle + 3 icons don't all fit on a phone;
+     space-between then distributes NEGATIVE space and the groups OVERLAP. Drop
+     the wordmark (keep the tappable icon) so everything fits without colliding. */
+  .navbar-b2b__brand .brand-logo__icon { width: 30px; height: 30px; }
+  .navbar-b2b__brand .brand-logo__text { display: none; }
 
   /* The centred business identity — kept roomy and clearly the focal point. */
   .navbar-b2b__biz {
@@ -223,4 +225,21 @@
     width: 36px;
     height: 36px;
   }
+
+  /* Trim the toggle's padding so it claims a little less of the cramped row. */
+  .navbar-b2b .mode-toggle--switch {
+    padding: 6px 10px;
+  }
+}
+
+/* ── ModeToggle on the green bar ──────────────────────────────
+   The shared "switch" style is brand-green — invisible on this green navbar.
+   Scope a translucent-white pill here so it clearly reads as a button.
+   (B2C's light navbar keeps the default green pill — unaffected.) */
+.navbar-b2b .mode-toggle--switch {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: var(--color-on-primary);
+}
+.navbar-b2b .mode-toggle--switch:hover {
+  background-color: rgba(255, 255, 255, 0.28);
 }
