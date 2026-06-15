@@ -3,6 +3,13 @@ import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.24.1"
 import { parseItems, estimateDecodedBytes } from "./parse.ts";
 
 const MAX_BYTES = 6 * 1024 * 1024; // matches the client's hard cap
+// Current GA flash model with vision + JSON mode. Notes from debugging:
+//  • gemini-2.0-flash now 404s ("no longer available") and 1.5-flash is on the
+//    same retirement track — don't fall back to older models.
+//  • The earlier "high demand" (503) on 2.5-flash was tangled with a quota:0
+//    key; on a billed key it has real paid-tier quota.
+// If this ever 404s again, list what the key can actually use:
+//   curl ".../v1beta/models?key=KEY"  → pick one whose methods include generateContent.
 const MODEL = "gemini-2.5-flash";
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
 
@@ -120,7 +127,10 @@ Deno.serve(async (req) => {
     if (!image || typeof image !== "string") return json(cors, 400, { error: "no image" });
     if (estimateDecodedBytes(image) > MAX_BYTES) return json(cors, 413, { error: "too large" });
 
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    // .trim() guards against a secret saved with stray whitespace/newline
+    // (a common cause of Google "401 Expected OAuth 2 access token"); ?. keeps
+    // a missing secret falsy so the check below still catches it.
+    const apiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
     if (!apiKey) return json(cors, 502, { error: "missing api key" });
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -135,7 +145,15 @@ Deno.serve(async (req) => {
     const text = result?.response?.text?.() ?? "";
     const items = parseItems(text);
     return json(cors, 200, { items });
-  } catch (_e) {
+  } catch (e) {
+    // Surface the REAL cause in the function logs so we never fly blind again.
+    // Typical culprits: Gemini 503 "high demand"/overloaded, 429 quota,
+    // an invalid key, or a blocked/empty response that parseItems rejects.
+    // (`supabase functions logs analyze-showcase` shows these.)
+    console.error(
+      "analyze-showcase failed:",
+      e instanceof Error ? (e.stack ?? e.message) : e,
+    );
     return json(cors, 502, { error: "analyze failed" });
   }
 });
