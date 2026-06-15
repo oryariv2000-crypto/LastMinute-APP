@@ -17,7 +17,7 @@ import {
 import { businessOpenState, todayKey } from '../lib/businessHours'
 import { businessTypeLabel } from '../lib/businessTypes'
 import { useProfile } from '../lib/useProfile'
-import { MapPinIcon, ChevronRightIcon, XIcon } from '../components/icons'
+import { MapPinIcon, ChevronRightIcon, XIcon, StarIcon, ZoomIcon } from '../components/icons'
 import './B2CPage.css'
 import './B2CBusinessPage.css'
 
@@ -438,24 +438,6 @@ function StarPicker({ value, onChange }) {
         </button>
       ))}
     </div>
-  )
-}
-
-function StarIcon({ filled = true }) {
-  return (
-    <svg viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor"
-      strokeWidth="2" aria-hidden="true">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
-}
-function ZoomIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-      <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
-    </svg>
   )
 }
 
