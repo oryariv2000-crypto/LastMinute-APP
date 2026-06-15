@@ -16,6 +16,22 @@ export function setRemember(value) {
   localStorage.setItem(REMEMBER_KEY, value ? 'true' : 'false')
 }
 
+// Remembered email — a UX convenience so a returning "remember me" user finds
+// their address already typed in the login form. It lives in localStorage (not
+// the session token store) and holds NO secret: just the email string.
+export const EMAIL_KEY = 'lm.email'
+
+// Persist the email when remember is on; clear it when the user opts out so we
+// never resurrect a stale address after they've unchecked the box.
+export function setRememberedEmail(email, remember) {
+  if (remember && email) localStorage.setItem(EMAIL_KEY, email)
+  else localStorage.removeItem(EMAIL_KEY)
+}
+
+export function getRememberedEmail() {
+  return localStorage.getItem(EMAIL_KEY) ?? ''
+}
+
 export const rememberStorage = {
   // setItem targets the canonical store; getItem reads both to handle mid-session preference changes
   getItem(key) {

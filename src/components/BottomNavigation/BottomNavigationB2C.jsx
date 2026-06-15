@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getMyOrders } from '../../lib/db'
 import { ACTIVE_STATUSES } from '../../lib/orderStatus'
-import { HomeIcon, UserIcon, ShoppingBagIcon } from '../icons'
+import { HomeIcon, UserIcon, ShoppingBagIcon, CompassIcon } from '../icons'
 import './BottomNavigation.css'
 
 /**
@@ -95,13 +95,3 @@ export default function BottomNavigationB2C({ orderCount }) {
   )
 }
 
-/* ── Icons ──────────────────────────────────────────────────── */
-function CompassIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" />
-      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-    </svg>
-  )
-}

@@ -231,13 +231,14 @@ export const CreditCardIcon = ({ size = 24, ...props }) => (
 
 // ── Trash / delete ────────────────────────────────────────────────────────────
 
-/** Trash can — appears in AddressBookModal, ActiveDealCard, ReviewListItem */
+/** Trash can (with lid handle) — AddressBookModal, ActiveDealCard, ReviewListItem */
 export const TrashIcon = ({ size = 24, ...props }) => (
   <StrokeIcon size={size} {...props}>
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
     <path d="M10 11v6" />
     <path d="M14 11v6" />
+    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
   </StrokeIcon>
 );
 
@@ -332,4 +333,222 @@ export const ArrowDownIcon = ({ size = 24, strokeWidth = 2.5, ...props }) => (
     <line x1="12" y1="5" x2="12" y2="19" />
     <polyline points="19 12 12 19 5 12" />
   </StrokeIcon>
+);
+
+// ── Media controls (deal pause/resume, voice dictation) ──────────────────────
+
+/** Pause (two bars) — appears in ActiveDealCard */
+export const PauseIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <rect x="6" y="4" width="4" height="16" />
+    <rect x="14" y="4" width="4" height="16" />
+  </StrokeIcon>
+);
+
+/** Play (triangle) — appears in ActiveDealCard */
+export const PlayIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <polygon points="6 4 20 12 6 20 6 4" />
+  </StrokeIcon>
+);
+
+/** Stop (filled square) — appears in B2BNewDealPage (voice dictation) */
+export const StopIcon = ({ size = 24, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </svg>
+);
+
+/** Microphone — appears in B2BNewDealPage (voice dictation) */
+export const MicIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" y1="19" x2="12" y2="23" />
+    <line x1="8" y1="23" x2="16" y2="23" />
+  </StrokeIcon>
+);
+
+// ── Navigation / discovery ───────────────────────────────────────────────────
+
+/** Bar chart — appears in BottomNavigationB2B */
+export const BarChartIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <line x1="18" y1="20" x2="18" y2="10" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="14" />
+  </StrokeIcon>
+);
+
+/** Compass / explore — appears in BottomNavigationB2C */
+export const CompassIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+  </StrokeIcon>
+);
+
+/** Navigation arrow (open in maps) — appears in PickupInstructions */
+export const NavigationIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <polygon points="3 11 22 2 13 21 11 13 3 11" />
+  </StrokeIcon>
+);
+
+/** Crosshair (use my location) — appears in LocationPickerModal */
+export const CrosshairIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <circle cx="12" cy="12" r="8" />
+    <line x1="12" y1="2" x2="12" y2="5" />
+    <line x1="12" y1="19" x2="12" y2="22" />
+    <line x1="2" y1="12" x2="5" y2="12" />
+    <line x1="19" y1="12" x2="22" y2="12" />
+    <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
+  </StrokeIcon>
+);
+
+/** Filter funnel — appears in B2CHomePage */
+export const FilterIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </StrokeIcon>
+);
+
+// ── Actions / misc ───────────────────────────────────────────────────────────
+
+/** Share (connected nodes) — appears in DealHeroImage */
+export const ShareIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+  </StrokeIcon>
+);
+
+/** Heart (favorite) — fills when `filled`. Appears in DealHeroImage */
+export const HeartIcon = ({ size = 24, filled = false, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill={filled ? 'currentColor' : 'none'}
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+/** Star outline (rating, fills when `filled`) — appears in B2CBusinessPage, ActivityListItem */
+export const StarIcon = ({ size = 24, filled = true, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill={filled ? 'currentColor' : 'none'}
+    stroke="currentColor"
+    strokeWidth={2}
+    aria-hidden="true"
+    {...props}
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+/** Zoom-in (magnifier with plus) — appears in B2CBusinessPage gallery */
+export const ZoomIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <circle cx="11" cy="11" r="7" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    <line x1="11" y1="8" x2="11" y2="14" />
+    <line x1="8" y1="11" x2="14" y2="11" />
+  </StrokeIcon>
+);
+
+/** Sparkle (AI magic) — appears in NewDealButton, ReviewListSection */
+export const SparkleIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z" />
+    <path d="M19 17l.9 2L22 19.9 19.9 21 19 23l-.9-2L16 19.9 18.1 19z" />
+  </StrokeIcon>
+);
+
+// ── Status / stats ───────────────────────────────────────────────────────────
+
+/** Check-in-box (completed/active) — appears in ActivityListItem, B2BDashboardPage */
+export const CheckSquareIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <path d="M9 11l3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </StrokeIcon>
+);
+
+/** Alert circle (expiry/warning) — appears in ActivityListItem */
+export const AlertCircleIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </StrokeIcon>
+);
+
+/** Box / package (stock units) — appears in B2BDashboardPage */
+export const BoxIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+  </StrokeIcon>
+);
+
+/** Dollar sign (revenue) — appears in B2BDashboardPage */
+export const DollarSignIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <path d="M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  </StrokeIcon>
+);
+
+// ── Profile / eco ────────────────────────────────────────────────────────────
+
+/** Globe (language/region) — appears in B2CProfilePage */
+export const GlobeIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </StrokeIcon>
+);
+
+/** Ruler (units/measurement) — appears in B2CProfilePage */
+export const RulerIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <rect x="2" y="9" width="20" height="6" rx="1" />
+    <line x1="6" y1="9" x2="6" y2="13" />
+    <line x1="10" y1="9" x2="10" y2="13" />
+    <line x1="14" y1="9" x2="14" y2="13" />
+    <line x1="18" y1="9" x2="18" y2="13" />
+  </StrokeIcon>
+);
+
+/** Leaf (eco impact) — appears in B2CProfilePage */
+export const LeafIcon = ({ size = 24, ...props }) => (
+  <StrokeIcon size={size} {...props}>
+    <path d="M11 20A7 7 0 0 1 4 13c0-7 7-12 16-12 0 9-5 16-12 16z" />
+    <line x1="4" y1="22" x2="14" y2="12" />
+  </StrokeIcon>
+);
+
+// ── Brand marks (monochrome, currentColor) ───────────────────────────────────
+
+/** Apple logo — appears in PaymentMethodsSection (Apple Pay). Multicolor brand
+ *  marks (e.g. Google's "G") stay inline in their own component; this one is
+ *  monochrome so it lives here with the rest of the currentColor icons. */
+export const AppleIcon = ({ size = 24, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M16.365 1.43c0 1.14-.41 2.18-1.23 2.95-.85.81-1.86 1.27-2.94 1.18-.06-1.13.45-2.27 1.27-3.06.83-.79 1.93-1.18 2.9-1.07zM20.5 17.4c-.55 1.27-.81 1.84-1.52 2.96-.99 1.56-2.39 3.51-4.12 3.52-1.54.02-1.94-1.01-4.04-1-2.1.01-2.54 1.02-4.08 1-1.73-.01-3.05-1.78-4.05-3.34C-.05 16.84-.34 11.71 2.06 8.93c1.7-1.97 4.39-3.13 6.92-3.13 1.49 0 2.5.61 3.59.61 1.07 0 1.72-.61 3.45-.61 1.4 0 2.89.76 3.95 2.07-3.47 1.9-2.91 6.85.53 8.53z" />
+  </svg>
 );

@@ -7,6 +7,7 @@ import CategoryFilters from '../components/CategoryFilters/CategoryFilters'
 import ProductCard from '../components/ProductCard/ProductCard'
 import TagSelector from '../components/TagSelector/TagSelector'
 import Loader from '../components/Loader/Loader'
+import { FilterIcon } from '../components/icons'
 import { getActiveDealsPage, discountPct } from '../lib/db'
 import { FILTERABLE_GROUP_IDS, tagsInGroup } from '../lib/productTags'
 import { BUSINESS_TYPES, businessTypeLabel } from '../lib/businessTypes'
@@ -139,7 +140,7 @@ export default function B2CHomePage() {
             onClick={() => setFiltersOpen((v) => !v)}
             aria-expanded={filtersOpen}
           >
-            <FilterIcon />
+            <FilterIcon size={16} />
             מאפיינים
             {activeFilterCount > 0 && <span className="feed-filters__count">{activeFilterCount}</span>}
           </button>
@@ -235,15 +236,6 @@ export default function B2CHomePage() {
 
       <BottomNavigationB2C />
     </div>
-  )
-}
-
-function FilterIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-    </svg>
   )
 }
 

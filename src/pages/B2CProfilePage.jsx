@@ -15,7 +15,7 @@ import { supabase } from '../lib/supabase'
 import { updateMyProfile, getMyImpactStats } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { usePreferences } from '../lib/usePreferences'
-import { MapPinIcon, BellIcon, EmailIcon, CreditCardIcon, ShoppingBagIcon, HelpCircleIcon, InfoCircleIcon, LogoutIcon } from '../components/icons'
+import { MapPinIcon, BellIcon, EmailIcon, CreditCardIcon, ShoppingBagIcon, HelpCircleIcon, InfoCircleIcon, LogoutIcon, GlobeIcon, RulerIcon, LeafIcon } from '../components/icons'
 import './B2CPage.css'
 import './B2CProfilePage.css'
 
@@ -176,22 +176,3 @@ export default function B2CProfilePage() {
   )
 }
 
-/* ── Inline icons ─────────────────────────────────────────────── */
-function GlobeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-  )
-}
-function RulerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="9" width="20" height="6" rx="1"/><line x1="6" y1="9" x2="6" y2="13"/><line x1="10" y1="9" x2="10" y2="13"/><line x1="14" y1="9" x2="14" y2="13"/><line x1="18" y1="9" x2="18" y2="13"/></svg>
-  )
-}
-function LeafIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-7 7-12 16-12 0 9-5 16-12 16z"/><line x1="4" y1="22" x2="14" y2="12"/></svg>
-  )
-}

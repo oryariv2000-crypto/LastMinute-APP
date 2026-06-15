@@ -6,6 +6,7 @@ import NewDealButton from '../components/NewDealButton/NewDealButton'
 import ActiveDealsSection from '../components/ActiveDealsSection/ActiveDealsSection'
 import DealEditModal from '../components/DealEditModal/DealEditModal'
 import Loader from '../components/Loader/Loader'
+import { CheckSquareIcon, BoxIcon, DollarSignIcon } from '../components/icons'
 import { getMyDeals, updateDeal, deleteDeal, setDealStatus, discountPct } from '../lib/db'
 import { useProfile } from '../lib/useProfile'
 import { isBusinessOpen } from '../lib/businessHours'
@@ -140,21 +141,10 @@ function buildStats(cards) {
   const potential = live.reduce((s, c) => s + (c.price || 0) * (c.quantity || 0), 0)
   return [
     { id: 'active', label: 'מבצעים פעילים', value: String(activeCount), accent: 'primary',
-      icon: <Svg d="M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /> },
+      icon: <CheckSquareIcon /> },
     { id: 'units', label: 'יחידות במלאי', value: String(unitsLeft), accent: 'accent',
-      icon: <Svg d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /> },
+      icon: <BoxIcon /> },
     { id: 'potential', label: 'הכנסה פוטנציאלית', value: `₪${potential.toLocaleString('he-IL')}`, accent: 'success',
-      icon: <Svg d="M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /> },
+      icon: <DollarSignIcon /> },
   ]
-}
-
-function Svg({ d }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round">
-      {d.split(' M').map((seg, i) => (
-        <path key={i} d={i === 0 ? seg : `M${seg}`} />
-      ))}
-    </svg>
-  )
 }

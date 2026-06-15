@@ -1,4 +1,4 @@
-import { MapPinIcon, ClockIcon, PhoneIcon } from '../icons'
+import { MapPinIcon, ClockIcon, PhoneIcon, NavigationIcon } from '../icons'
 import './PickupInstructions.css'
 
 /**
@@ -53,7 +53,7 @@ export default function PickupInstructions({
             className="pickup-instructions__btn pickup-instructions__btn--primary"
             onClick={onGetDirections}
           >
-            <NavIcon /> נווט לעסק
+            <NavigationIcon /> נווט לעסק
           </button>
           <button
             type="button"
@@ -82,12 +82,3 @@ const STEPS = [
     body: 'בדוק/י שהפריטים תואמים לפני העזיבה.',
   },
 ]
-
-function NavIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polygon points="3 11 22 2 13 21 11 13 3 11" />
-    </svg>
-  )
-}

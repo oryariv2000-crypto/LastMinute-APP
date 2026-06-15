@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import InputField from '../InputField/InputField'
 import SubmitButton from '../SubmitButton/SubmitButton'
 import Turnstile from '../Turnstile/Turnstile'
-import { setRemember } from '../../lib/authStorage'
+import { setRemember, setRememberedEmail, getRememberedEmail } from '../../lib/authStorage'
 import { EmailIcon, LockIcon, EyeIcon, EyeOffIcon } from '../icons'
 import './AuthForm.css'
 
@@ -19,7 +19,9 @@ import './AuthForm.css'
  *   error      string              — server-side error message shown above the form
  */
 export default function AuthForm({ onSubmit, loading = false, error = '' }) {
-  const [email, setEmail]       = useState('')
+  // Prefill the address a returning "remember me" user saved last time (UX only;
+  // the lazy initializer reads localStorage exactly once on mount).
+  const [email, setEmail]       = useState(getRememberedEmail)
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [remember, setRememberChecked] = useState(true)
@@ -44,10 +46,13 @@ export default function AuthForm({ onSubmit, loading = false, error = '' }) {
       return
     }
     setErrors({})
+    const trimmedEmail = email.trim()
     // Persist the remember-me preference BEFORE sign-in so the Supabase session
     // is written to the correct store (localStorage vs sessionStorage).
     setRemember(remember)
-    Promise.resolve(onSubmit?.(email.trim(), password, { captchaToken }))
+    // Remember (or forget) the email for the next visit, matching the checkbox.
+    setRememberedEmail(trimmedEmail, remember)
+    Promise.resolve(onSubmit?.(trimmedEmail, password, { captchaToken }))
       .finally(() => turnstileRef.current?.reset())
   }
 

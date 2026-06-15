@@ -3,9 +3,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
-// AuthForm persists the remember-me preference via setRemember before sign-in.
+// AuthForm persists the remember-me preference via setRemember before sign-in,
+// and remembers/prefills the email via the authStorage email helpers.
 vi.mock('../../lib/authStorage', () => ({
   setRemember: vi.fn(),
+  setRememberedEmail: vi.fn(),
+  getRememberedEmail: vi.fn(() => ''),
 }))
 
 import { setRemember } from '../../lib/authStorage'

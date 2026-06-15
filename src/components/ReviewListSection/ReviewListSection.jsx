@@ -1,5 +1,5 @@
 import ReviewListItem from '../ReviewListItem/ReviewListItem'
-import { PlusIcon } from '../icons'
+import { PlusIcon, SparkleIcon } from '../icons'
 import './ReviewListSection.css'
 
 /**
@@ -73,15 +73,5 @@ export default function ReviewListSection({
         </button>
       )}
     </section>
-  )
-}
-
-
-function SparkleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z" />
-    </svg>
   )
 }

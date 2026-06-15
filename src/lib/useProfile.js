@@ -8,17 +8,20 @@ import { getMyProfile, getMyBusiness } from './db'
  * (e.g. the profile page) instantly updates it everywhere it's shown (e.g. the
  * navbar avatar) — `setProfile`/`setBusiness` write straight to that cache.
  *
- * @param {{ withBusiness?: boolean }} opts
+ * @param {{ withBusiness?: boolean, enabled?: boolean }} opts
+ *        `enabled` lets a caller skip the fetch entirely (e.g. ProtectedRoute on
+ *        routes that only need a session, not the profile row) — avoiding a
+ *        needless network round-trip and the loader flash it causes.
  * @returns {{ profile, business, loading, error, setProfile, setBusiness }}
  */
-export function useProfile({ withBusiness = false } = {}) {
+export function useProfile({ withBusiness = false, enabled = true } = {}) {
   const qc = useQueryClient()
 
-  const profileQ = useQuery({ queryKey: ['my-profile'], queryFn: getMyProfile })
+  const profileQ = useQuery({ queryKey: ['my-profile'], queryFn: getMyProfile, enabled })
   const businessQ = useQuery({
     queryKey: ['my-business'],
     queryFn: getMyBusiness,
-    enabled: withBusiness,
+    enabled: enabled && withBusiness,
   })
 
   // Accept either a new value or an updater fn, mirroring useState's setter so
@@ -31,7 +34,7 @@ export function useProfile({ withBusiness = false } = {}) {
   return {
     profile: profileQ.data ?? null,
     business: withBusiness ? (businessQ.data ?? null) : null,
-    loading: profileQ.isLoading || (withBusiness && businessQ.isLoading),
+    loading: enabled && (profileQ.isLoading || (withBusiness && businessQ.isLoading)),
     error: profileQ.error?.message || businessQ.error?.message || '',
     setProfile,
     setBusiness,

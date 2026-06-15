@@ -11,7 +11,9 @@ afterEach(() => {
 
 describe('Turnstile', () => {
   it('renders nothing and does not throw when no site key is configured', () => {
-    // Default test env: VITE_TURNSTILE_SITE_KEY is unset.
+    // Force the "no key" path explicitly so the test is deterministic whether or
+    // not VITE_TURNSTILE_SITE_KEY is present in the ambient .env (it is in prod).
+    vi.stubEnv('VITE_TURNSTILE_SITE_KEY', '')
     const onToken = vi.fn()
     const { container } = render(<Turnstile onToken={onToken} />)
     expect(container.firstChild).toBeNull()

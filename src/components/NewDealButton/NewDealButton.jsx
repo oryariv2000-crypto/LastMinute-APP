@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ChevronLeftIcon } from '../icons'
+import { ChevronLeftIcon, SparkleIcon } from '../icons'
 import './NewDealButton.css'
 
 /**
@@ -36,15 +36,5 @@ export default function NewDealButton({ to = '/b2b/new-deal', onClick }) {
     <Link to={to} className="new-deal-btn" id="new-deal-cta">
       {inner}
     </Link>
-  )
-}
-
-function SparkleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z" />
-      <path d="M19 17l.9 2L22 19.9 19.9 21 19 23l-.9-2L16 19.9 18.1 19z" />
-    </svg>
   )
 }
