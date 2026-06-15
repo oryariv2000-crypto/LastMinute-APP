@@ -1,15 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import {
-  isAdminEmail, ADMIN_EMAILS, TOPICS_BY_AUDIENCE, labelOf, TICKET_STATUSES,
+  isAdmin, ADMIN_ROLE, TOPICS_BY_AUDIENCE, labelOf, TICKET_STATUSES,
 } from './support'
 
 describe('support config', () => {
-  it('isAdminEmail matches the allowlist case-insensitively', () => {
-    expect(isAdminEmail(ADMIN_EMAILS[0])).toBe(true)
-    expect(isAdminEmail(ADMIN_EMAILS[0].toUpperCase())).toBe(true)
-    expect(isAdminEmail('someone@else.com')).toBe(false)
-    expect(isAdminEmail('')).toBe(false)
-    expect(isAdminEmail(null)).toBe(false)
+  it('isAdmin is true only for the admin role (string or profile object)', () => {
+    expect(isAdmin(ADMIN_ROLE)).toBe(true)
+    expect(isAdmin('admin')).toBe(true)
+    expect(isAdmin({ role: 'admin' })).toBe(true)
+    expect(isAdmin('customer')).toBe(false)
+    expect(isAdmin({ role: 'business_owner' })).toBe(false)
+    expect(isAdmin({})).toBe(false)
+    expect(isAdmin(null)).toBe(false)
+    expect(isAdmin(undefined)).toBe(false)
   })
 
   it('topics differ per audience and both end with "other"', () => {

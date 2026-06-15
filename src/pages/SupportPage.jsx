@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { submitSupportTicket, getMySupportTickets } from '../lib/db'
+import { submitSupportTicket, getMySupportTickets, getMyProfile } from '../lib/db'
 import {
   SUPPORT_AUDIENCES, TOPICS_BY_AUDIENCE,
-  TICKET_CATEGORIES, TICKET_STATUSES, labelOf, isAdminEmail,
+  TICKET_CATEGORIES, TICKET_STATUSES, labelOf, isAdmin,
 } from '../lib/support'
 import Loader from '../components/Loader/Loader'
 import './SupportPage.css'
@@ -34,6 +34,7 @@ function topicToCategory(topic) {
 export default function SupportPage() {
   const navigate = useNavigate()
   const [email, setEmail]     = useState(null)
+  const [isAdminUser, setIsAdminUser] = useState(false)
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [sent, setSent]       = useState(false)
@@ -68,8 +69,13 @@ export default function SupportPage() {
         if (active && u?.email) {
           setEmail(u.email)
           setValue('email', u.email)
-          const rows = await getMySupportTickets()
-          if (active) setTickets(rows)
+          // Role + ticket history in parallel. The admin link shows only for
+          // users whose profile role is 'admin' (mirrors the RLS guard).
+          const [rows, profile] = await Promise.all([getMySupportTickets(), getMyProfile()])
+          if (active) {
+            setTickets(rows)
+            setIsAdminUser(isAdmin(profile))
+          }
         }
       } catch {
         /* guest — no history, that's fine */
@@ -115,7 +121,7 @@ export default function SupportPage() {
       <header className="support__top">
         <button type="button" className="support__back" onClick={() => navigate(-1)} aria-label="חזרה">‹ חזרה</button>
         <h1 className="support__title">עזרה ותמיכה</h1>
-        {isAdminEmail(email) && (
+        {isAdminUser && (
           <Link to="/admin/support" className="support__admin-link">ניהול פניות ←</Link>
         )}
       </header>

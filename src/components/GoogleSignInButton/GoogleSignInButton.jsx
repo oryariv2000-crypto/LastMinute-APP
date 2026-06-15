@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { setRemember } from '../../lib/authStorage'
 import './GoogleSignInButton.css'
 
 /**
@@ -10,30 +11,58 @@ import './GoogleSignInButton.css'
  */
 export default function GoogleSignInButton({ label = 'התחברות עם Google' }) {
   const [error, setError] = useState(null)
+  const [pending, setPending] = useState(false)
 
   async function handleClick() {
+    if (pending) return // ignore double-clicks during the redirect handoff
     setError(null)
+    setPending(true)
+    // "Sign in with Google" implies a lasting session, so persist it (also
+    // writes the PKCE code-verifier to localStorage, where it survives the
+    // full-page redirect to Google and back to /login).
+    setRemember(true)
     // try/catch so the button can NEVER fail silently: signInWithOAuth can
     // either return { error } OR reject (network/provider/redirect-uri issues).
     // Both paths surface a visible Hebrew message instead of a dead click.
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/login` },
+        options: {
+          // Must be on the provider's redirect allowlist in the Supabase
+          // dashboard (Authentication → URL Configuration → Redirect URLs) AND
+          // match the Site URL. A mismatch is the usual cause of a "flash and
+          // back to login" with no session. We return to /login, where
+          // detectSessionInUrl exchanges the code and LoginPage routes the
+          // now-authenticated user to their home.
+          redirectTo: `${window.location.origin}/login`,
+          // Always show the account chooser so an existing Google session
+          // doesn't silently auto-submit (which reads as a "flash and close").
+          queryParams: { prompt: 'select_account' },
+        },
       })
+      // On success the browser navigates away, so reaching here with no error
+      // just means the redirect is in flight — keep `pending` true.
       if (error) {
         setError(error.message || 'ההתחברות עם Google נכשלה')
+        setPending(false)
       }
     } catch (err) {
       setError(err?.message || 'ההתחברות עם Google נכשלה')
+      setPending(false)
     }
   }
 
   return (
     <>
-      <button type="button" className="google-signin" onClick={handleClick}>
+      <button
+        type="button"
+        className="google-signin"
+        onClick={handleClick}
+        disabled={pending}
+        aria-busy={pending}
+      >
         <GoogleIcon />
-        {label}
+        {pending ? 'מתחבר…' : label}
       </button>
       {error && (
         <p role="alert" className="google-signin__error">{error}</p>

@@ -39,12 +39,14 @@ describe('GoogleSignInButton', () => {
     await userEvent.click(screen.getByRole('button', { name: /התחברות עם Google/ }))
 
     expect(supabase.auth.signInWithOAuth).toHaveBeenCalledOnce()
-    expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
-      provider: 'google',
-      options: {
-        redirectTo: expect.stringContaining('/login'),
-      },
-    })
+    expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'google',
+        options: expect.objectContaining({
+          redirectTo: expect.stringContaining('/login'),
+        }),
+      }),
+    )
   })
 
   it('shows an alert with the error message when signInWithOAuth fails', async () => {

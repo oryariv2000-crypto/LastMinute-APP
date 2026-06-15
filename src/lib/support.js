@@ -1,11 +1,18 @@
 /**
  * Support config — who counts as the support team (admin).
- * Keep this in sync with the email(s) in supabase/support_tickets.sql RLS.
+ *
+ * Admin is now a ROLE (`users.role = 'admin'`), not a hardcoded email. This
+ * mirrors the database guard `get_my_role() = 'admin'` used by the
+ * support_tickets RLS policies, so the frontend and DB agree on one source of
+ * truth and rotating an admin is a single UPDATE (no code change / redeploy).
  */
-export const ADMIN_EMAILS = ['oryariv2000@gmail.com']
+export const ADMIN_ROLE = 'admin'
 
-export function isAdminEmail(email) {
-  return !!email && ADMIN_EMAILS.includes(email.toLowerCase())
+/** Whether a user is the support team / admin. Accepts a role string or a
+ *  profile object ({ role }) — e.g. the row returned by getMyProfile(). */
+export function isAdmin(roleOrProfile) {
+  const role = typeof roleOrProfile === 'string' ? roleOrProfile : roleOrProfile?.role
+  return role === ADMIN_ROLE
 }
 
 /* Display metadata for ticket enums (Hebrew labels + ordering). */

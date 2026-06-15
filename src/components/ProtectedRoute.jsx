@@ -1,86 +1,80 @@
-import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
-import { isAdminEmail } from '../lib/support'
+import { useSession } from '../lib/useSession'
+import { useProfile } from '../lib/useProfile'
+import { isAdmin } from '../lib/support'
 import Loader from './Loader/Loader'
 
 /**
  * ProtectedRoute — Guards routes that require an authenticated user, optionally
- * with the B2B capability (`is_business`).
+ * with the B2B capability (`is_business`) or the support-team email allowlist.
  *
- * Checks the current Supabase session on mount and listens for auth changes.
- * Alongside the session it fetches the user's `is_business` from the `users`
- * table. While auth/profile is being resolved it renders the branded page
- * loader; with no session it redirects to /login; if `requireBusiness` is true
- * and the user does not have the B2B capability it redirects to /b2c/open-business;
- * otherwise it renders its children.
+ * Auth is decided from the SESSION (useSession → getSession, no network), so
+ * navigating between protected pages is instant and never flashes the loader,
+ * and a transient network blip can't masquerade as "logged out". The profile
+ * row is only fetched when a route's capability gate actually needs it
+ * (requireBusiness / adminOnly) — plain authenticated routes don't wait on it.
+ *
+ * The profile, when needed, is read from the SHARED react-query cache via
+ * useProfile() (db.js → getMyProfile, RLS-scoped to the caller), the same
+ * ['my-profile'] entry the navbar/profile pages populate — so the gate adds no
+ * extra round-trip per navigation.
+ *
+ * Rendering:
+ *   - first session hydration → branded page loader (once, on first paint)
+ *   - no session              → redirect to /login
+ *   - capability route, profile still loading → page loader
+ *   - capability route, profile failed to load (but session is valid) → inline
+ *     retry (NOT a /login bounce — that would ping-pong with LoginPage, which
+ *     now redirects authenticated users straight back here)
  *
  * @param {boolean} [requireBusiness] - when true, only users with `is_business`
  *        true are allowed. When false/omitted, any authenticated user is allowed.
  * @param {boolean} [adminOnly] - restrict to the support-team email allowlist.
  */
 export default function ProtectedRoute({ children, requireBusiness = false, adminOnly = false }) {
-  const [session, setSession] = useState(undefined)      // undefined = loading
-  const [isBusiness, setIsBusiness] = useState(undefined) // undefined = loading
+  const { session, initializing } = useSession()
+  const needsProfile = requireBusiness || adminOnly
+  // Fetch the profile only for capability routes, and only once we have a
+  // session to scope it to. Hooks stay unconditional; `enabled` controls work.
+  const { profile, loading: profileLoading, error: profileError } =
+    useProfile({ enabled: needsProfile && !!session })
 
-  useEffect(() => {
-    let active = true
+  // First paint — still resolving whether there's a session at all.
+  if (initializing) return <Loader fullscreen label="טוען…" />
 
-    // Resolve the session, then look up the user's business capability from the DB.
-    async function resolve(currentSession) {
-      if (!active) return
-      setSession(currentSession)
-
-      if (!currentSession?.user) {
-        setIsBusiness(false)
-        return
-      }
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('is_business')
-        .eq('id', currentSession.user.id)
-        .single()
-
-      if (active) {
-        setIsBusiness(error ? false : data?.is_business === true)
-      }
-    }
-
-    supabase.auth.getSession().then(({ data }) => resolve(data.session))
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
-      // Reset to loading while we re-resolve for the new session.
-      setIsBusiness(undefined)
-      resolve(s)
-    })
-
-    return () => {
-      active = false
-      listener.subscription.unsubscribe()
-    }
-  }, [])
-
-  // Still resolving session or profile — show the branded page loader.
-  if (session === undefined || isBusiness === undefined) return <Loader fullscreen label="טוען…" />
-
-  // No active user — bounce to login.
+  // Nobody to authorize → login.
   if (!session) return <Navigate to="/login" replace />
 
-  // Admin-only route — gate by the support-team email allowlist.
+  // Plain authenticated route (B2C / shared): a valid session is enough.
+  if (!needsProfile) return children
+
+  // Capability route — we need the profile row to authorize.
+  if (profileLoading) return <Loader fullscreen label="טוען…" />
+
+  // Profile failed to load while the session is valid: this is a data error,
+  // not an auth failure. Bouncing to /login would loop (LoginPage sends an
+  // authenticated user right back), so surface a retry instead.
+  if (profileError || !profile) {
+    return (
+      <div role="alert" style={{ display: 'grid', placeItems: 'center', minHeight: '60vh', gap: 12, textAlign: 'center', padding: 24 }} dir="rtl">
+        <p>אירעה שגיאה בטעינת הפרופיל.</p>
+        <button type="button" onClick={() => window.location.reload()}>נסה שוב</button>
+      </div>
+    )
+  }
+
+  // Admin-only route — gate by the support-team allowlist.
   if (adminOnly) {
-    if (!isAdminEmail(session.user?.email)) {
-      return <Navigate to={isBusiness ? '/b2b/dashboard' : '/b2c/home'} replace />
+    if (!isAdmin(profile)) {
+      return <Navigate to={profile.is_business ? '/b2b/dashboard' : '/b2c/home'} replace />
     }
     return children
   }
 
-  // B2B capability gate — non-business users are redirected to the business
-  // onboarding page so they can finish setting up their business.
-  if (requireBusiness && !isBusiness) {
+  // B2B capability gate — non-business users go finish business onboarding.
+  if (requireBusiness && profile.is_business !== true) {
     return <Navigate to="/b2c/open-business" replace />
   }
 
-  // Any authenticated user is allowed (B2C routes or shared pages).
   return children
 }

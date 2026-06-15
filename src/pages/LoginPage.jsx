@@ -1,10 +1,24 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm/AuthForm'
 import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInButton'
 import { supabase } from '../lib/supabase'
+import { useSession } from '../lib/useSession'
+import { useProfile } from '../lib/useProfile'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
+import Loader from '../components/Loader/Loader'
 import './AuthPage.css'
+
+// OAuth providers redirect back here. On success the URL carries `?code=…`
+// (PKCE), which detectSessionInUrl exchanges for a session; on failure it
+// carries `?error=…&error_description=…`. Read both from the live URL.
+function readOAuthCallback() {
+  const params = new URLSearchParams(window.location.search)
+  return {
+    hasCode: params.has('code'),
+    errorDescription: params.get('error_description') || (params.get('error') ? 'ההתחברות עם Google נכשלה' : ''),
+  }
+}
 
 /**
  * LoginPage — Full-page login screen.
@@ -15,6 +29,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const navigate = useNavigate()
+
+  // Already-authenticated users must not be parked on the login form — this is
+  // the path both a "remember me" return visit AND the Google OAuth round-trip
+  // land on. Decide from the session (no network); fetch the profile only to
+  // pick the role-correct home.
+  const { session, initializing } = useSession()
+  const { profile, loading: profileLoading } = useProfile({ enabled: !!session })
+  const { errorDescription } = readOAuthCallback()
+
+  // Still hydrating the session (first paint, a remember-me return visit, or the
+  // OAuth code exchange in flight) — hold the loader so the form never flashes
+  // before we know whether to redirect an already-authenticated user.
+  if (initializing) return <Loader fullscreen />
+
+  if (session) {
+    if (profileLoading) return <Loader fullscreen />
+    const dest = profile?.role === 'business_owner' ? '/b2b/dashboard' : '/b2c/home'
+    return <Navigate to={dest} replace />
+  }
 
   async function handleLogin(email, password, { captchaToken } = {}) {
     setLoading(true)
@@ -68,7 +101,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <AuthForm onSubmit={handleLogin} loading={loading} error={error} />
+        <AuthForm onSubmit={handleLogin} loading={loading} error={error || errorDescription} />
 
         {/* Google OAuth */}
         <GoogleSignInButton />
