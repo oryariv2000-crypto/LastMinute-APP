@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { EMAILS } from './constants.js'
 
 /**
  * Service-role helpers for the Hybrid test-data strategy: specs that MUTATE state
@@ -42,4 +43,47 @@ export async function deleteUserByEmail(admin, email) {
     }
     if (data.users.length < 200) return // last page reached
   }
+}
+
+/* ── Deals (for stock-mutating customer specs) ──────────────────────────────── */
+
+/** The seeded owner's business id (global-setup provisions it). */
+export async function ownerBusinessId(admin) {
+  const { data: owner } = await admin.from('users').select('id').eq('email', EMAILS.owner).maybeSingle()
+  if (!owner) throw new Error('seed.js: owner user not found — run global-setup')
+  const { data: biz } = await admin.from('businesses').select('id').eq('user_id', owner.id).maybeSingle()
+  if (!biz) throw new Error('seed.js: owner business not found — run global-setup')
+  return biz.id
+}
+
+/**
+ * Create an active deal on a business. pickupStart=null → always cancellable.
+ * Returns { id, quantity_left }.
+ */
+export async function createDeal(admin, { businessId, title, quantity = 5, pickupStart = null }) {
+  const { data, error } = await admin.from('deals').insert({
+    business_id: businessId, title,
+    original_price: 20, discount_price: 10,
+    quantity_total: quantity, quantity_left: quantity,
+    status: 'active', tags: [], pickup_start: pickupStart,
+  }).select('id, quantity_left').single()
+  if (error) throw error
+  return data
+}
+
+/** Delete a deal and any orders that reference it (FK-safe cleanup). */
+export async function deleteDeal(admin, dealId) {
+  await admin.from('orders').delete().eq('deal_id', dealId)
+  await admin.from('deals').delete().eq('id', dealId)
+}
+
+/** Current live stock for a deal (for restore/oversell assertions). */
+export async function dealStock(admin, dealId) {
+  const { data } = await admin.from('deals').select('quantity_left').eq('id', dealId).single()
+  return data?.quantity_left
+}
+
+/** Force a deal's stock (simulate it selling out mid-checkout). */
+export async function setDealStock(admin, dealId, quantityLeft) {
+  await admin.from('deals').update({ quantity_left: quantityLeft }).eq('id', dealId)
 }
