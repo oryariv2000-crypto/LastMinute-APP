@@ -1,29 +1,21 @@
 import { test, expect } from '@playwright/test'
-import fs from 'node:fs'
-import path from 'node:path'
+import { authFile, hasAuth, SEED_DEAL_TITLE } from '../../fixtures/constants.js'
 
 /**
- * Dual-role E2E journeys: mode toggle (B2C ⇄ B2B), the prevent-self-dealing
- * guard, and the "open a business" CTA for plain customers.
+ * Dual-role journeys: mode toggle (B2C ⇄ B2B), the prevent-self-dealing guard,
+ * and the "open a business" CTA for plain customers.
  *
- * Each block uses a storageState saved by global-setup and SKIPS automatically
- * when that file is absent (i.e. no E2E test project configured).
- *
- * ── PREREQUISITE ───────────────────────────────────────────────────────────
- * These specs require the dedicated E2E Supabase test project to have the
- * dual-role schema applied: run `supabase/consolidated_update.sql` against it
- * (adds users.is_business + the businesses AFTER-INSERT trigger that flags the
- * seeded owner as is_business=true, plus the place_order self-dealing guard).
- * Without that migration the owner won't be is_business and these will fail.
- * global-setup seeds the owner with a business + one active deal "קרואסון בדיקה".
+ * PREREQUISITE: the QA project must have the dual-role schema (consolidated_update.sql)
+ * — users.is_business + the businesses AFTER-INSERT trigger that flags the seeded
+ * owner is_business=true, plus the place_order self-dealing guard. global-setup
+ * seeds the owner with a business + one active deal (SEED_DEAL_TITLE).
  */
-const authFile = (f) => path.join('e2e', '.auth', f)
-const has = (f) => fs.existsSync(authFile(f))
+const DEAL = new RegExp(SEED_DEAL_TITLE)
 
 /* ── Mode toggle: business-capable user switches B2C ⇄ B2B shells ─────────── */
 test.describe('Dual-role — mode toggle (owner)', () => {
-  test.skip(!has('owner.json'), 'requires E2E test project (run global-setup)')
-  test.use({ storageState: has('owner.json') ? authFile('owner.json') : undefined })
+  test.skip(!hasAuth('owner.json'), 'requires E2E test project (run global-setup)')
+  test.use({ storageState: hasAuth('owner.json') ? authFile('owner.json') : undefined })
 
   test('owner toggles from shopping to business mode and back', async ({ page }) => {
     // Start in the customer shell — a business-capable user sees the switch.
@@ -45,25 +37,28 @@ test.describe('Dual-role — mode toggle (owner)', () => {
 
 /* ── Prevent self-dealing: owner cannot buy their own deal ────────────────── */
 test.describe('Dual-role — prevent self-dealing (owner)', () => {
-  test.skip(!has('owner.json'), 'requires E2E test project (run global-setup)')
-  test.use({ storageState: has('owner.json') ? authFile('owner.json') : undefined })
+  test.skip(!hasAuth('owner.json'), 'requires E2E test project (run global-setup)')
+  test.use({ storageState: hasAuth('owner.json') ? authFile('owner.json') : undefined })
 
   test('owner viewing their own deal sees the notice, not add-to-cart', async ({ page }) => {
     await page.goto('/b2c/home')
-    // The owner's own seeded deal appears in the customer feed.
-    await page.getByRole('link', { name: /קרואסון בדיקה/ }).first().click()
+    // The owner's own seeded deal appears in the customer feed. Feed cards are
+    // <a role="listitem"> (grid is role="list"), so query the real role, not link.
+    await page.getByRole('listitem', { name: DEAL }).first().click()
     await expect(page).toHaveURL(/\/b2c\/product\//)
 
     // Self-dealing UI guard: informational notice instead of the buy control.
-    await expect(page.getByText(/זהו מבצע של העסק שלך/)).toBeVisible()
+    // The notice is rendered twice (desktop + mobile variants, CSS-toggled), so
+    // assert on the one visible in the current viewport.
+    await expect(page.getByText(/זהו מבצע של העסק שלך/).filter({ visible: true })).toBeVisible()
     await expect(page.getByRole('button', { name: /הוסף לסל/ })).toHaveCount(0)
   })
 })
 
 /* ── Plain customer sees the "open a business" CTA, not the toggle ────────── */
 test.describe('Dual-role — customer open-business CTA', () => {
-  test.skip(!has('customer.json'), 'requires E2E test project (run global-setup)')
-  test.use({ storageState: has('customer.json') ? authFile('customer.json') : undefined })
+  test.skip(!hasAuth('customer.json'), 'requires E2E test project (run global-setup)')
+  test.use({ storageState: hasAuth('customer.json') ? authFile('customer.json') : undefined })
 
   test('a non-business customer is offered to open a business', async ({ page }) => {
     await page.goto('/b2c/home')
