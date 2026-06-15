@@ -47,6 +47,12 @@ export async function deleteUserByEmail(admin, email) {
 
 /* ── Deals (for stock-mutating customer specs) ──────────────────────────────── */
 
+/** A user's id by email (e.g. to scope review cleanup to the test customer). */
+export async function userIdByEmail(admin, email) {
+  const { data } = await admin.from('users').select('id').eq('email', email).maybeSingle()
+  return data?.id ?? null
+}
+
 /** The seeded owner's business id (global-setup provisions it). */
 export async function ownerBusinessId(admin) {
   const { data: owner } = await admin.from('users').select('id').eq('email', EMAILS.owner).maybeSingle()
