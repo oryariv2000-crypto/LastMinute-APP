@@ -46,18 +46,13 @@ export default function LandingPage() {
         </div>
 
         <div className="landing__hero-visual" aria-hidden="true">
-          <div className="landing__phone">
-            <div className="landing__phone-notch" />
-            <div className="landing__phone-screen">
-              <img
-                className="landing__phone-shot"
-                src={appMockup}
-                alt="מסך אפליקציית רגע אחרון"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
-          </div>
+          <img
+            className="landing__phone-shot"
+            src={appMockup}
+            alt="מסך אפליקציית רגע אחרון"
+            loading="eager"
+            decoding="async"
+          />
           <span className="landing__float landing__float--eco">🌿 1.2 ק״ג ניצלו</span>
         </div>
       </section>
