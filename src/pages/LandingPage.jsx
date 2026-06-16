@@ -46,13 +46,17 @@ export default function LandingPage() {
         </div>
 
         <div className="landing__hero-visual" aria-hidden="true">
-          <img
-            className="landing__phone-shot"
-            src={appMockup}
-            alt="מסך אפליקציית רגע אחרון"
-            loading="eager"
-            decoding="async"
-          />
+          {/* The mockup asset is a full Safari screenshot; the container masks it
+              down to just the app screen (CSS-cropped — see LandingPage.css). */}
+          <div className="landing__device">
+            <img
+              className="landing__device-shot"
+              src={appMockup}
+              alt="מסך אפליקציית רגע אחרון"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
           <span className="landing__float landing__float--eco">🌿 1.2 ק״ג ניצלו</span>
         </div>
       </section>

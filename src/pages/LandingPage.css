@@ -101,24 +101,49 @@
   margin: 0 0 var(--space-6);
 }
 
-/* Hero visual — the app shown inside an already-rendered device mockup.
-   The asset is a complete phone render on its own light backdrop, so we present
-   it directly (no extra CSS frame) as a rounded, softly-shadowed device card. */
-.landing__hero-visual { position: relative; display: flex; justify-content: center; perspective: 1600px; }
+/* Hero visual — a sleek device mockup of the app.
+   The source asset (landing-app-mockup.png, 561×1029) is a raw Safari screenshot:
+   it carries the iOS status bar, the surrounding phone frame, and the Safari
+   address/tool bars. Rather than edit the file, we mask it in CSS: the container
+   IS the app screen (its aspect-ratio matches the cropped region), and the image
+   is scaled up + translated so only the app UI fills it. A subtle edge + soft
+   shadow form the modern device; the tilt-on-hover lives on the container.
 
-.landing__phone-shot {
-  width: clamp(250px, 30vw, 318px);
-  height: auto;
-  display: block;
-  /* Match the mockup's own backdrop so the rounded corners read as one piece. */
-  background: #f4f7f4;
-  border-radius: 38px;
-  box-shadow: 0 42px 80px -34px color-mix(in srgb, var(--color-brand-primary) 45%, rgba(0, 0, 0, 0.5));
-  /* Subtle, intentional "device shot" tilt; straightens on hover. */
+   Crop geometry (intrinsic px → fraction of the 561×1029 image):
+     left 56  right 56  top 112  bottom 182  →  app screen ≈ 449×735.
+   translate% resolves against the image's OWN box on both axes, so one translate
+   aligns the app's top-left corner to the container's top-left. */
+/* align-items:center is load-bearing — without it the flex item stretches
+   vertically, overriding the device's aspect-ratio and leaking the cropped chrome. */
+.landing__hero-visual { position: relative; display: flex; justify-content: center; align-items: center; perspective: 1600px; }
+
+.landing__device {
+  position: relative;
+  width: clamp(248px, 29vw, 300px);
+  aspect-ratio: 449 / 735;          /* the cropped app screen, not the whole image */
+  overflow: hidden;
+  border-radius: 34px;
+  background: #f4f7f4;              /* matches the mockup backdrop, hides sub-px seams */
+  /* Subtle modern device edge: a hairline ring + a deep, soft brand-tinted shadow. */
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 44px 80px -34px color-mix(in srgb, var(--color-brand-primary) 45%, rgba(0, 0, 0, 0.5));
   transform: rotateY(-9deg) rotateX(3deg) rotate(0.6deg);
   transition: transform 0.5s ease;
 }
-.landing__phone-shot:hover { transform: rotateY(0deg) rotateX(0deg) rotate(0deg); }
+.landing__device:hover { transform: rotateY(0deg) rotateX(0deg) rotate(0deg); }
+
+.landing__device-shot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 124.9%;                    /* 561 / 449 — app width fills the container */
+  max-width: none;                  /* override the global `img { max-width: 100% }` reset */
+  height: auto;
+  transform: translate(-9.98%, -10.88%);  /* -56/561 , -112/1029 */
+  display: block;
+}
 
 /* floating eco chip */
 .landing__float {
@@ -287,7 +312,7 @@
 }
 @media (max-width: 860px) {
   /* keep the phone flat & fully on-screen on small viewports */
-  .landing__phone-shot { transform: none; }
+  .landing__device { transform: none; }
   .landing__float--eco { inset-inline-end: 8px; }
 }
 @media (max-width: 640px) {
@@ -298,7 +323,7 @@
 
 /* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .landing__phone-shot,
+  .landing__device,
   .landing__value { transition: none; }
-  .landing__phone-shot { transform: none; }
+  .landing__device { transform: none; }
 }
