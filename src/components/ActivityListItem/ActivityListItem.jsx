@@ -1,3 +1,4 @@
+import { Price } from '../../lib/formatters'
 import { TagIcon, CheckSquareIcon, AlertCircleIcon, StarIcon } from '../icons'
 import './ActivityListItem.css'
 
@@ -31,7 +32,7 @@ export default function ActivityListItem({
 
       <div className="activity-item__meta">
         {amount != null && (
-          <span className="activity-item__amount">+₪{amount}</span>
+          <Price value={amount} fraction={0} currency="+₪" className="activity-item__amount" />
         )}
         {timeAgo && <span className="activity-item__time">{timeAgo}</span>}
       </div>

@@ -1,0 +1,21 @@
+/* ── Price / currency rendering ──────────────────────────────────
+   Consistent shekel-sign styling for every <Price> in the app (deal cards,
+   explore feed, product page, checkout, order summary, dashboards…).
+
+   The body font (Heebo) renders ₪ wide and heavy, which looks off beside the
+   Latin numerals and varies between weights. Drawing just the symbol in a
+   clean UI-font stack — and nudging it a hair off the digits — keeps prices
+   tidy and uniform without touching the numerals. */
+.price {
+  /* Even digit widths so prices in a column line up. */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.price__symbol {
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  /* dir="ltr" on the wrapper → inline-end is the gap between ₪ and the number. */
+  margin-inline-end: 0.12em;
+  /* Trim the symbol's optical weight so it doesn't dominate the amount. */
+  font-weight: inherit;
+}

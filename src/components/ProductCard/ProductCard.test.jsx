@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { priceText } from '../../test/utils'
 import ProductCard from './ProductCard'
 
 // asLink={false} renders a plain <article> (no <Link>), so no Router is needed.
@@ -13,8 +14,8 @@ describe('ProductCard', () => {
     render(<ProductCard {...base} />)
     expect(screen.getByText('קרואסון חמאה')).toBeInTheDocument()
     expect(screen.getByText('מאפיית הבוקר')).toBeInTheDocument()
-    expect(screen.getByText('₪8')).toBeInTheDocument()
-    expect(screen.getByText('₪16')).toBeInTheDocument()
+    expect(screen.getByText(priceText('₪8'))).toBeInTheDocument()
+    expect(screen.getByText(priceText('₪16'))).toBeInTheDocument()
   })
 
   it('shows the discount badge as "-50%" (minus first)', () => {

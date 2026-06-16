@@ -1,3 +1,4 @@
+import { Price } from '../../lib/formatters'
 import { CheckIcon } from '../icons'
 import './PublishActions.css'
 
@@ -25,7 +26,7 @@ export default function PublishActions({
       <div className="publish-actions__summary">
         <span className="publish-actions__count">{itemCount} פריטים</span>
         {total != null && (
-          <span className="publish-actions__total">סה״כ ₪{total}</span>
+          <span className="publish-actions__total">סה״כ <Price value={total} fraction={0} /></span>
         )}
       </div>
 

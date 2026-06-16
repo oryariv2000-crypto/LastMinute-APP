@@ -6,7 +6,14 @@
  * "00:45" rendering as "45:00"). Wrapping the value in an inline-block element
  * forced to `dir="ltr"` makes it a single LTR atom inside the RTL flow, which
  * fixes both cases without changing surrounding alignment.
+ *
+ * The shekel sign is rendered in its own `.price__symbol` span so it can be
+ * styled independently of the digits: the body font (Heebo) draws a wide,
+ * heavy ₪ that reads inconsistently next to numerals, so the symbol gets a
+ * clean UI-font stack and a hair of inline spacing from the amount. Styling
+ * lives in formatters.css and applies everywhere <Price> is used.
  */
+import './formatters.css'
 
 const isolate = { display: 'inline-block', unicodeBidi: 'isolate' }
 
@@ -22,9 +29,10 @@ export function Price({ value, fraction = 2, currency = '₪', className }) {
     minimumFractionDigits: fraction,
     maximumFractionDigits: fraction,
   })
+  const cls = ['price', className].filter(Boolean).join(' ')
   return (
-    <span dir="ltr" style={isolate} className={className}>
-      {currency}{amount}
+    <span dir="ltr" style={isolate} className={cls}>
+      <span className="price__symbol">{currency}</span>{amount}
     </span>
   )
 }

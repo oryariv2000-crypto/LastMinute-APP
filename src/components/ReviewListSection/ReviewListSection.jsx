@@ -1,4 +1,5 @@
 import ReviewListItem from '../ReviewListItem/ReviewListItem'
+import { Price } from '../../lib/formatters'
 import { PlusIcon, SparkleIcon } from '../icons'
 import './ReviewListSection.css'
 
@@ -39,7 +40,7 @@ export default function ReviewListSection({
         </div>
         {suggestedTotal != null && (
           <span className="review-list-section__total" aria-label="סך הכל מוערך">
-            ₪{suggestedTotal}
+            <Price value={suggestedTotal} fraction={0} />
           </span>
         )}
       </header>
