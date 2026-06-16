@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
+import appMockup from '../assets/landing-app-mockup.png'
 import './LandingPage.css'
 
 /**
@@ -48,46 +49,13 @@ export default function LandingPage() {
           <div className="landing__phone">
             <div className="landing__phone-notch" />
             <div className="landing__phone-screen">
-              {/* mini app top bar */}
-              <div className="landing__app-bar">
-                <span className="landing__app-brand">🌿 Last Minute</span>
-                <span className="landing__app-avatar" />
-              </div>
-
-              {/* featured deal */}
-              <div className="landing__app-feature">
-                <img
-                  src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1000&q=80&auto=format&fit=crop"
-                  alt=""
-                  loading="eager"
-                />
-                <span className="landing__app-badge">‎-50%‎</span>
-                <span className="landing__app-timer">⏳ 03:00:00</span>
-                <div className="landing__app-feature-info">
-                  <strong>קרואסון חמאה טרי</strong>
-                  <span>מאפיית רחל · 0.6 ק״מ</span>
-                </div>
-              </div>
-
-              <p className="landing__app-section">מבצעי היום</p>
-
-              {/* mini deal rows */}
-              <div className="landing__app-row">
-                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80&auto=format&fit=crop" alt="" loading="lazy" />
-                <div className="landing__app-row-text">
-                  <strong>מגש סלטים טריים</strong>
-                  <span className="landing__app-row-price">₪30 <s>₪60</s></span>
-                </div>
-                <span className="landing__app-add">+</span>
-              </div>
-              <div className="landing__app-row">
-                <img src="https://images.unsplash.com/photo-1565299543923-37dd37887442?w=400&q=80&auto=format&fit=crop" alt="" loading="lazy" />
-                <div className="landing__app-row-text">
-                  <strong>קישים גבינה</strong>
-                  <span className="landing__app-row-price">₪22 <s>₪35</s></span>
-                </div>
-                <span className="landing__app-add">+</span>
-              </div>
+              <img
+                className="landing__phone-shot"
+                src={appMockup}
+                alt="מסך אפליקציית רגע אחרון"
+                loading="eager"
+                decoding="async"
+              />
             </div>
           </div>
           <span className="landing__float landing__float--eco">🌿 1.2 ק״ג ניצלו</span>
