@@ -97,6 +97,18 @@
   border-color: var(--color-brand-primary);
 }
 
+/* When the customer has a profile picture, it fills the avatar circle. */
+.navbar-b2c__avatar:has(.navbar-b2c__avatar-img) {
+  background-color: transparent;
+  overflow: hidden;
+}
+.navbar-b2c__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+}
+
 .navbar-b2c__logout {
   width: 34px;
   height: 34px;

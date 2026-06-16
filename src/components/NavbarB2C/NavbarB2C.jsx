@@ -93,7 +93,11 @@ export default function NavbarB2C({
             aria-label={`פרופיל — ${userName}`}
             id="b2c-nav-avatar"
           >
-            {initials}
+            {profile?.avatar_url ? (
+              <img className="navbar-b2c__avatar-img" src={profile.avatar_url} alt="" />
+            ) : (
+              initials
+            )}
           </Link>
           <button
             className="navbar-b2c__logout"
