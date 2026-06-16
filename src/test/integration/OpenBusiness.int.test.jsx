@@ -10,6 +10,10 @@ vi.mock('../../lib/db', () => ({
   createMyBusiness: (...args) => h.createMyBusiness(...args),
 }))
 
+// The address field is an autocomplete; stub its search so it never hits the
+// network and renders no dropdown during these form-flow tests.
+vi.mock('../../lib/geocode', () => ({ searchAddresses: vi.fn(async () => []) }))
+
 // useAppMode is a hook that reads/writes localStorage. Mock it so we can
 // verify setMode is called without touching real storage.
 const mockSetMode = vi.fn()
@@ -51,7 +55,7 @@ describe('OpenBusinessPage', () => {
     await userEvent.type(screen.getByLabelText(/טלפון/), '0501234567')
 
     // Select a business type from the <select>
-    const typeSelect = screen.getByRole('combobox')
+    const typeSelect = screen.getByLabelText(/סוג עסק/)
     await userEvent.selectOptions(typeSelect, 'cafe')
 
     await userEvent.click(screen.getByRole('button', { name: /צור עסק|הקמת עסק|שמור|המשך/i }))
@@ -59,6 +63,8 @@ describe('OpenBusinessPage', () => {
     expect(h.createMyBusiness).toHaveBeenCalledWith({
       name: 'הפינה של מיכל',
       address: 'רחוב דיזנגוף 50, תל אביב',
+      lat: null,   // typed freely, no suggestion picked → server geocodes
+      lng: null,
       businessType: 'cafe',
       phone: '0501234567',
     })
@@ -78,7 +84,7 @@ describe('OpenBusinessPage', () => {
     await userEvent.type(screen.getByLabelText(/כתובת/), 'רחוב ראשי 1')
     await userEvent.type(screen.getByLabelText(/טלפון/), '0501234567')
 
-    const typeSelect = screen.getByRole('combobox')
+    const typeSelect = screen.getByLabelText(/סוג עסק/)
     await userEvent.selectOptions(typeSelect, 'cafe')
 
     await userEvent.click(screen.getByRole('button', { name: /צור עסק|הקמת עסק|שמור|המשך/i }))
@@ -112,7 +118,7 @@ describe('OpenBusinessPage', () => {
     await userEvent.type(screen.getByLabelText(/שם העסק/), 'בדיקה')
     await userEvent.type(screen.getByLabelText(/כתובת/), 'כתובת')
     await userEvent.type(screen.getByLabelText(/טלפון/), '0501234567')
-    const typeSelect = screen.getByRole('combobox')
+    const typeSelect = screen.getByLabelText(/סוג עסק/)
     await userEvent.selectOptions(typeSelect, 'cafe')
 
     const btn = screen.getByRole('button', { name: /צור עסק|הקמת עסק|שמור|המשך/i })

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import InputField from '../InputField/InputField'
+import AddressAutocomplete from '../AddressAutocomplete/AddressAutocomplete'
 import SubmitButton from '../SubmitButton/SubmitButton'
 import { BUSINESS_TYPES as BUSINESS_TYPE_LIST } from '../../lib/businessTypes'
 import { UserIcon, EmailIcon, PhoneIcon, LockIcon, EyeIcon, EyeOffIcon, HomeIcon, MapPinIcon, BriefcaseIcon, ChevronDownIcon } from '../icons'
@@ -30,6 +31,8 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
     businessType:  '',
     businessTypeOther: '',
     address:       '',
+    lat:           null,
+    lng:           null,
     password:      '',
     confirmPassword: '',
   })
@@ -42,6 +45,17 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
       setForm(prev => ({ ...prev, [field]: e.target.value }))
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
+  }
+
+  // Free typing clears any captured coordinates; picking a suggestion captures
+  // the exact lat/lng so they travel with the form to business creation.
+  function onAddressChange(text) {
+    setForm(prev => ({ ...prev, address: text, lat: null, lng: null }))
+    setErrors(prev => ({ ...prev, address: '' }))
+  }
+  function onAddressSelect({ address, lat, lng }) {
+    setForm(prev => ({ ...prev, address, lat, lng }))
+    setErrors(prev => ({ ...prev, address: '' }))
   }
 
   function validate() {
@@ -153,14 +167,13 @@ export default function RegisterFormB2B({ onSubmit, loading = false, error = '' 
           />
         )}
 
-        <InputField
+        <AddressAutocomplete
           id="b2b-address"
           label="כתובת"
-          type="text"
           value={form.address}
-          onChange={set('address')}
+          onChange={onAddressChange}
+          onSelect={onAddressSelect}
           placeholder="רחוב דיזנגוף 50, תל אביב"
-          autoComplete="street-address"
           required
           error={errors.address}
           icon={<MapPinIcon />}

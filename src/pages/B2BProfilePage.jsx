@@ -219,6 +219,8 @@ export default function B2BProfilePage() {
             logo_url: business?.logo_url,
             cover_url: business?.cover_url,
             opening_hours: business?.opening_hours,
+            location_lat: business?.location_lat,
+            location_lng: business?.location_lng,
           }}
           onSave={async ({ full_name, ...bizFields }) => {
             const [updatedProfile, updatedBiz] = await Promise.all([

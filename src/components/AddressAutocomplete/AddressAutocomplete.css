@@ -1,0 +1,68 @@
+/* ── AddressAutocomplete ─────────────────────────────────────────
+   Wraps an InputField and anchors a suggestions dropdown beneath it. */
+.address-ac {
+  position: relative;
+}
+
+.address-ac__status {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--font-size-caption);
+  color: var(--color-on-surface-variant);
+}
+
+/* ── Suggestions dropdown */
+.address-ac__list {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  background-color: var(--color-surface-container-lowest);
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.address-ac__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-body-md);
+  color: var(--color-on-surface);
+  line-height: 1.35;
+  transition: background-color var(--transition-fast);
+}
+
+.address-ac__item--active,
+.address-ac__item:hover {
+  background-color: var(--color-surface-container-high, rgba(45, 106, 79, 0.08));
+}
+
+.address-ac__item-icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--color-brand-primary);
+  width: 18px;
+  height: 18px;
+}
+
+.address-ac__item-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.address-ac__item-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

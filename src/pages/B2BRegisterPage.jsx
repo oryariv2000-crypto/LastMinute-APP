@@ -71,6 +71,8 @@ export default function B2BRegisterPage() {
           prefill: {
             name:         data.businessName,
             address:      data.address,
+            lat:          data.lat,
+            lng:          data.lng,
             businessType: data.businessType,
             phone:        data.phone,
           },

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import InputField from '../components/InputField/InputField'
+import AddressAutocomplete from '../components/AddressAutocomplete/AddressAutocomplete'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import { createMyBusiness } from '../lib/db'
 import { useAppMode } from '../lib/useAppMode'
@@ -34,6 +35,8 @@ export default function OpenBusinessPage() {
   const [form, setForm] = useState({
     name:         prefill.name         ?? '',
     address:      prefill.address      ?? '',
+    lat:          prefill.lat          ?? null,
+    lng:          prefill.lng          ?? null,
     businessType: prefill.businessType ?? '',
     businessTypeOther: '',
     phone:        prefill.phone        ?? '',
@@ -47,6 +50,17 @@ export default function OpenBusinessPage() {
       setForm(prev => ({ ...prev, [field]: e.target.value }))
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
+  }
+
+  // Free typing invalidates any previously captured coordinates; selecting a
+  // suggestion captures the exact lat/lng for the chosen address.
+  function onAddressChange(text) {
+    setForm(prev => ({ ...prev, address: text, lat: null, lng: null }))
+    setErrors(prev => ({ ...prev, address: '' }))
+  }
+  function onAddressSelect({ address, lat, lng }) {
+    setForm(prev => ({ ...prev, address, lat, lng }))
+    setErrors(prev => ({ ...prev, address: '' }))
   }
 
   function validate() {
@@ -78,6 +92,8 @@ export default function OpenBusinessPage() {
       await createMyBusiness({
         name:         form.name.trim(),
         address:      form.address.trim(),
+        lat:          form.lat,
+        lng:          form.lng,
         businessType,
         phone:        form.phone.replace(/\s/g, ''),
       })
@@ -176,14 +192,13 @@ export default function OpenBusinessPage() {
             />
           )}
 
-          <InputField
+          <AddressAutocomplete
             id="ob-address"
             label="כתובת"
-            type="text"
             value={form.address}
-            onChange={set('address')}
+            onChange={onAddressChange}
+            onSelect={onAddressSelect}
             placeholder="רחוב דיזנגוף 50, תל אביב"
-            autoComplete="street-address"
             required
             error={errors.address}
             icon={<MapPinIcon />}

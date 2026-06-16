@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { uploadDealImage } from '../../lib/db'
 import { BUSINESS_TYPES, isKnownBusinessType } from '../../lib/businessTypes'
+import AddressAutocomplete from '../AddressAutocomplete/AddressAutocomplete'
 import { XIcon } from '../icons'
 import '../DealEditModal/DealEditModal.css'
 import './StorefrontEditModal.css'
@@ -41,6 +42,14 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
     business_type_other: knownType ? '' : storedType,
     description:       initial.description ?? '',
   })
+  // Coordinates captured from the address autocomplete. Seeded from the existing
+  // business so an unrelated save preserves them; reset on free typing and
+  // re-captured on selecting a suggestion. Only sent to the server when set.
+  const [coords, setCoords] = useState(
+    initial.location_lat != null && initial.location_lng != null
+      ? { lat: initial.location_lat, lng: initial.location_lng }
+      : null,
+  )
   const [logo, setLogo]   = useState(initial.logo_url || null)
   const [cover, setCover] = useState(initial.cover_url || null)
   const [hours, setHours] = useState(() => normalizeHours(initial.opening_hours))
@@ -59,6 +68,17 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
 
   function set(name) {
     return (e) => setValues((p) => ({ ...p, [name]: e.target.value }))
+  }
+
+  // Typing a new address invalidates the captured coordinates (they'll be
+  // re-geocoded on save); choosing a suggestion captures exact coordinates.
+  function onAddressChange(text) {
+    setValues((p) => ({ ...p, address: text }))
+    setCoords(null)
+  }
+  function onAddressSelect({ address, lat, lng }) {
+    setValues((p) => ({ ...p, address }))
+    setCoords({ lat, lng })
   }
 
   async function pickImage(e, kind) {
@@ -98,6 +118,9 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
         logo_url: logo,
         cover_url: cover,
         opening_hours: hours,
+        // Only send coordinates when we actually have them, so a save that
+        // didn't touch the address never wipes the stored location.
+        ...(coords ? { location_lat: coords.lat, location_lng: coords.lng } : {}),
       })
     } catch (err) {
       setError(err?.message || 'שמירת הפרופיל נכשלה')
@@ -178,10 +201,16 @@ export default function StorefrontEditModal({ initial = {}, onSave, onClose }) {
         </label>
 
         <div className="deal-edit__row">
-          <label className="deal-edit__field">
-            <span>כתובת</span>
-            <input type="text" value={values.address} onChange={set('address')} />
-          </label>
+          <div className="deal-edit__field">
+            <AddressAutocomplete
+              id="sf-address"
+              label="כתובת"
+              value={values.address}
+              onChange={onAddressChange}
+              onSelect={onAddressSelect}
+              placeholder="רחוב דיזנגוף 50, תל אביב"
+            />
+          </div>
           <label className="deal-edit__field">
             <span>טלפון</span>
             <input type="tel" value={values.phone} onChange={set('phone')} />
