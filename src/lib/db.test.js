@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
  */
 
 const h = vi.hoisted(() => ({ fake: null }))
+const g = vi.hoisted(() => ({ geocode: vi.fn(async () => null) }))
 
 vi.mock('./supabase', () => ({
   supabase: {
@@ -18,6 +19,10 @@ vi.mock('./supabase', () => ({
   },
 }))
 
+// Geocoding is mocked so the data layer can be tested offline; each test sets
+// the resolved coordinates (or null) it wants via g.geocode.mockResolvedValueOnce.
+vi.mock('./geocode', () => ({ geocodeAddress: (addr) => g.geocode(addr) }))
+
 import {
   getMyDeals,
   createDeal,
@@ -25,8 +30,13 @@ import {
   deleteDeal,
   createOrder,
   createMyBusiness,
+  updateMyBusiness,
   getActiveDealsPage,
   periodRange,
+  getMyNotifications,
+  markNotificationRead,
+  getMyBusinessOrders,
+  completeOrderByCode,
 } from './db'
 
 /* ── In-memory fake Supabase with minimal RLS emulation ─────────────── */
@@ -36,6 +46,7 @@ function makeFake(seed) {
     businesses: structuredClone(seed.businesses ?? []),
     deals: structuredClone(seed.deals ?? []),
     orders: structuredClone(seed.orders ?? []),
+    notifications: structuredClone(seed.notifications ?? []),
   }
   let uid = seed.currentUserId
   let seq = 1000
@@ -136,6 +147,12 @@ function makeFake(seed) {
       store.orders.push(row)
       return { data: row, error: null }
     }
+    if (fn === 'complete_order') {
+      const o = store.orders.find((x) => x.id === args.p_order_id)
+      if (!o) return { data: null, error: { message: 'order not found' } }
+      o.status = 'completed'
+      return { data: o, error: null }
+    }
     return { data: null, error: { message: `unknown rpc: ${fn}` } }
   }
 
@@ -171,6 +188,7 @@ function seedTwoBusinesses() {
 
 beforeEach(() => {
   h.fake = makeFake(seedTwoBusinesses())
+  g.geocode.mockClear()
 })
 
 describe('deals — create', () => {
@@ -424,5 +442,177 @@ describe('createMyBusiness', () => {
     }
     await expect(createMyBusiness({ name: 'Test', address: null, businessType: null, phone: null }))
       .rejects.toThrow('שגיאת שרת')
+  })
+
+  it('geocodes the address and persists real coordinates on the new business', async () => {
+    g.geocode.mockResolvedValueOnce({ lat: 32.075, lng: 34.775 })
+    const biz = await createMyBusiness({
+      name: 'הקונדיטוריה של שלומו',
+      address: 'דיזנגוף 40, תל אביב',
+      businessType: 'bakery',
+      phone: null,
+    })
+    expect(g.geocode).toHaveBeenCalledWith('דיזנגוף 40, תל אביב')
+    expect(biz.location_lat).toBe(32.075)
+    expect(biz.location_lng).toBe(34.775)
+    const stored = h.fake.store.businesses.find((b) => b.id === biz.id)
+    expect(stored.location_lat).toBe(32.075)
+    expect(stored.location_lng).toBe(34.775)
+  })
+
+  it('still creates the business (no coordinates) when geocoding fails', async () => {
+    g.geocode.mockResolvedValueOnce(null)
+    const biz = await createMyBusiness({ name: 'X', address: 'כתובת לא קיימת', businessType: null, phone: null })
+    expect(biz).toBeTruthy()
+    expect(biz.location_lat ?? null).toBeNull()
+    expect(biz.location_lng ?? null).toBeNull()
+  })
+
+  it('does not geocode when no address is given', async () => {
+    await createMyBusiness({ name: 'No address', address: null, businessType: null, phone: null })
+    expect(g.geocode).not.toHaveBeenCalled()
+  })
+
+  it('uses coordinates supplied by the form (autocomplete) without geocoding', async () => {
+    const biz = await createMyBusiness({
+      name: 'הקונדיטוריה של שלומו',
+      address: 'דיזנגוף 40, תל אביב',
+      businessType: 'bakery',
+      phone: null,
+      lat: 32.07,
+      lng: 34.77,
+    })
+    expect(g.geocode).not.toHaveBeenCalled()
+    expect(biz.location_lat).toBe(32.07)
+    expect(biz.location_lng).toBe(34.77)
+    const stored = h.fake.store.businesses.find((b) => b.id === biz.id)
+    expect(stored.location_lat).toBe(32.07)
+  })
+})
+
+describe('updateMyBusiness — geocoding', () => {
+  it('re-geocodes and stores new coordinates when the address changes', async () => {
+    g.geocode.mockResolvedValueOnce({ lat: 31.25, lng: 34.79 })
+    const updated = await updateMyBusiness({ address: 'רחוב חדש 5, באר שבע' })
+    expect(g.geocode).toHaveBeenCalledWith('רחוב חדש 5, באר שבע')
+    expect(updated.location_lat).toBe(31.25)
+    expect(updated.location_lng).toBe(34.79)
+  })
+
+  it('does not geocode when the address is unchanged and coordinates exist', async () => {
+    const biz = h.fake.store.businesses.find((b) => b.user_id === 'user-A')
+    biz.address = 'אותה כתובת'
+    biz.location_lat = 32.1; biz.location_lng = 34.8
+    await updateMyBusiness({ address: 'אותה כתובת', name: 'Shop A+' })
+    expect(g.geocode).not.toHaveBeenCalled()
+  })
+
+  it('back-fills coordinates for a legacy business even when the address is unchanged', async () => {
+    const biz = h.fake.store.businesses.find((b) => b.user_id === 'user-A')
+    biz.address = 'כתובת קיימת'   // legacy row: has an address but no coordinates
+    g.geocode.mockResolvedValueOnce({ lat: 32.06, lng: 34.77 })
+    const updated = await updateMyBusiness({ address: 'כתובת קיימת' })
+    expect(g.geocode).toHaveBeenCalledWith('כתובת קיימת')
+    expect(updated.location_lat).toBe(32.06)
+    expect(updated.location_lng).toBe(34.77)
+  })
+
+  it('clears coordinates when a changed address cannot be geocoded', async () => {
+    const biz = h.fake.store.businesses.find((b) => b.user_id === 'user-A')
+    biz.address = 'כתובת ישנה'
+    biz.location_lat = 32.0; biz.location_lng = 34.0
+    g.geocode.mockResolvedValueOnce(null)
+    const updated = await updateMyBusiness({ address: 'כתובת חדשה לא ידועה' })
+    expect(updated.location_lat).toBeNull()
+    expect(updated.location_lng).toBeNull()
+  })
+
+  it('trusts explicit coordinates from the form and skips geocoding', async () => {
+    const biz = h.fake.store.businesses.find((b) => b.user_id === 'user-A')
+    biz.address = 'כתובת ישנה'
+    const updated = await updateMyBusiness({
+      address: 'דיזנגוף 40, תל אביב',
+      location_lat: 32.07,
+      location_lng: 34.77,
+    })
+    expect(g.geocode).not.toHaveBeenCalled()
+    expect(updated.location_lat).toBe(32.07)
+    expect(updated.location_lng).toBe(34.77)
+  })
+})
+
+describe('notifications', () => {
+  it('returns only the current owner’s notifications', async () => {
+    h.fake.store.notifications.push(
+      { id: 'n-A', user_id: 'user-A', type: 'new_order', title: 'הזמנה חדשה התקבלה!', body: 'הזמנה LM-1', is_read: false },
+      { id: 'n-B', user_id: 'user-B', type: 'new_order', title: 'הזמנה חדשה התקבלה!', body: 'הזמנה LM-2', is_read: false },
+    )
+    const rows = await getMyNotifications()
+    expect(rows).toHaveLength(1)
+    expect(rows[0].id).toBe('n-A')
+    expect(rows[0].title).toBe('הזמנה חדשה התקבלה!')
+  })
+
+  it('returns an empty array when the owner has no notifications', async () => {
+    expect(await getMyNotifications()).toEqual([])
+  })
+
+  it('marks a notification read and returns the updated row', async () => {
+    h.fake.store.notifications.push(
+      { id: 'n-A', user_id: 'user-A', type: 'new_order', title: 'הזמנה חדשה התקבלה!', is_read: false },
+    )
+    const updated = await markNotificationRead('n-A')
+    expect(updated.is_read).toBe(true)
+    expect(h.fake.store.notifications.find((n) => n.id === 'n-A').is_read).toBe(true)
+  })
+})
+
+describe('getMyBusinessOrders', () => {
+  it('returns only orders for the current owner’s business', async () => {
+    h.fake.store.orders.push(
+      { id: 'o1', business_id: 'biz-A', user_id: 'cust-1', deal_id: 'deal-A1', status: 'pending', order_code: 'LM-AAAAA' },
+      { id: 'o2', business_id: 'biz-B', user_id: 'cust-1', deal_id: 'deal-B1', status: 'pending', order_code: 'LM-BBBBB' },
+    )
+    const rows = await getMyBusinessOrders()
+    expect(rows).toHaveLength(1)
+    expect(rows[0].id).toBe('o1')
+  })
+
+  it('returns an empty array when the owner has no business', async () => {
+    h.fake.setUser('cust-1') // a customer owns no business
+    expect(await getMyBusinessOrders()).toEqual([])
+  })
+})
+
+describe('completeOrderByCode', () => {
+  beforeEach(() => {
+    h.fake.store.orders.push(
+      { id: 'o1', business_id: 'biz-A', user_id: 'cust-1', deal_id: 'deal-A1', status: 'pending', order_code: 'LM-OPEN1' },
+      { id: 'o2', business_id: 'biz-A', user_id: 'cust-1', deal_id: 'deal-A1', status: 'completed', order_code: 'LM-DONE1' },
+      { id: 'o3', business_id: 'biz-A', user_id: 'cust-1', deal_id: 'deal-A1', status: 'cancelled', order_code: 'LM-CANC1' },
+    )
+  })
+
+  it('completes a pending order looked up by its code (case/space-insensitive)', async () => {
+    const updated = await completeOrderByCode('  lm-open1 ')
+    expect(updated.id).toBe('o1')
+    expect(updated.status).toBe('completed')
+    expect(h.fake.store.orders.find((o) => o.id === 'o1').status).toBe('completed')
+  })
+
+  it('rejects an empty code', async () => {
+    await expect(completeOrderByCode('   ')).rejects.toThrow('יש להזין קוד הזמנה')
+  })
+
+  it('rejects an unknown code', async () => {
+    await expect(completeOrderByCode('LM-NOPE0')).rejects.toThrow('לא נמצאה')
+  })
+
+  it('rejects an order that was already collected', async () => {
+    await expect(completeOrderByCode('LM-DONE1')).rejects.toThrow('כבר נאספה')
+  })
+
+  it('rejects a cancelled order', async () => {
+    await expect(completeOrderByCode('LM-CANC1')).rejects.toThrow('בוטלה')
   })
 })

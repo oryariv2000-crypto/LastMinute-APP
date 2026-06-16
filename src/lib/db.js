@@ -15,6 +15,7 @@
  */
 import { supabase } from './supabase'
 import { isBusinessOpen } from './businessHours'
+import { geocodeAddress } from './geocode'
 
 /* ── Auth helpers ─────────────────────────────────────────────── */
 
@@ -120,7 +121,7 @@ export async function getBusinessDeals(businessId) {
  * The RPC is idempotent — calling it again updates the existing row.
  * Returns the upserted businesses row.
  */
-export async function createMyBusiness({ name, address, businessType, phone }) {
+export async function createMyBusiness({ name, address, businessType, phone, lat = null, lng = null }) {
   const { data, error } = await supabase.rpc('create_my_business', {
     p_name: name?.trim() ?? null,
     p_address: address?.trim() ?? null,
@@ -129,15 +130,58 @@ export async function createMyBusiness({ name, address, businessType, phone }) {
   })
   // RPC errors carry the human-readable message in .message
   if (error) throw new Error(error.message || 'יצירת העסק נכשלה')
+
+  // Persist real coordinates so the business lands at its true spot on the
+  // explore map and can be discovered by distance. Prefer coordinates the form
+  // already captured (address autocomplete) and only geocode as a fallback.
+  // Best-effort: a miss must never block creation — the pin stays unplaced.
+  const addr = address?.trim()
+  let coords = lat != null && lng != null ? { lat, lng } : null
+  if (!coords && addr) coords = await geocodeAddress(addr).catch(() => null)
+  if (coords && data?.id) {
+    const { error: locErr } = await supabase
+      .from('businesses')
+      .update({ location_lat: coords.lat, location_lng: coords.lng })
+      .eq('id', data.id)
+    if (!locErr) {
+      data.location_lat = coords.lat
+      data.location_lng = coords.lng
+    }
+  }
   return data
 }
 
 export async function updateMyBusiness(fields) {
   const biz = await getMyBusiness()
   if (!biz) throw new Error('לא נמצא עסק למשתמש זה.')
+
+  // Keep the stored coordinates in sync with the address. Re-geocode only when
+  // the address actually changed (geocode.js caches, but this also avoids the
+  // 1s rate-limit wait on unrelated profile saves). A changed-but-unresolvable
+  // address clears the old coords so we never show a stale location.
+  const patch = { ...fields }
+  // If the caller already supplied coordinates (address autocomplete), trust
+  // them as-is. Otherwise keep coordinates in sync with the address text.
+  const hasExplicitCoords = patch.location_lat != null && patch.location_lng != null
+  if ('address' in fields && !hasExplicitCoords) {
+    const addr = (fields.address ?? '').trim()
+    const prev = (biz.address ?? '').trim()
+    // Geocode when the address changed, or when it's unchanged but the business
+    // still has no coordinates (self-heals legacy rows created before geocoding).
+    const missingCoords = biz.location_lat == null || biz.location_lng == null
+    if (addr && (addr !== prev || missingCoords)) {
+      const coords = await geocodeAddress(addr).catch(() => null)
+      patch.location_lat = coords ? coords.lat : null
+      patch.location_lng = coords ? coords.lng : null
+    } else if (!addr && prev) {
+      patch.location_lat = null
+      patch.location_lng = null
+    }
+  }
+
   const { data, error } = await supabase
     .from('businesses')
-    .update(fields)
+    .update(patch)
     .eq('id', biz.id)
     .select()
     .single()
@@ -378,6 +422,42 @@ export async function getMyImpactStats() {
   }
 }
 
+/**
+ * All orders for the current owner's business, newest first, with the deal and
+ * customer joined for display. RLS ("orders: business read on own deals") scopes
+ * this to the owner, so the explicit business_id filter is belt-and-suspenders.
+ * Returns every status; the Orders Management page derives the open ones to act
+ * on. Returns [] when the user has no business yet.
+ */
+export async function getMyBusinessOrders() {
+  const biz = await getMyBusiness()
+  if (!biz) return []
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*, deals ( title, image_url ), users ( full_name )')
+    .eq('business_id', biz.id)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+/**
+ * Verify-and-complete an order from the short code the customer presents (typed
+ * or scanned from their pickup QR). Normalises the code, surfaces a clear Hebrew
+ * error for the not-found / already-collected / cancelled cases, then delegates
+ * the actual status flip to complete_order() (which re-checks ownership + status
+ * server-side). Returns the completed order row.
+ */
+export async function completeOrderByCode(code) {
+  const trimmed = (code ?? '').trim().toUpperCase()
+  if (!trimmed) throw new Error('יש להזין קוד הזמנה')
+  const order = await getOrderByCode(trimmed)
+  if (!order) throw new Error('לא נמצאה הזמנה עם קוד זה')
+  if (order.status === 'completed') throw new Error('ההזמנה כבר נאספה')
+  if (order.status === 'cancelled') throw new Error('לא ניתן לאסוף הזמנה שבוטלה')
+  return completeOrder(order.id)
+}
+
 /** Look up a single order by its human-readable code (RLS scopes access). */
 export async function getOrderByCode(code) {
   const { data, error } = await supabase
@@ -385,6 +465,36 @@ export async function getOrderByCode(code) {
     .select('*, deals ( title, pickup_start, businesses ( name, address, phone ) )')
     .eq('order_code', code)
     .maybeSingle()
+  if (error) throw error
+  return data
+}
+
+/* ── Notifications (recipient column = user_id) ───────────────── */
+
+/**
+ * The current user's notifications, newest first. Recipients are scoped by RLS
+ * to their own rows, so a business owner only ever sees notifications addressed
+ * to them (e.g. "הזמנה חדשה התקבלה!" written by place_order on each new order).
+ */
+export async function getMyNotifications() {
+  const user = await requireUser()
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+/** Mark one notification read (RLS scopes the update to the recipient). */
+export async function markNotificationRead(id) {
+  const { data, error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', id)
+    .select()
+    .single()
   if (error) throw error
   return data
 }

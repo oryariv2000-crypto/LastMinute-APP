@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMyDeals, getMySupportTickets } from '../../lib/db'
+import { getMyDeals, getMySupportTickets, getMyNotifications, markNotificationRead } from '../../lib/db'
 import { labelOf, TICKET_STATUSES } from '../../lib/support'
 import { BellIcon } from '../icons'
 import './NotificationsBell.css'
@@ -22,15 +22,31 @@ export default function NotificationsBell() {
   useEffect(() => {
     let active = true
     ;(async () => {
-      // Independent sources: a missing support table shouldn't hide stock alerts.
-      const [dealsRes, ticketsRes] = await Promise.allSettled([getMyDeals(), getMySupportTickets()])
+      // Independent sources: one missing table shouldn't hide the others'
+      // alerts (e.g. a missing support table mustn't suppress new-order rows).
+      const [dealsRes, ticketsRes, notifsRes] = await Promise.allSettled([
+        getMyDeals(), getMySupportTickets(), getMyNotifications(),
+      ])
       if (!active) return
       const deals = dealsRes.status === 'fulfilled' ? dealsRes.value : []
       const tickets = ticketsRes.status === 'fulfilled' ? ticketsRes.value : []
-      setItems(buildNotifications(deals, tickets))
+      const notifs = notifsRes.status === 'fulfilled' ? notifsRes.value : []
+      setItems(buildNotifications(deals, tickets, notifs))
     })()
     return () => { active = false }
   }, [])
+
+  // Acting on a stored notification: mark it read (best-effort) and route to
+  // the screen where the owner can act on it. Removing it locally keeps the
+  // badge honest without a refetch.
+  function handleSelect(n) {
+    setOpen(false)
+    if (n.dbId) {
+      setItems((prev) => prev.filter((i) => i.id !== n.id))
+      markNotificationRead(n.dbId).catch(() => {})
+    }
+    navigate(n.to)
+  }
 
   // Close on outside click / Escape.
   useEffect(() => {
@@ -71,7 +87,7 @@ export default function NotificationsBell() {
                     type="button"
                     className="notif__item"
                     role="menuitem"
-                    onClick={() => { setOpen(false); navigate(n.to) }}
+                    onClick={() => handleSelect(n)}
                   >
                     <span className={`notif__dot notif__dot--${n.tone}`} aria-hidden="true" />
                     <span className="notif__text">
@@ -89,9 +105,30 @@ export default function NotificationsBell() {
   )
 }
 
-/* Derive notification rows from the owner's deals + their support tickets. */
-function buildNotifications(deals = [], tickets = []) {
+/* Where clicking a stored notification takes the owner. New orders open the
+   Orders Management page, deep-linked to the specific order when known. */
+function routeForNotification(n) {
+  switch (n.type) {
+    case 'new_order': return n.order_id ? `/b2b/orders?order=${n.order_id}` : '/b2b/orders'
+    default:          return '/b2b/dashboard'
+  }
+}
+
+/* Merge stored DB notifications (e.g. new orders) with alerts derived from the
+   owner's deals + support tickets. Stored, unread notifications come first as
+   the most time-sensitive; read ones are dropped so the badge stays accurate. */
+function buildNotifications(deals = [], tickets = [], notifications = []) {
   const out = []
+
+  for (const n of notifications) {
+    if (n.is_read) continue
+    out.push({
+      id: `db-${n.id}`, dbId: n.id,
+      tone: n.type === 'new_order' ? 'ok' : 'info',
+      to: routeForNotification(n),
+      title: n.title, sub: n.body,
+    })
+  }
 
   for (const d of deals) {
     if (d.status === 'paused') continue
