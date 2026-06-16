@@ -109,8 +109,10 @@
    is scaled up + translated so only the app UI fills it. A subtle edge + soft
    shadow form the modern device; the tilt-on-hover lives on the container.
 
-   Crop geometry (intrinsic px → fraction of the 561×1029 image):
-     left 56  right 56  top 112  bottom 182  →  app screen ≈ 449×735.
+   Crop geometry (intrinsic px → fraction of the 561×1029 image). The values sit
+   a hair INSIDE the device frame on every side so no black bezel leaks at the
+   rounded corners: app screen spans x66–506, y112–852.
+     left 68  right 57  top 114  bottom 179  →  app screen ≈ 436×736.
    translate% resolves against the image's OWN box on both axes, so one translate
    aligns the app's top-left corner to the container's top-left. */
 /* align-items:center is load-bearing — without it the flex item stretches
@@ -120,7 +122,7 @@
 .landing__device {
   position: relative;
   width: clamp(248px, 29vw, 300px);
-  aspect-ratio: 449 / 735;          /* the cropped app screen, not the whole image */
+  aspect-ratio: 436 / 736;          /* the cropped app screen, not the whole image */
   overflow: hidden;
   border-radius: 34px;
   background: #f4f7f4;              /* matches the mockup backdrop, hides sub-px seams */
@@ -138,10 +140,10 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 124.9%;                    /* 561 / 449 — app width fills the container */
+  width: 128.7%;                    /* 561 / 436 — app width fills the container */
   max-width: none;                  /* override the global `img { max-width: 100% }` reset */
   height: auto;
-  transform: translate(-9.98%, -10.88%);  /* -56/561 , -112/1029 */
+  transform: translate(-12.12%, -11.08%);  /* -68/561 , -114/1029 */
   display: block;
 }
 
