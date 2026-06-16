@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { HomeIcon, PlusIcon, BarChartIcon } from '../icons'
+import { HomeIcon, PlusIcon, BarChartIcon, ShoppingBagIcon } from '../icons'
 import './BottomNavigation.css'
 
 /**
@@ -30,6 +30,13 @@ export default function BottomNavigationB2B({ notifCount = 5 }) {
   ]
 
   const rightTabs = [
+    {
+      id:    'b2b-tab-orders',
+      to:    '/b2b/orders',
+      label: 'הזמנות',
+      icon:  <ShoppingBagIcon />,
+      match: '/b2b/orders',
+    },
     {
       id:    'b2b-tab-stats',
       to:    '/b2b/stats',

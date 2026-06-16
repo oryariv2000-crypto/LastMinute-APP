@@ -1,0 +1,56 @@
+/* ── OrderQrScanner ──────────────────────────────────────────── */
+.order-scanner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-3);
+}
+
+.order-scanner__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.order-scanner__title {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+.order-scanner__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--color-surface-container);
+  border-radius: var(--radius-full);
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+.order-scanner__close svg { width: 18px; height: 18px; }
+
+.order-scanner__view {
+  width: 100%;
+  min-height: 240px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: #000;
+}
+.order-scanner__view video { width: 100% !important; height: auto !important; display: block; }
+
+.order-scanner__hint {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.order-scanner__error {
+  margin: 0;
+  font-size: var(--font-size-label-md);
+  color: var(--color-action-red);
+  text-align: center;
+}

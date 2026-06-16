@@ -12,6 +12,7 @@ import B2BDashboardPage from './pages/B2BDashboardPage'
 import B2BAiReviewPage from './pages/B2BAiReviewPage'
 import B2BNewDealPage from './pages/B2BNewDealPage'
 import B2BStatsPage from './pages/B2BStatsPage'
+import B2BOrdersPage from './pages/B2BOrdersPage'
 import B2BProfilePage from './pages/B2BProfilePage'
 import B2CHomePage from './pages/B2CHomePage'
 // Lazy — pulls in leaflet/react-leaflet (~200KB) only when the map is opened.
@@ -58,6 +59,7 @@ export default function App() {
       <Route path="/b2b/new-deal"  element={B2B(<B2BNewDealPage />)} />
       <Route path="/b2b/review"    element={B2B(<B2BAiReviewPage />)} />
       <Route path="/b2b/stats"     element={B2B(<B2BStatsPage />)} />
+      <Route path="/b2b/orders"    element={B2B(<B2BOrdersPage />)} />
       <Route path="/b2b/profile"   element={B2B(<B2BProfilePage />)} />
 
       {/* ── B2C (Customer) — customer only ─────────────────── */}

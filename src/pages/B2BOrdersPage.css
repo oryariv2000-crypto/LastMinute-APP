@@ -1,0 +1,152 @@
+/* ── B2B Orders Management ───────────────────────────────────── */
+
+/* Verification card: code field + QR scan toggle */
+.orders-verify {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+  margin-block-end: var(--space-4);
+}
+.orders-verify__form { display: flex; flex-direction: column; gap: var(--space-2); }
+.orders-verify__label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+}
+.orders-verify__row { display: flex; gap: var(--space-2); }
+.orders-verify__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-outline, rgba(0, 0, 0, 0.18));
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body-md);
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+}
+.orders-verify__btn,
+.orders-verify__scan {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.orders-verify__btn {
+  background-color: var(--color-brand-primary);
+  color: #fff;
+}
+.orders-verify__btn:disabled { opacity: 0.55; cursor: default; }
+.orders-verify__btn svg { width: 18px; height: 18px; }
+.orders-verify__scan {
+  align-self: flex-start;
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.orders-verify__feedback {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+.orders-verify__feedback--ok  { color: var(--color-brand-primary); }
+.orders-verify__feedback--err { color: var(--color-action-red); }
+
+/* Open-orders list */
+.orders-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-3);
+}
+.order-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+.order-row__icon svg { width: 20px; height: 20px; }
+.order-row__body { flex: 1; min-width: 0; }
+.order-row__title {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.order-row__meta {
+  margin: 2px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+.order-row__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.order-row__total {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+.order-row__collect {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-primary);
+  color: #fff;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-label-md);
+  cursor: pointer;
+}
+.order-row__collect:disabled { opacity: 0.55; cursor: default; }
+.order-row__collect svg { width: 16px; height: 16px; }
+
+/* Empty state */
+.orders-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+}
+.orders-empty__emoji { font-size: 3rem; }
+.orders-empty__title { margin: 0; font-size: 1.2rem; font-weight: var(--font-weight-bold); }
+.orders-empty__sub { margin: 0; max-width: 320px; color: var(--color-text-muted); line-height: 1.6; }
