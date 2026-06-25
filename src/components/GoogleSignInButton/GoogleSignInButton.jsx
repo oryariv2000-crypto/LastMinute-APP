@@ -4,12 +4,15 @@ import { setRemember } from '../../lib/authStorage'
 import './GoogleSignInButton.css'
 
 /**
- * GoogleSignInButton — OAuth sign-in / sign-up via Google.
+ * GoogleSignInButton — OAuth via Google.
+ *
+ * OAuth handles signup and login in one identical flow, so the label is the
+ * same on both the login and register pages: a neutral "continue with Google".
  *
  * Props:
- *   label  string  — button text (default: Hebrew "sign in with Google")
+ *   label  string  — button text (default: Hebrew "continue with Google")
  */
-export default function GoogleSignInButton({ label = 'התחברות עם Google' }) {
+export default function GoogleSignInButton({ label = 'המשך עם Google' }) {
   const [error, setError] = useState(null)
   const [pending, setPending] = useState(false)
 

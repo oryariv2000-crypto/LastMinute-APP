@@ -1,116 +1,99 @@
-# OAuth Signup Fix — Harden handle_new_user + Unify Google Button
+# OAuth Signup Fix — Friendly Email-Collision Message + Google Button Unify
 
 **Date:** 2026-06-25
-**Status:** Approved (pending spec review) — ready for implementation plan
-**Scope:** One Supabase migration (trigger) + a small frontend UX cleanup.
+**Status:** Implemented
+**Scope:** Frontend only. **No database, trigger, or RLS changes.**
+
+> **Revision note:** an earlier draft of this spec proposed hardening the
+> `handle_new_user` trigger (a suspected null-role on OAuth). Live verification
+> **disproved** that — the deployed trigger already coalesces `role` and
+> `full_name`, and Postgres logs revealed the real cause (below). This document
+> records the confirmed diagnosis and the shipped fix.
 
 ## Bug
 
-A brand-new user clicking the Google auth button gets a red UI error:
-**"Database error saving new user."** Email/password signup works.
+Clicking the Google auth button can fail with a red UI error:
+**"Database error saving new user."**
 
-## Root cause
+## Root cause (confirmed via Postgres logs)
 
-`public.users.role` is `text DEFAULT 'customer' NOT NULL`. The live
-`handle_new_user` trigger inserts the role straight from signup metadata:
-
-```sql
-... new.raw_user_meta_data->>'role' ...
+```
+duplicate key value violates unique constraint "users_email_key"
+Detail: Key (email)=(<addr>) already exists.
 ```
 
-- Email/password signup works because our `supabase.auth.signUp` call sends
-  `options.data = { role: 'customer' }`, so the metadata key exists.
-- Google OAuth never sends our custom `role` key, so `->>'role'` is `NULL`.
-- A column `DEFAULT` is applied only when the column is **omitted** from the
-  INSERT. The trigger explicitly passes a value, and that value is `NULL`, so
-  the `NOT NULL` constraint fires → GoTrue surfaces it as the generic
-  "Database error saving new user."
+The `handle_new_user` trigger inserts the new profile row with
+`on conflict (id) do nothing`. That clause only catches a conflict on the
+**primary key (id)**. The `public.users` table also has
+`users_email_key UNIQUE (email)`. When Google OAuth creates a **new** auth user
+whose email already exists in `public.users` under a different id, the insert
+violates the **email** constraint — which `on conflict (id)` does not catch — so
+the trigger raises, and GoTrue masks it as the generic "Database error saving
+new user."
 
-**Important nuance:** the repo's `handle_new_user` migration *already*
-coalesces role to `'customer'`, but those migrations were never applied. The
-**live** trigger is a stale version without the coalesce. The fix must be
-applied to the live database, not just committed to the repo.
+This happens when a prior email/password account exists for that address
+(typically an **unconfirmed** one — "Confirm email" is ON, and Supabase only
+auto-links a Google identity to an existing account when its email is
+confirmed). Investigation steps that got us here:
 
-## Out of scope (known, not fixed here)
+1. `pg_get_functiondef('public.handle_new_user')` → trigger already coalesces
+   `role`→'customer' and `full_name`/`name` → **null-role ruled out**.
+2. `information_schema.columns` for `public.users` + trigger list → no missing
+   NOT NULL column, only the one trigger → **omitted-column ruled out**.
+3. Postgres logs → `users_email_key` violation → **email collision confirmed**.
 
-- **Account-linking collision:** if an email/password user later signs in with
-  Google using the same address, the trigger's insert hits the
-  `users_email_key` unique constraint (the `on conflict (id)` clause doesn't
-  catch an email collision). Separate concern; not addressed now.
-- **Avatar enrichment:** not pulling Google's `picture` into `avatar_url` in
-  this change (decided: name-only). OAuth users can set an avatar in profile.
+## Decision: fix at the frontend, keep DB integrity
 
-## Plan
+We keep the strict DB constraints (we want **one account per email**) and do
+**not** weaken the trigger:
 
-### Step 0 — Confirm the live trigger (read-only)
-Before changing anything, dump the deployed function body to confirm role is
-the culprit:
-```sql
-select pg_get_functiondef('public.handle_new_user'::regproc);
-```
-Expectation: the `role` line lacks `coalesce`.
+- Changing `on conflict (id)` to an untargeted `on conflict do nothing` would
+  suppress the error but leave the new OAuth auth user with **no `public.users`
+  row** (orphan) → `getMyProfile()` returns null → broken app. Rejected.
 
-### Part 1 — Harden the trigger (new migration, applied via SQL editor)
-New file `supabase/migrations/<timestamp>_harden_handle_new_user_oauth.sql`,
-idempotent (`create or replace`):
+Instead we translate the masked error into a clear instruction on the frontend.
 
-```sql
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  insert into public.users (id, email, full_name, role)
-  values (
-    new.id,
-    new.email,
-    coalesce(new.raw_user_meta_data->>'full_name',
-             new.raw_user_meta_data->>'name', ''),   -- Google sends 'name'
-    coalesce(new.raw_user_meta_data->>'role', 'customer')
-  )
-  on conflict (id) do nothing;
-  return new;
-end;
-$$;
+## Implementation (shipped)
 
-notify pgrst, 'reload schema';
-```
+### Part A — Friendly OAuth-error message
+- New pure helper `src/lib/authErrors.js` → `mapOAuthCallbackError(raw)`:
+  - `/database error saving new user/i` → **"האימייל הזה כבר רשום. התחברו עם
+    אימייל וסיסמה."**
+  - any other message passes through unchanged; empty → `''`.
+- `src/pages/LoginPage.jsx` — `readOAuthCallback()` runs the raw
+  `error_description` / `error` through `mapOAuthCallbackError`. OAuth always
+  redirects to `/login` (`GoogleSignInButton` hardcodes
+  `redirectTo: origin + '/login'`), so this one spot covers signups started from
+  both the login and register pages.
 
-The trigger itself (`on_auth_user_created`) is unchanged and not recreated;
-`create or replace function` updates the body in place.
+**Accepted trade-off:** "Database error saving new user" is GoTrue's *generic*
+trigger-failure message. The trigger's only realistic failure mode is this email
+collision (role/name coalesced; no missing NOT NULL columns), so mapping it to
+"already registered" is correct in practice. A different trigger error would
+show a slightly off message — acceptable for alpha.
 
-**Apply:** paste into the Supabase dashboard SQL editor and run (same flow used
-for the earlier read-only checks).
+### Part B — Unify the Google button label
+OAuth handles signup and login in one identical flow, so both pages now show a
+single neutral label.
+- `GoogleSignInButton` default label → **"המשך עם Google"**.
+- `RegisterPage` — dropped its `label="הרשמה עם Google"` override.
+- `LoginPage` — already used the default.
 
-**Verify:** re-run the Step 0 query (role line now coalesced) and perform a real
-Google signup with a brand-new account → no error → a `public.users` row with
-`role = 'customer'`, `is_business = false`, and the Google display name.
+## Testing
 
-### Part 2 — Unify the Google button label
-OAuth handles signup and login in one identical flow, so the two different
-labels are confusing.
-
-- `GoogleSignInButton`: change the default `label` to **"המשך עם Google"**.
-- `RegisterPage`: remove the `label="הרשמה עם Google"` override (use default).
-- `LoginPage`: already uses the default — no change.
-- `GoogleSignInButton.test.jsx`: update the expected default-label assertion.
-
-Result: both pages show one consistent **"המשך עם Google"**.
-
-## Testing & verification
-
-- Update `GoogleSignInButton.test.jsx` for the new default label (test-first
-  for the label change).
+- `src/lib/authErrors.test.js` — mapping (match, case-insensitive, passthrough,
+  empty).
+- `src/pages/LoginPage.test.jsx` — with `?error_description=Database error saving
+  new user` in the URL, the friendly message renders.
+- `src/components/GoogleSignInButton/GoogleSignInButton.test.jsx` — updated for
+  the unified default label.
 - `npm run lint` + full `vitest` suite green.
-- Manual: a fresh Google signup completes and lands on `/b2c/home` as a
-  customer (frontend can't be unit-tested against live OAuth; this is a manual
-  check the user performs).
+- Manual (user): a Google signup against a colliding email shows the friendly
+  message instead of the red DB error.
 
-## Files touched
+## Out of scope — follow-up
 
-- `supabase/migrations/<timestamp>_harden_handle_new_user_oauth.sql` (new)
-- `src/components/GoogleSignInButton/GoogleSignInButton.jsx`
-- `src/components/GoogleSignInButton/GoogleSignInButton.test.jsx`
-- `src/pages/RegisterPage.jsx`
+- **True account linking (one identity per email).** The proper long-term fix is
+  to link a Google identity to an existing account (or otherwise prevent the
+  duplicate auth user), e.g. via Supabase identity linking / confirmed-email
+  flows. Tracked separately; this change only improves the error UX.

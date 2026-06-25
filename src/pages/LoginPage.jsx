@@ -5,6 +5,7 @@ import GoogleSignInButton from '../components/GoogleSignInButton/GoogleSignInBut
 import { supabase } from '../lib/supabase'
 import { useSession } from '../lib/useSession'
 import { useProfile } from '../lib/useProfile'
+import { mapOAuthCallbackError } from '../lib/authErrors'
 import BrandLogo from '../components/BrandLogo/BrandLogo'
 import Loader from '../components/Loader/Loader'
 import './AuthPage.css'
@@ -14,9 +15,12 @@ import './AuthPage.css'
 // carries `?error=…&error_description=…`. Read both from the live URL.
 function readOAuthCallback() {
   const params = new URLSearchParams(window.location.search)
+  const raw = params.get('error_description') || (params.get('error') ? 'ההתחברות עם Google נכשלה' : '')
   return {
     hasCode: params.has('code'),
-    errorDescription: params.get('error_description') || (params.get('error') ? 'ההתחברות עם Google נכשלה' : ''),
+    // Translate Supabase's masked "Database error saving new user" (an email
+    // already registered) into a clear instruction; other errors pass through.
+    errorDescription: mapOAuthCallbackError(raw),
   }
 }
 

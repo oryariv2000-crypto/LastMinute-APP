@@ -23,7 +23,7 @@ describe('GoogleSignInButton', () => {
   it('renders the default Hebrew label', () => {
     render(<GoogleSignInButton />)
     expect(
-      screen.getByRole('button', { name: /התחברות עם Google/ })
+      screen.getByRole('button', { name: /המשך עם Google/ })
     ).toBeInTheDocument()
   })
 
@@ -36,7 +36,7 @@ describe('GoogleSignInButton', () => {
 
   it('calls signInWithOAuth with google provider and /login redirectTo on click', async () => {
     render(<GoogleSignInButton />)
-    await userEvent.click(screen.getByRole('button', { name: /התחברות עם Google/ }))
+    await userEvent.click(screen.getByRole('button', { name: /המשך עם Google/ }))
 
     expect(supabase.auth.signInWithOAuth).toHaveBeenCalledOnce()
     expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith(
@@ -56,7 +56,7 @@ describe('GoogleSignInButton', () => {
     })
 
     render(<GoogleSignInButton />)
-    await userEvent.click(screen.getByRole('button', { name: /התחברות עם Google/ }))
+    await userEvent.click(screen.getByRole('button', { name: /המשך עם Google/ }))
 
     expect(screen.getByRole('alert')).toHaveTextContent('provider disabled')
   })
@@ -67,7 +67,7 @@ describe('GoogleSignInButton', () => {
     supabase.auth.signInWithOAuth.mockRejectedValue(new Error('redirect_uri mismatch'))
 
     render(<GoogleSignInButton />)
-    await userEvent.click(screen.getByRole('button', { name: /התחברות עם Google/ }))
+    await userEvent.click(screen.getByRole('button', { name: /המשך עם Google/ }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('redirect_uri mismatch')
   })

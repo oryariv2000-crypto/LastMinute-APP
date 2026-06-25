@@ -102,8 +102,8 @@ export default function RegisterPage() {
           </>
         )}
 
-        {/* Google OAuth */}
-        <GoogleSignInButton label="הרשמה עם Google" />
+        {/* Google OAuth — unified label (OAuth is the same flow for signup/login) */}
+        <GoogleSignInButton />
 
         {/* Divider */}
         <div className="auth-page__divider" aria-hidden="true"><span>או</span></div>

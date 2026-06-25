@@ -49,6 +49,9 @@ beforeEach(() => {
   // AuthForm persists the "remember me" email to localStorage on submit; clear
   // it so one test's email doesn't prefill (and corrupt) the next test's input.
   localStorage.clear()
+  // readOAuthCallback() reads window.location.search; reset it so OAuth-error
+  // params from one test don't leak into the next.
+  window.history.pushState({}, '', '/')
   h.session = null
   h.initializing = false
   h.profile = null
@@ -90,5 +93,17 @@ describe('LoginPage — routes by capability (is_business), not the role string'
     await userEvent.type(screen.getByLabelText(/^סיסמה/), 'secret123')
     await userEvent.click(screen.getByRole('button', { name: 'כניסה' }))
     expect(await screen.findByTestId('loc')).toHaveTextContent('/b2c/home')
+  })
+})
+
+describe('LoginPage — OAuth callback error', () => {
+  it('shows a friendly "already registered" message when the OAuth signup hit an existing email', () => {
+    // Supabase masks the trigger's users_email_key violation as this generic
+    // error and appends it to the /login redirect.
+    window.history.pushState({}, '', '/login?error_description=Database%20error%20saving%20new%20user')
+    renderLogin()
+    expect(
+      screen.getByText('האימייל הזה כבר רשום. התחברו עם אימייל וסיסמה.'),
+    ).toBeInTheDocument()
   })
 })
