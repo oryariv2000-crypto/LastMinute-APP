@@ -42,6 +42,12 @@
   }
 }
 
+/* Mode switch row — separated from the top row by a hairline so it reads as a
+   distinct control band rather than floating in the header. */
+.navbar-b2c .mode-switch {
+  border-top: 1px solid var(--color-outline-variant);
+}
+
 /* Brand */
 .navbar-b2c__brand {
   grid-area: brand;

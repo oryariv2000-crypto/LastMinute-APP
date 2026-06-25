@@ -225,21 +225,22 @@
     width: 36px;
     height: 36px;
   }
-
-  /* Trim the toggle's padding so it claims a little less of the cramped row. */
-  .navbar-b2b .mode-toggle--switch {
-    padding: 6px 10px;
-  }
 }
 
-/* ── ModeToggle on the green bar ──────────────────────────────
-   The shared "switch" style is brand-green — invisible on this green navbar.
-   Scope a translucent-white pill here so it clearly reads as a button.
-   (B2C's light navbar keeps the default green pill — unaffected.) */
-.navbar-b2b .mode-toggle--switch {
+/* ── Mode switch row on the green bar ─────────────────────────
+   The shared track/thumb are tuned for a light surface; on this green navbar
+   we give the track a translucent-white well so the white thumb and labels
+   read clearly. (B2C's light navbar keeps the default surface styling.) */
+.navbar-b2b .mode-switch {
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  padding-block: var(--space-2);
+}
+.navbar-b2b .mode-switch__track {
   background-color: rgba(255, 255, 255, 0.16);
-  color: var(--color-on-primary);
 }
-.navbar-b2b .mode-toggle--switch:hover {
-  background-color: rgba(255, 255, 255, 0.28);
+.navbar-b2b .mode-switch__seg {
+  color: var(--color-on-primary-container);
+}
+.navbar-b2b .mode-switch__seg--active {
+  color: var(--color-brand-primary);
 }

@@ -3,8 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Loader from './components/Loader/Loader'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
-import B2CRegisterPage from './pages/B2CRegisterPage'
-import B2BRegisterPage from './pages/B2BRegisterPage'
+import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import OpenBusinessPage from './pages/OpenBusinessPage'
@@ -43,10 +42,12 @@ export default function App() {
 
       {/* ── Public ─────────────────────────────────────────── */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register/b2c" element={<B2CRegisterPage />} />
-      <Route path="/register/b2b" element={<B2BRegisterPage />} />
-      {/* Convenience alias: bare /register → B2C registration */}
-      <Route path="/register" element={<Navigate to="/register/b2c" replace />} />
+      {/* Unified signup — everyone registers as a customer; opening a business
+          happens later from the profile. The old role-specific routes redirect
+          here (preserving the ?intent business nudge from the b2b alias). */}
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register/b2c" element={<Navigate to="/register" replace />} />
+      <Route path="/register/b2b" element={<Navigate to="/register?intent=business" replace />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
