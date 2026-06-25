@@ -33,7 +33,7 @@ export default function LoginPage() {
   // Already-authenticated users must not be parked on the login form — this is
   // the path both a "remember me" return visit AND the Google OAuth round-trip
   // land on. Decide from the session (no network); fetch the profile only to
-  // pick the role-correct home.
+  // pick the capability-correct home.
   const { session, initializing } = useSession()
   const { profile, loading: profileLoading } = useProfile({ enabled: !!session })
   const { errorDescription } = readOAuthCallback()
@@ -45,7 +45,9 @@ export default function LoginPage() {
 
   if (session) {
     if (profileLoading) return <Loader fullscreen />
-    const dest = profile?.role === 'business_owner' ? '/b2b/dashboard' : '/b2c/home'
+    // Route by the is_business capability, not the role string: a customer who
+    // later opened a business keeps role:'customer' but is_business:true.
+    const dest = profile?.is_business === true ? '/b2b/dashboard' : '/b2c/home'
     return <Navigate to={dest} replace />
   }
 
@@ -63,10 +65,10 @@ export default function LoginPage() {
         return
       }
 
-      // Fetch the user's role to decide where to land them
+      // Fetch the user's capability to decide where to land them.
       const { data: profile, error: profileError } = await supabase
         .from('users')
-        .select('role')
+        .select('is_business')
         .eq('id', data.user.id)
         .single()
 
@@ -75,7 +77,7 @@ export default function LoginPage() {
         return
       }
 
-      navigate(profile?.role === 'business_owner' ? '/b2b/dashboard' : '/b2c/home')
+      navigate(profile?.is_business === true ? '/b2b/dashboard' : '/b2c/home')
     } catch {
       setError('אימייל או סיסמה שגויים')
     } finally {
@@ -114,7 +116,7 @@ export default function LoginPage() {
         {/* Register link */}
         <p className="auth-page__switch text-label-md">
           עדיין אין לך חשבון?{' '}
-          <Link to="/register/b2c" className="auth-page__switch-link" id="go-register">
+          <Link to="/register" className="auth-page__switch-link" id="go-register">
             הרשמה
           </Link>
         </p>

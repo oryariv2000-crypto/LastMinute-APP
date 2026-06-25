@@ -19,7 +19,7 @@ import ReviewListItem from '../components/ReviewListItem/ReviewListItem'
 import ActiveDealCard from '../components/ActiveDealCard/ActiveDealCard'
 import NewDealButton from '../components/NewDealButton/NewDealButton'
 import BottomNavigationB2B from '../components/BottomNavigation/BottomNavigationB2B'
-import RegisterFormB2B from '../components/RegisterFormB2B/RegisterFormB2B'
+import OpenBusinessCard from '../components/OpenBusinessCard/OpenBusinessCard'
 
 const noop = () => {}
 
@@ -36,12 +36,12 @@ const plain = [
   ['PublishActions', <PublishActions total={50} onCancel={noop} onPublish={noop} />],
   ['ReviewListItem', <ReviewListItem id="1" title="מאפה" price={10} quantity={5} tags={[]} onTitleChange={noop} onQtyChange={noop} onPriceChange={noop} onImageChange={noop} onTagsChange={noop} onRemove={noop} />],
   ['ActiveDealCard', <ActiveDealCard title="מבצע" originalPrice={20} price={10} discountPct={50} quantity={5} onEdit={noop} onToggleStatus={noop} onDelete={noop} />],
-  ['RegisterFormB2B', <RegisterFormB2B onSubmit={noop} />],
 ]
 
 const routed = [
   ['NewDealButton', <NewDealButton />],
   ['BottomNavigationB2B', <BottomNavigationB2B notifCount={3} />],
+  ['OpenBusinessCard', <OpenBusinessCard isBusiness={false} />],
 ]
 
 describe('presentational components — smoke render', () => {

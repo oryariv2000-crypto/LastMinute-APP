@@ -1,16 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
-import { HomeIcon, PlusIcon, BarChartIcon, ShoppingBagIcon } from '../icons'
+import { HomeIcon, PlusIcon, BarChartIcon, ShoppingBagIcon, SettingsIcon } from '../icons'
 import './BottomNavigation.css'
 
 /**
  * BottomNavigationB2B — Fixed bottom tab bar for business owners.
  *
- * Tabs: Home · [Publish FAB] · Stats
+ * Tabs: Home · Orders · [Publish FAB] · Stats · Settings
  *
  * The center slot is a floating action button (FAB) for "Publish Deal"
  * — styled with the Sunset Orange accent color from the design system.
- * Profile is reached from the avatar in the top bar (NavbarB2B), so it
- * is intentionally not duplicated here.
+ * The tabs are split evenly (two each side) so the FAB sits dead-center
+ * on every screen width. Settings links to the business profile/settings
+ * page (also reachable from the top-bar avatar).
  *
  * Props:
  *   notifCount  number — badge on Home tab (pending orders / alerts)
@@ -27,9 +28,6 @@ export default function BottomNavigationB2B({ notifCount = 5 }) {
       match: '/b2b/dashboard',
       badge: notifCount,
     },
-  ]
-
-  const rightTabs = [
     {
       id:    'b2b-tab-orders',
       to:    '/b2b/orders',
@@ -37,12 +35,22 @@ export default function BottomNavigationB2B({ notifCount = 5 }) {
       icon:  <ShoppingBagIcon />,
       match: '/b2b/orders',
     },
+  ]
+
+  const rightTabs = [
     {
       id:    'b2b-tab-stats',
       to:    '/b2b/stats',
       label: 'סטטיסטיקות',
       icon:  <BarChartIcon />,
       match: '/b2b/stats',
+    },
+    {
+      id:    'b2b-tab-settings',
+      to:    '/b2b/profile',
+      label: 'הגדרות',
+      icon:  <SettingsIcon />,
+      match: '/b2b/profile',
     },
   ]
 

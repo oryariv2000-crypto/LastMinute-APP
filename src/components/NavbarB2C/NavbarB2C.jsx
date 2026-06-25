@@ -84,9 +84,8 @@ export default function NavbarB2C({
           <BrandLogo tone="dark" size="sm" />
         </Link>
 
-        {/* Actions: mode toggle + avatar + logout */}
+        {/* Actions: avatar + logout */}
         <div className="navbar-b2c__actions">
-          <ModeToggle isBusiness={profile?.is_business ?? false} current="shopping" />
           <Link
             to="/b2c/profile"
             className="navbar-b2c__avatar"
@@ -161,6 +160,10 @@ export default function NavbarB2C({
         )}
 
       </div>
+
+      {/* ── Mode switch row — switch to the business shell, or (for customers
+          without a business yet) a CTA into the open-business flow. */}
+      <ModeToggle isBusiness={profile?.is_business ?? false} current="shopping" />
     </header>
   )
 }

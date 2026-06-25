@@ -5,6 +5,7 @@ import NavbarB2C from '../components/NavbarB2C/NavbarB2C'
 import BottomNavigationB2C from '../components/BottomNavigation/BottomNavigationB2C'
 import UserProfileHeader from '../components/UserProfileHeader/UserProfileHeader'
 import EcoImpactStats from '../components/EcoImpactStats/EcoImpactStats'
+import OpenBusinessCard from '../components/OpenBusinessCard/OpenBusinessCard'
 import SettingsList from '../components/SettingsList/SettingsList'
 import ProfileEditModal from '../components/ProfileEditModal/ProfileEditModal'
 import PickerModal from '../components/PickerModal/PickerModal'
@@ -114,6 +115,10 @@ export default function B2CProfilePage() {
           co2Kg={impact?.co2Kg ?? 0}
           ordersCount={impact?.ordersCount ?? 0}
         />
+
+        {/* Entry into B2B onboarding — only for customers without a business
+            yet (owners switch shells via the header ModeToggle instead). */}
+        <OpenBusinessCard isBusiness={profile?.is_business ?? false} />
 
         <SettingsList groups={groups} />
       </main>

@@ -25,6 +25,19 @@
   width: 100%;
 }
 
+/* Desktop / tablet: a button stretched across the wide content column reads as
+   "smeared". Past the mobile shell (480px) we cap the width and center it so it
+   stays a comfortable, tappable target instead of a full-bleed bar.
+   `display: flex` makes it block-level so the auto inline margins actually
+   center it (an inline-flex box ignores auto margins). */
+@media (min-width: 700px) {
+  .submit-btn--full {
+    display: flex;
+    max-width: 400px;
+    margin-inline: auto;
+  }
+}
+
 .submit-btn:active:not(:disabled) {
   transform: scale(0.97);
 }

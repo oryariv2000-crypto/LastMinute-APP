@@ -21,7 +21,7 @@ export default function LandingPage() {
         </Link>
         <nav className="landing__nav">
           <Link to="/login" className="btn btn-ghost" id="landing-login">כניסה</Link>
-          <Link to="/register/b2c" className="btn btn-primary" id="landing-register">הצטרפות</Link>
+          <Link to="/register" className="btn btn-primary" id="landing-register">הצטרפות</Link>
         </nav>
       </header>
 
@@ -37,8 +37,8 @@ export default function LandingPage() {
             שהם נזרקים. אתם נהנים, העסק מרוויח, וכדור הארץ נושם קצת יותר טוב.
           </p>
           <div className="landing__cta-row">
-            <Link to="/register/b2c" className="btn btn-primary landing__cta">הצטרפות כלקוח</Link>
-            <Link to="/register/b2b" className="btn btn-secondary landing__cta">יש לי עסק</Link>
+            <Link to="/register" className="btn btn-primary landing__cta">הצטרפות כלקוח</Link>
+            <Link to="/register?intent=business" className="btn btn-secondary landing__cta">יש לי עסק</Link>
           </div>
           <p className="landing__login-hint">
             כבר חלק מהקהילה? <Link to="/login" className="landing__link">כניסה לחשבון</Link>
@@ -93,7 +93,7 @@ export default function LandingPage() {
             בלי הקלדות ובלי טפסים. מצלמים את המלאי שנשאר או מקליטים הודעה קולית,
             וה-AI מזהה את המנות, מכמת כמויות ומציע מחיר. אישור אחד — והמבצע באוויר.
           </p>
-          <Link to="/register/b2b" className="btn btn-primary landing__ai-btn">פרסמו מבצע ראשון</Link>
+          <Link to="/register?intent=business" className="btn btn-primary landing__ai-btn">פרסמו מבצע ראשון</Link>
         </div>
 
         <div className="landing__ai-flow" aria-hidden="true">
@@ -122,8 +122,8 @@ export default function LandingPage() {
         <h2 className="landing__join-title">מוכנים להצטרף לתנועה?</h2>
         <p className="landing__join-text">דקה אחת להרשמה — והמבצע הראשון שלכם מחכה.</p>
         <div className="landing__cta-row landing__cta-row--center">
-          <Link to="/register/b2c" className="btn btn-primary landing__cta">הצטרפות כלקוח</Link>
-          <Link to="/register/b2b" className="btn btn-secondary landing__cta">הצטרפות כעסק</Link>
+          <Link to="/register" className="btn btn-primary landing__cta">הצטרפות כלקוח</Link>
+          <Link to="/register?intent=business" className="btn btn-secondary landing__cta">הצטרפות כעסק</Link>
         </div>
       </section>
 
@@ -134,7 +134,7 @@ export default function LandingPage() {
         <p className="landing__footer-links">
           <Link to="/login" className="landing__link">כניסה</Link>
           <span aria-hidden="true"> · </span>
-          <Link to="/register/b2c" className="landing__link">הצטרפות</Link>
+          <Link to="/register" className="landing__link">הצטרפות</Link>
         </p>
       </footer>
     </div>

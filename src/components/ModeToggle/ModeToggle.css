@@ -1,44 +1,67 @@
-/* ── ModeToggle ────────────────────────────────────────────────── */
-.mode-toggle {
+/* ── ModeToggle ──────────────────────────────────────────────────
+   A full-width row under the top bar. Centers its control to the same
+   content column (--shell-max) the rest of the page uses. */
+.mode-switch {
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding: var(--space-2) var(--space-gutter);
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Segmented slider (business-capable users) ───────────────────── */
+.mode-switch__track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 340px;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-high);
+}
+
+/* The sliding highlight. Uses logical inset so it lands on the correct
+   segment in RTL automatically (inline-start = right in Hebrew). */
+.mode-switch__thumb {
+  position: absolute;
+  z-index: 0;
+  inset-block: 4px;
+  inline-size: calc(50% - 4px);
+  inset-inline-start: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-sm);
+  transition: inset-inline-start var(--transition-base);
+}
+.mode-switch__track[data-active='business'] .mode-switch__thumb {
+  inset-inline-start: 50%;
+}
+
+.mode-switch__seg {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
-  padding: 7px 14px;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   border-radius: var(--radius-full);
   font-family: var(--font-family-base);
   font-size: var(--font-size-label-md);
   font-weight: var(--font-weight-semibold);
-  cursor: pointer;
+  color: var(--color-text-muted);
   white-space: nowrap;
-  text-decoration: none;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
+  transition: color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
 }
-
-/* Switch button: filled brand style */
-.mode-toggle--switch {
-  background-color: var(--color-brand-primary);
-  color: var(--color-on-primary);
-  border: none;
+.mode-switch__seg svg {
+  width: 18px;
+  height: 18px;
 }
-.mode-toggle--switch:hover {
-  background-color: var(--color-dark-forest);
-}
-.mode-toggle--switch:active {
-  transform: scale(0.97);
-}
-
-/* CTA link: outlined style */
-.mode-toggle--cta {
-  background-color: transparent;
+.mode-switch__seg--active {
   color: var(--color-brand-primary);
-  border: 1.5px solid var(--color-brand-primary);
-}
-.mode-toggle--cta:hover {
-  background-color: var(--color-brand-primary);
-  color: var(--color-on-primary);
-}
-.mode-toggle--cta:active {
-  transform: scale(0.97);
 }

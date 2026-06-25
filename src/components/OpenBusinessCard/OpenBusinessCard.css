@@ -1,0 +1,86 @@
+/* ── OpenBusinessCard ────────────────────────────────────────────
+   A distinct, sunset-accented banner in the customer profile that invites
+   the user to open a business account. Stands apart from the neutral
+   settings rows so it reads as an opportunity, not a setting. */
+.open-business-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255, 127, 81, 0.12), rgba(255, 127, 81, 0.04));
+  border: 1px solid rgba(255, 127, 81, 0.35);
+  text-align: start;
+}
+
+.open-business-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  color: #ffffff;
+}
+.open-business-card__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.open-business-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.open-business-card__title {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.open-business-card__subtitle {
+  margin: 2px 0 0;
+  font-size: var(--font-size-label-md);
+  line-height: var(--line-height-label-md);
+  color: var(--color-text-muted);
+}
+
+.open-business-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  color: #ffffff;
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast), transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+.open-business-card__cta:hover {
+  background-color: #e86d3f;
+  box-shadow: var(--shadow-md);
+}
+.open-business-card__cta:active {
+  transform: scale(0.97);
+}
+
+/* On a phone the row would get cramped — stack the CTA full-width under the
+   text so it stays a comfortable tap target. */
+@media (max-width: 480px) {
+  .open-business-card {
+    flex-wrap: wrap;
+  }
+  .open-business-card__cta {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
